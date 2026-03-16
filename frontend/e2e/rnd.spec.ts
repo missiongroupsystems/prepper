@@ -3,11 +3,12 @@
  * Covers: R&D List Page, To Do Column, In Progress Column, Review Column
  */
 import { test, expect } from '@playwright/test';
+import { DEBOUNCE_WAIT } from './helpers/data';
 
 test.describe('R&D List Page (/rnd)', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/rnd');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
   });
 
   test('three columns are displayed: To Do, In Progress, Review', async ({ page }) => {
@@ -25,7 +26,7 @@ test.describe('R&D List Page (/rnd)', () => {
     const searchInput = page.locator('input[placeholder*="earch"]').first();
     if (await searchInput.isVisible()) {
       await searchInput.pressSequentially('test', { delay: 30 });
-      await page.waitForTimeout(400);
+      await page.waitForTimeout(DEBOUNCE_WAIT);
       await expect(page.locator('main')).toBeVisible();
     }
   });
@@ -52,7 +53,7 @@ test.describe('R&D List Page (/rnd)', () => {
 test.describe('To Do Column', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/rnd');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
   });
 
   test('recipes not yet started are listed with name, yield, and status badge', async ({ page }) => {
@@ -107,15 +108,16 @@ test.describe('To Do Column', () => {
 });
 
 test.describe('In Progress Column', () => {
-  test('forked recipes owned by current user are listed', async ({ page }) => {
+  test.beforeEach(async ({ page }) => {
     await page.goto('/rnd');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
+  });
+
+  test('forked recipes owned by current user are listed', async ({ page }) => {
     await expect(page.locator('main')).toBeVisible();
   });
 
   test('"Add new session" button is present', async ({ page }) => {
-    await page.goto('/rnd');
-    await page.waitForLoadState('networkidle');
     const addSessionBtn = page.locator('button').filter({ hasText: /add.*session|new session/i });
     if (await addSessionBtn.isVisible()) {
       await expect(addSessionBtn).toBeVisible();
@@ -124,16 +126,17 @@ test.describe('In Progress Column', () => {
 });
 
 test.describe('Review Column', () => {
-  test('tasting sessions containing review_ready recipes are listed', async ({ page }) => {
+  test.beforeEach(async ({ page }) => {
     await page.goto('/rnd');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
+  });
+
+  test('tasting sessions containing review_ready recipes are listed', async ({ page }) => {
     await expect(page.locator('main')).toBeVisible();
   });
 
   test.describe('Edge Cases', () => {
     test('review column with no sessions shows an empty state', async ({ page }) => {
-      await page.goto('/rnd');
-      await page.waitForLoadState('networkidle');
       await expect(page.locator('main')).toBeVisible();
     });
   });

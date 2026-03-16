@@ -3,13 +3,14 @@
  * Covers: Ingredients List Page, Ingredient Detail Page
  */
 import { test, expect } from '@playwright/test';
-import { unique } from './helpers/data';
+import { unique, DEBOUNCE_WAIT } from './helpers/data';
 import { getPagination, hasPagination } from './helpers/pagination';
+import { goToFirstIngredient } from './helpers/navigation';
 
 test.describe('Ingredients List Page (/ingredients)', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/ingredients');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
   });
 
   test('tab navigation: Ingredients, Categories, Allergens', async ({ page }) => {
@@ -33,7 +34,7 @@ test.describe('Ingredients List Page (/ingredients)', () => {
     });
 
     await searchInput.pressSequentially('flour', { delay: 30 });
-    await page.waitForTimeout(400);
+    await page.waitForTimeout(DEBOUNCE_WAIT);
     expect(requestCount).toBeLessThanOrEqual(3);
   });
 
@@ -152,20 +153,10 @@ test.describe('Ingredients List Page (/ingredients)', () => {
 });
 
 test.describe('Ingredient Detail Page (/ingredients/[id])', () => {
-  async function goToFirstIngredient(page: import('@playwright/test').Page): Promise<boolean> {
-    await page.goto('/ingredients');
-    await page.waitForLoadState('networkidle');
-    const link = page.locator('a[href*="/ingredients/"]').first();
-    if (!(await link.isVisible())) return false;
-    await link.click();
-    await page.waitForURL(/\/ingredients\/\d+/, { timeout: 10_000 });
-    return true;
-  }
-
   test('ingredient metadata is displayed', async ({ page }) => {
     const found = await goToFirstIngredient(page);
     test.skip(!found, 'No ingredients available');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
     await expect(page.locator('main').first()).toBeVisible();
   });
 
@@ -190,7 +181,7 @@ test.describe('Ingredient Detail Page (/ingredients/[id])', () => {
   test.describe('Edge Cases', () => {
     test('navigating to non-existent ingredient ID does not show blank page', async ({ page }) => {
       await page.goto('/ingredients/999999999');
-      await page.waitForLoadState('networkidle');
+      await page.waitForLoadState('load');
       const bodyText = await page.locator('body').textContent();
       expect(bodyText).toBeTruthy();
     });
@@ -210,7 +201,7 @@ test.describe('Ingredient Detail Page (/ingredients/[id])', () => {
     test('ingredient with no suppliers shows empty supplier list without error', async ({ page }) => {
       const found = await goToFirstIngredient(page);
       test.skip(!found, 'No ingredients available');
-      await page.waitForLoadState('networkidle');
+      await page.waitForLoadState('load');
       await expect(page.locator('main').first()).toBeVisible();
     });
   });

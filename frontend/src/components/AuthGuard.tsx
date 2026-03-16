@@ -45,10 +45,17 @@ function isValidRoute(pathname: string): boolean {
   return VALID_ROUTE_PATTERNS.some((pattern) => pattern.test(pathname));
 }
 const LAST_ROUTE_KEY = 'prepper_last_route';
+const DEFAULT_ROUTE = '/outlets';
+
+/** Only allow relative paths that start with `/` (no `//`, `javascript:`, etc.) */
+function isValidRedirectPath(path: string): boolean {
+  return typeof path === 'string' && path.startsWith('/') && !path.startsWith('//');
+}
 
 function getLastRoute(): string {
   if (typeof window === 'undefined') return '/';
-  return localStorage.getItem(LAST_ROUTE_KEY) || '/recipes';
+  const stored = localStorage.getItem(LAST_ROUTE_KEY);
+  return stored && isValidRedirectPath(stored) ? stored : DEFAULT_ROUTE;
 }
 
 function setLastRoute(route: string) {

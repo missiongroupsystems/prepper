@@ -5,11 +5,12 @@
 import { test, expect } from '@playwright/test';
 import { unique } from './helpers/data';
 import { getPagination, hasPagination } from './helpers/pagination';
+import { goToFirstSupplier } from './helpers/navigation';
 
 test.describe('Suppliers List Page (/suppliers)', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/suppliers');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
   });
 
   test('supplier cards/rows are displayed', async ({ page }) => {
@@ -110,20 +111,10 @@ test.describe('Suppliers List Page (/suppliers)', () => {
 });
 
 test.describe('Supplier Detail Page (/suppliers/[id])', () => {
-  async function goToFirstSupplier(page: import('@playwright/test').Page): Promise<boolean> {
-    await page.goto('/suppliers');
-    await page.waitForLoadState('networkidle');
-    const link = page.locator('a[href*="/suppliers/"]').first();
-    if (!(await link.isVisible())) return false;
-    await link.click();
-    await page.waitForURL(/\/suppliers\/\d+/, { timeout: 10_000 });
-    return true;
-  }
-
   test('supplier metadata is displayed', async ({ page }) => {
     const found = await goToFirstSupplier(page);
     test.skip(!found, 'No suppliers available');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
     await expect(page.locator('main').first()).toBeVisible();
   });
 
@@ -139,7 +130,7 @@ test.describe('Supplier Detail Page (/suppliers/[id])', () => {
   test.describe('Edge Cases', () => {
     test('navigating to non-existent supplier ID does not show blank page', async ({ page }) => {
       await page.goto('/suppliers/999999999');
-      await page.waitForLoadState('networkidle');
+      await page.waitForLoadState('load');
       const bodyText = await page.locator('body').textContent();
       expect(bodyText).toBeTruthy();
     });

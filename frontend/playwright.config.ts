@@ -32,7 +32,18 @@ export default defineConfig({
         storageState: 'e2e/.auth/user.json',
       },
       dependencies: ['setup'],
-      testIgnore: /.*admin\.spec\.ts/,
+      testIgnore: [/.*admin\.spec\.ts/, /.*manager\.spec\.ts/],
+    },
+
+    // Manager user tests (non-admin with is_manager=true — menu create/edit)
+    {
+      name: 'manager',
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: 'e2e/.auth/manager.json',
+      },
+      dependencies: ['setup'],
+      testMatch: /.*manager\.spec\.ts/,
     },
 
     // Admin user tests

@@ -10,7 +10,7 @@
 ### Login Page (`/login`)
 - [ ] Email and password fields are present and accept input
 - [ ] Submit button is disabled while login is in progress
-- [ ] Successful login redirects to `/recipes` (or stored redirect URL)
+- [ ] Successful login redirects to `/outlets` (or stored redirect URL)
 - [ ] Invalid credentials show an error message below the form
 - [ ] Toast notification appears on success
 - [ ] Toast notification appears on error
@@ -29,12 +29,12 @@
 - [ ] Expired/revoked token from a previous session does not cause a redirect loop
 - [ ] Browser back button after successful login does not return to login page
 - [ ] Stored redirect URL is used after login (e.g., `/recipes/123` → login → `/recipes/123`)
-- [ ] Malformed stored redirect URL falls back to `/recipes` safely
+- [ ] Malformed stored redirect URL falls back to `/outlets` safely
 
 ### Register Page (`/register`)
 - [ ] Email, username, and password fields are present
 - [ ] Required field validation triggers on empty submit
-- [ ] Successful registration redirects to `/recipes`
+- [ ] Successful registration redirects to `/outlets`
 - [ ] Duplicate email/username shows error message
 - [ ] Link back to login page navigates to `/login`
 
@@ -50,7 +50,7 @@
 
 ### Auth Guard
 - [ ] Unauthenticated users visiting protected routes are redirected to `/login`
-- [ ] Authenticated users visiting `/login` or `/register` are redirected to `/recipes`
+- [ ] Authenticated users visiting `/login` or `/register` are redirected to `/outlets` (or their last visited route)
 - [ ] Logout clears auth state and redirects to `/login`
 
 **Edge Cases**
@@ -80,12 +80,12 @@
 - [ ] Rapidly clicking the same nav link multiple times does not cause duplicate fetches or errors
 
 ### Home Page (`/`)
-- [ ] Authenticated users are redirected to `/recipes`
+- [ ] Authenticated users are redirected to `/outlets`
 - [ ] Unauthenticated users are redirected to `/login`
 
 **Edge Cases**
 - [ ] Redirect happens before any content flash (no brief render of the home page itself)
-- [ ] If `/recipes` is slow to load, redirect still happens and loading state is shown there
+- [ ] If `/outlets` is slow to load, redirect still happens and loading state is shown there
 
 ---
 

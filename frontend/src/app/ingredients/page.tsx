@@ -199,7 +199,7 @@ function IngredientsListTab() {
           title="Ingredients"
           description="Browse and manage your ingredient library"
         >
-          <Button onClick={() => setShowForm(true)} disabled={showForm}>
+          <Button type="button" onClick={() => setShowForm(true)} disabled={showForm}>
             <Plus className="h-4 w-4" />
             <span className="hidden sm:inline">Add Ingredient</span>
           </Button>

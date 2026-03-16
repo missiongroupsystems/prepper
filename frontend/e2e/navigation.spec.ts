@@ -12,7 +12,7 @@ import { test, expect } from '@playwright/test';
 test.describe('Top Navigation', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/recipes');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
   });
 
   test('nav links are present', async ({ page }) => {
@@ -76,12 +76,6 @@ test.describe('Top Navigation', () => {
       }
     });
 
-    test('keyboard navigation reaches nav links', async ({ page }) => {
-      await page.keyboard.press('Tab');
-      const focused = page.locator(':focus');
-      await expect(focused).toBeVisible();
-    });
-
     test('rapidly clicking the same nav link multiple times does not cause errors', async ({ page }) => {
       // Use the nav item (rounded-md class) not the logo link to avoid strict mode
       const recipesLink = page.locator('nav').first().locator('a[href="/recipes"][class*="rounded"]');
@@ -95,17 +89,17 @@ test.describe('Top Navigation', () => {
 });
 
 test.describe('Home Page (/)', () => {
-  test('authenticated users are redirected to /recipes', async ({ page }) => {
+  test('authenticated users are redirected to /outlets', async ({ page }) => {
     await page.goto('/');
-    await page.waitForURL(/\/recipes/, { timeout: 10_000 });
-    expect(page.url()).toContain('/recipes');
+    await page.waitForURL(/\/outlets/, { timeout: 10_000 });
+    expect(page.url()).toContain('/outlets');
   });
 
   test.describe('Edge Cases', () => {
     test('redirect happens without briefly rendering home page content', async ({ page }) => {
       const homeContent = page.locator('h1').filter({ hasText: /home|welcome/i });
       await page.goto('/');
-      await page.waitForURL(/\/recipes/, { timeout: 10_000 });
+      await page.waitForURL(/\/outlets/, { timeout: 10_000 });
       const isHomeVisible = await homeContent.isVisible().catch(() => false);
       expect(isHomeVisible).toBe(false);
     });

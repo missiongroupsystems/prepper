@@ -19,6 +19,10 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
+  /** Only allow relative paths starting with `/` (blocks `javascript:`, `//`, etc.) */
+  const isValidRedirectPath = (path: string) =>
+    typeof path === 'string' && path.startsWith('/') && !path.startsWith('//');
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -39,15 +43,17 @@ export default function LoginPage() {
         response.user.outlet_id ?? null
       );
 
-      // Determine redirect destination
+      // Determine redirect destination (priority: URL param > tasting redirect > last route > default)
       const params = new URLSearchParams(window.location.search);
       const redirectParam = params.get('redirect');
       const storedRedirect = localStorage.getItem('tasting_redirect_url');
-      const destination = redirectParam || storedRedirect || '/recipes';
+      const storedLastRoute = localStorage.getItem('prepper_last_route');
+      const raw = redirectParam || storedRedirect || storedLastRoute || '/outlets';
+      const destination = isValidRedirectPath(raw) ? raw : '/outlets';
 
       // Persist destination so AuthGuard picks it up when it detects auth
       // state change (prevents race condition where AuthGuard redirects to
-      // the default /recipes before router.push fires)
+      // a stale route before router.push fires)
       localStorage.setItem('prepper_last_route', destination);
 
       // Clean up one-time tasting redirect

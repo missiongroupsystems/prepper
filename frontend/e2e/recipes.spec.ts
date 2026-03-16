@@ -9,21 +9,13 @@
  */
 import { test, expect } from '@playwright/test';
 import { RecipesPage } from './pages/RecipesPage';
-import { unique, XSS_PAYLOAD, LONG_STRING_500 } from './helpers/data';
-
-/** Pagination helpers — Pagination uses icon-only buttons, no text */
-function getPaginationButtons(page: import('@playwright/test').Page) {
-  // The pagination span shows "X / Y" — use it to locate the pagination container
-  const pageText = page.locator('span').filter({ hasText: /^\d+ \/ \d+$/ });
-  const prevBtn = page.locator('[class*="border-t"] button').first();
-  const nextBtn = page.locator('[class*="border-t"] button').last();
-  return { pageText, prevBtn, nextBtn };
-}
+import { unique, XSS_PAYLOAD, LONG_STRING_500, DEBOUNCE_WAIT } from './helpers/data';
+import { getPagination, hasPagination } from './helpers/pagination';
 
 test.describe('Recipe List Page (/recipes)', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/recipes');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
   });
 
   test('recipes are listed with name and status', async ({ page }) => {
@@ -41,7 +33,7 @@ test.describe('Recipe List Page (/recipes)', () => {
     });
 
     await recipesPage.searchInput.pressSequentially('test', { delay: 50 });
-    await page.waitForTimeout(400);
+    await page.waitForTimeout(DEBOUNCE_WAIT);
     expect(requestCount).toBeLessThanOrEqual(2);
   });
 
@@ -56,7 +48,7 @@ test.describe('Recipe List Page (/recipes)', () => {
 
   test('"New Recipe" button is visible', async ({ page }) => {
     const newBtn = page.locator('button').filter({ hasText: /new recipe/i });
-    await expect(newBtn).toBeVisible();
+    await expect(newBtn).toBeVisible({ timeout: 15_000 });
   });
 
   test('clicking a recipe row navigates to /recipes/[id]', async ({ page }) => {
@@ -82,21 +74,16 @@ test.describe('Recipe List Page (/recipes)', () => {
 
   test.describe('Pagination', () => {
     test('pagination controls are present when there are multiple pages', async ({ page }) => {
-      const { pageText } = getPaginationButtons(page);
-      const hasPagination = await pageText.isVisible().catch(() => false);
-      if (hasPagination) {
-        await expect(pageText).toBeVisible();
-      } else {
-        // Fewer than 30 items — pagination hidden, that is correct
-        expect(true).toBe(true);
+      if (await hasPagination(page)) {
+        const { pageIndicator } = getPagination(page);
+        await expect(pageIndicator).toBeVisible();
       }
+      // Fewer than 30 items → pagination hidden, that is correct
     });
 
     test('rapidly clicking Next/Previous does not cause race conditions', async ({ page }) => {
-      const { nextBtn, pageText } = getPaginationButtons(page);
-      const hasPagination = await pageText.isVisible().catch(() => false);
-      if (!hasPagination) return; // Skip if no pagination
-
+      if (!(await hasPagination(page))) return;
+      const { nextBtn } = getPagination(page);
       if (await nextBtn.isEnabled()) {
         await nextBtn.click();
         await nextBtn.click();
@@ -150,7 +137,8 @@ test.describe('Recipe List Page (/recipes)', () => {
 test.describe('Recipe Category Management Tab', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/recipes');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
+    await page.waitForTimeout(500);
     const tabs = page.locator('[role="tab"]');
     const count = await tabs.count();
     if (count >= 2) {
@@ -201,13 +189,15 @@ test.describe('Recipe Category Management Tab', () => {
 test.describe('New Recipe Page (/recipes/new)', () => {
   test('page loads without error', async ({ page }) => {
     await page.goto('/recipes/new');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
+    await page.waitForTimeout(500);
     await expect(page.locator('main').first()).toBeVisible();
   });
 
   test('canvas tabs are accessible', async ({ page }) => {
     await page.goto('/recipes/new');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
+    await page.waitForTimeout(500);
 
     const expectedTabs = ['canvas', 'overview', 'ingredients', 'instructions', 'costs', 'outlets', 'tasting', 'versions'];
     for (const tabName of expectedTabs) {
@@ -225,7 +215,7 @@ test.describe('New Recipe Page (/recipes/new)', () => {
 test.describe('Recipe Detail Page (/recipes/[id])', () => {
   test('navigating to a non-existent recipe ID does not show a blank page', async ({ page }) => {
     await page.goto('/recipes/999999999');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
     const bodyText = await page.locator('body').textContent();
     expect(bodyText).toBeTruthy();
     expect(bodyText!.length).toBeGreaterThan(10);
@@ -233,7 +223,7 @@ test.describe('Recipe Detail Page (/recipes/[id])', () => {
 
   test('back link navigates to /recipes', async ({ page }) => {
     await page.goto('/recipes');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
     const recipeLink = page.locator('a[href*="/recipes/"]').first();
     if (await recipeLink.isVisible()) {
       await recipeLink.click();

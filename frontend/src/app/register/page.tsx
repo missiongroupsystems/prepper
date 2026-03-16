@@ -79,7 +79,7 @@ export default function RegisterPage() {
         response.user.email,
         response.user.is_manager
       );
-      router.push('/recipes');
+      router.push('/outlets');
     } catch (err: unknown) {
       console.error('Registration error:', err);
       const apiError = err as AuthApiError;
