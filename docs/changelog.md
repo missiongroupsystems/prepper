@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ## Version History
 
+- **0.0.27** (2026-03-17) - Playwright E2E Testing, FMH Import Optimization & Sample File Downloads: Full E2E test suite (213 tests), N+1→bulk DB round-trips (~2500→~6), FMH import modals, sample XLSX download endpoints & DropdownButton component
 - **0.0.26** (2026-03-13) - Cross-Category Unit Conversion in Canvas: Weight↔Volume unit switching (g/kg↔ml/l) with automatic quantity and price conversion in CanvasLayout ingredient table and cards
 - **0.0.25** (2026-03-12) - FMH Import Pipeline, Recipe-Category Search, Menu UX Enhancements, Recipe Category Soft Delete, Ingredient Filter Pagination & UI Polish
 - **0.0.24** (2026-03-09) - Lark Integration & Tasting UX: Lark DM Invitations, Add-to-Calendar Applink, Branded Email Template, Inline Recipe Feedback Modal, Derived Session Ingredients & Sequential Lark Fix
@@ -32,6 +33,132 @@ All notable changes to this project will be documented in this file.
 - **0.0.3** (2024-11-27) - Database Migration: Alembic Initial Tables to Supabase + PostgreSQL JSON Compatibility Fix
 - **0.0.2** (2024-11-27) - Frontend Implementation: Next.js 15 Recipe Canvas with Drag-and-Drop, Autosave & TanStack Query
 - **0.0.1** (2024-11-27) - Backend Foundation: FastAPI + SQLModel with 17 API Endpoints, Domain Services & Unit Conversio
+---
+
+## [0.0.27] - 2026-03-17
+
+### Added
+
+#### Playwright E2E Test Suite
+
+Full end-to-end testing infrastructure covering all 14 sections of the frontend UI testing checklist.
+
+**Infrastructure:**
+- `frontend/playwright.config.ts` — Chromium + admin projects, auto-detected workers for local runs
+- `frontend/e2e/global.setup.ts` — API-level login, seed data creation (recipe, supplier, tasting session), localStorage auth injection
+- `frontend/e2e/helpers/{auth,data,pagination,navigation,seed}.ts` — shared utilities for auth, API data, pagination, page navigation, and seed lookup
+- `frontend/e2e/fixtures/index.ts` — Sonner toast helpers
+- `frontend/e2e/pages/{LoginPage,RecipesPage}.ts` — page object models
+- `docs/frontend-ui-testing-checklist.md` — 850+ line checklist documenting all test cases
+
+**Spec files (14 sections, 213 tests — 164 passing, 49 skipped pending test data):**
+- `auth.spec.ts` — login, register, auth guard
+- `navigation.spec.ts` — TopNav links, active state, home redirect
+- `recipes.spec.ts` — list, search, pagination, category management
+- `recipe-canvas.spec.ts` — canvas tabs, ingredient rows, costing
+- `ingredients.spec.ts` — list, filters, detail
+- `suppliers.spec.ts` — list, detail
+- `tastings.spec.ts` — sessions list/create/detail, tasting notes
+- `outlets.admin.spec.ts` — admin-only outlet CRUD
+- `rnd.spec.ts` — R&D workspace
+- `menu.spec.ts`, `menu.manager.spec.ts`, `menu.preview.manager.spec.ts` — menu management flows
+- `ui-components.spec.ts` — search debounce, modals, pagination, view toggle, toasts, error handling, responsiveness, autosave
+
+**Files Created:**
+- `frontend/e2e/` directory with all spec and helper files
+- `frontend/playwright.config.ts`
+- `docs/frontend-ui-testing-checklist.md`
+
+**Files Modified:**
+- `frontend/package.json` — added `@playwright/test`, `playwright` dev dependencies
+- `frontend/src/app/login/page.tsx` — test-id attributes for auth spec
+- `frontend/src/app/register/page.tsx` — test-id attributes
+- `frontend/src/components/AuthGuard.tsx` — test compatibility adjustments
+
+#### FMH Import Performance Optimization
+
+Centralised all FMH import logic into a dedicated service and replaced N+1 SELECT loops with bulk pre-loads, dropping DB round-trips from ~2500 to ~6 per import.
+
+**`backend/app/domain/fmh_import_service.py`** (new):
+- Single-pass over product rows using bulk IN pre-loads for outlets, categories, ingredients, supplier-ingredients, and outlet-supplier-ingredients
+- `add_all()` + single flush per entity type (5 total flushes per import)
+- `_parse_pack_from_name()` results cached per ingredient to avoid duplicate regex execution
+- `openpyxl` opened with `read_only=True` + `data_only=True` on both import endpoints
+
+**`source` field on models** (migration `i5_add_source_to_categories_outlets_suppliers.py`):
+- `Category.source`, `Outlet.source`, `Supplier.source` — tracks data origin (e.g. `"fmh"`) for selective resets
+
+**FMH Import Modals (Frontend):**
+- `FMHIngredientImportModal` — file upload with progress, toast notifications, auto-close on success
+- `FMHSupplierImportModal` — same pattern for supplier + supplier pricings XLSX pair
+- `disableClose` prop added to `Modal` component — blocks backdrop click, Escape key, and X button during in-flight requests
+- Query invalidation: `['ingredients']`, `['categories']`, `['outlets']` after ingredient import; `['suppliers']` after supplier import
+
+**FMH Response Types (Frontend):**
+- `FMHImportResult` and `FMHSupplierImportResult` interfaces added to `frontend/src/types/index.ts`
+- API functions `importIngredientsFMH()` and `importSuppliersFMH()` added to `frontend/src/lib/api.ts`
+
+**Files Created:**
+- `backend/app/domain/fmh_import_service.py`
+- `backend/alembic/versions/i5_add_source_to_categories_outlets_suppliers.py`
+- `frontend/src/components/ingredients/FMHIngredientImportModal.tsx`
+- `frontend/src/components/suppliers/FMHSupplierImportModal.tsx`
+
+**Files Modified:**
+- `backend/app/api/ingredients.py`, `backend/app/api/suppliers.py` — delegated to new service
+- `backend/app/models/category.py`, `outlet.py`, `supplier.py` — `source` field
+- `backend/scripts/reset_fmh.py` — updated to filter by `source = "fmh"` on new columns
+- `frontend/src/components/ui/Modal.tsx` — `disableClose` prop
+- `frontend/src/components/ingredients/index.ts`, `suppliers/index.ts` — export new modals
+
+#### FMH Sample File Download Endpoints
+
+Three new GET endpoints serve sample XLSX templates from Supabase Storage (`fmh-samples/` folder) so operators can download pre-formatted import files.
+
+- `GET /ingredients/fmh-sample-items` → `ProductList_sample.xlsx`
+- `GET /suppliers/fmh-sample-supplier` → `Suppliers_sample.xlsx`
+- `GET /suppliers/fmh-sample-supplier-pricings` → `SponsoredSupplierPricings_sample.xlsx`
+
+All three return 503 when Supabase Storage is not configured and 404 if the file is missing.
+
+**`StorageService.download_fmh_sample(filename)`** — fetches raw bytes from the public storage URL using the shared `httpx` client; raises `StorageError` on HTTP or network failure.
+
+**Frontend (`frontend/src/lib/api.ts`):**
+- `fetchApiBlob()` helper — authenticated fetch returning a `Blob`, with structured error parsing
+- `downloadFMHSampleSupplier()`, `downloadFMHSampleSupplierPricings()`, `downloadFMHSampleItems()` — thin wrappers
+
+**`triggerBlobDownload(blob, filename)`** utility added to `frontend/src/lib/utils.ts` — creates an object URL, simulates a click, then revokes to free memory.
+
+#### `DropdownButton` UI Component
+
+New `DropdownButton` component (`frontend/src/components/ui/DropdownButton.tsx`) replaces standalone import buttons on the Suppliers and Ingredients pages with a unified FMH import/export menu.
+
+- `items` prop accepts `DropdownItem[]` (label, optional icon, onClick, optional disabled)
+- Click-outside via `mousedown` listener; Escape key closes via `keydown` listener
+- Animated dropdown panel via Tailwind `animate-in fade-in-0 zoom-in-95`
+- Exported from `frontend/src/components/ui/index.ts`
+
+**Suppliers page** (`frontend/src/app/suppliers/page.tsx`):
+- FMH `DropdownButton` with three items: Export Sample Suppliers, Export Sample Supplier Pricings, Import
+- Per-item loading state (`downloadingSupplier`, `downloadingPricings`) with label swap during download
+
+**Ingredients page** (`frontend/src/app/ingredients/page.tsx`):
+- FMH `DropdownButton` with two items: Export Product List, Import
+- `downloadingItems` state with label swap during download
+
+### Fixed
+
+#### Modal Accessibility & E2E Reliability
+
+- Moved `role="dialog"` from the fixed full-viewport wrapper to the inner modal content `<div>` so Playwright (and assistive technology) correctly targets the panel rather than the backdrop overlay
+- Removed `force: true` from all E2E click calls — no longer needed once the dialog wrapper's `inset-0` element no longer carries the `dialog` role
+- Replaced optional `if`-guards in E2E specs with `expect(...).toBeVisible()` assertions for definitive failure on regression
+
+**Files Modified:**
+- `frontend/src/components/ui/Modal.tsx`
+- `frontend/e2e/ingredients.spec.ts`, `outlets.admin.spec.ts`, `recipes.spec.ts`, `suppliers.spec.ts`, `tastings.spec.ts`, `ui-components.spec.ts`
+- All modal components (`AddIngredientModal`, `AddOutletModal`, `AddSupplierModal`, `AddRecipeCategoryModal`, `AddCategoryModal`, `AddAllergenModal`, `AddUserModal`) — removed redundant `role="dialog"` from wrapper
+
 ---
 
 ## [0.0.25] - 2026-03-12

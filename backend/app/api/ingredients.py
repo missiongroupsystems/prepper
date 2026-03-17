@@ -3,11 +3,13 @@
 import io
 
 from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile, status
+from fastapi.responses import Response
 from sqlmodel import Session
 
 import openpyxl
 
 from app.api.deps import get_session, get_current_user
+from app.domain.storage_service import StorageService, StorageError, is_storage_configured
 from app.models import (
     Ingredient,
     IngredientCreate,
@@ -88,6 +90,25 @@ async def import_ingredients_fmh(
         return import_ingredients(session, products_wb)
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+
+_XLSX_CONTENT_TYPE = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+
+
+@router.get("/fmh-sample-items")
+async def download_fmh_sample_items() -> Response:
+    """Download the FMH sample product list XLSX template."""
+    if not is_storage_configured():
+        raise HTTPException(status_code=503, detail="Storage not configured")
+    try:
+        data = await StorageService().download_fmh_sample("ProductList_sample.xlsx")
+    except StorageError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    return Response(
+        content=data,
+        media_type=_XLSX_CONTENT_TYPE,
+        headers={"Content-Disposition": 'attachment; filename="ProductList_sample.xlsx"'},
+    )
 
 
 @router.get("/categories", response_model=list[Category])

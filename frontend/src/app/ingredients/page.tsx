@@ -1,15 +1,16 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { Plus, Upload } from 'lucide-react';
+import { Plus, Upload, Download } from 'lucide-react'; // Upload/Download used in DropdownButton items
 import { useIngredients, useDeactivateIngredient, useUpdateIngredient, useCategories, useCategoriesPaginated, useAllergens, useDebouncedValue } from '@/lib/hooks';
 import { IngredientCard, IngredientListRow, CategoriesTab, FilterButtons, AddIngredientModal, AllergensTab, FMHIngredientImportModal } from '@/components/ingredients';
-import { PageHeader, SearchInput, Select, GroupSection, ListSection, Button, Skeleton, ViewToggle, Checkbox } from '@/components/ui';
+import { PageHeader, SearchInput, Select, GroupSection, ListSection, Button, Skeleton, ViewToggle, Checkbox, DropdownButton } from '@/components/ui';
 import { Pagination } from '@/components/ui/Pagination';
 import { toast } from 'sonner';
 import type { Ingredient, Category } from '@/types';
 import { useAppState, type IngredientTab } from '@/lib/store';
-import { cn } from '@/lib/utils';
+import { cn, triggerBlobDownload } from '@/lib/utils';
+import { downloadFMHSampleItems } from '@/lib/api';
 
 type GroupByOption = 'none' | 'unit' | 'status' | 'category';
 type ViewType = 'grid' | 'list';
@@ -106,7 +107,20 @@ function IngredientsListTab() {
 
   const [showForm, setShowForm] = useState(false);
   const [showFMHImport, setShowFMHImport] = useState(false);
+  const [downloadingItems, setDownloadingItems] = useState(false);
   const [groupBy, setGroupBy] = useState<GroupByOption>('none');
+
+  const handleDownloadSampleItems = async () => {
+    setDownloadingItems(true);
+    try {
+      const blob = await downloadFMHSampleItems();
+      triggerBlobDownload(blob, 'ProductList_sample.xlsx');
+    } catch {
+      toast.error('Failed to download sample product list file');
+    } finally {
+      setDownloadingItems(false);
+    }
+  };
   const [showArchived, setShowArchived] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
   const [selectedUnits, setSelectedUnits] = useState<string[]>([]);
@@ -202,10 +216,22 @@ function IngredientsListTab() {
           description="Browse and manage your ingredient library"
         >
           <div className="flex items-center gap-2">
-            <Button type="button" variant="outline" onClick={() => setShowFMHImport(true)}>
-              <Upload className="h-4 w-4" />
-              <span className="hidden sm:inline">Import (FMH)</span>
-            </Button>
+            <DropdownButton
+              label="FMH"
+              items={[
+                {
+                  label: downloadingItems ? 'Downloading…' : 'Export Product List',
+                  icon: <Download className="h-3.5 w-3.5" />,
+                  onClick: handleDownloadSampleItems,
+                  disabled: downloadingItems,
+                },
+                {
+                  label: 'Import',
+                  icon: <Upload className="h-3.5 w-3.5" />,
+                  onClick: () => setShowFMHImport(true),
+                },
+              ]}
+            />
             <Button type="button" onClick={() => setShowForm(true)} disabled={showForm}>
               <Plus className="h-4 w-4" />
               <span className="hidden sm:inline">Add Ingredient</span>

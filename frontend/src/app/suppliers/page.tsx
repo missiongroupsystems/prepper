@@ -3,13 +3,15 @@
 import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { useDebouncedValue } from '@/lib/hooks/useDebouncedValue';
 import Link from 'next/link';
-import { Plus, Trash2, Check, X, MapPin, Phone, Mail, ArchiveRestore, Upload } from 'lucide-react';
+import { Plus, Trash2, Check, X, MapPin, Phone, Mail, ArchiveRestore, Upload, Download } from 'lucide-react';
 import { useSuppliers, useUpdateSupplier, useDeactivateSupplier } from '@/lib/hooks';
-import { PageHeader, SearchInput, Button, Skeleton, Input, Card, CardHeader, CardTitle, CardContent, ViewToggle, Checkbox, Badge } from '@/components/ui';
+import { PageHeader, SearchInput, Button, Skeleton, Input, Card, CardHeader, CardTitle, CardContent, ViewToggle, Checkbox, Badge, DropdownButton } from '@/components/ui';
 import { Pagination } from '@/components/ui/Pagination';
 import { AddSupplierModal, FMHSupplierImportModal, SupplierListRow } from '@/components/suppliers';
 import { toast } from 'sonner';
 import type { Supplier } from '@/types';
+import { downloadFMHSampleSupplier, downloadFMHSampleSupplierPricings } from '@/lib/api';
+import { triggerBlobDownload } from '@/lib/utils';
 
 type ViewType = 'grid' | 'list';
 
@@ -259,7 +261,33 @@ export default function SuppliersPage() {
   const filteredSuppliers = data?.items ?? [];
   const [showForm, setShowForm] = useState(false);
   const [showFMHImport, setShowFMHImport] = useState(false);
+  const [downloadingSupplier, setDownloadingSupplier] = useState(false);
+  const [downloadingPricings, setDownloadingPricings] = useState(false);
   const [view, setView] = useState<ViewType>('grid');
+
+  const handleDownloadSampleSupplier = async () => {
+    setDownloadingSupplier(true);
+    try {
+      const blob = await downloadFMHSampleSupplier();
+      triggerBlobDownload(blob, 'Suppliers_sample.xlsx');
+    } catch {
+      toast.error('Failed to download sample supplier file');
+    } finally {
+      setDownloadingSupplier(false);
+    }
+  };
+
+  const handleDownloadSamplePricings = async () => {
+    setDownloadingPricings(true);
+    try {
+      const blob = await downloadFMHSampleSupplierPricings();
+      triggerBlobDownload(blob, 'SponsoredSupplierPricings_sample.xlsx');
+    } catch {
+      toast.error('Failed to download sample supplier pricings file');
+    } finally {
+      setDownloadingPricings(false);
+    }
+  };
 
   if (error) {
     return (
@@ -279,10 +307,28 @@ export default function SuppliersPage() {
           description="Manage your ingredient suppliers"
         >
           <div className="flex items-center gap-2">
-            <Button variant="outline" onClick={() => setShowFMHImport(true)}>
-              <Upload className="h-4 w-4" />
-              <span className="hidden sm:inline">Import (FMH)</span>
-            </Button>
+            <DropdownButton
+              label="FMH"
+              items={[
+                {
+                  label: downloadingSupplier ? 'Downloading…' : 'Export Sample Suppliers',
+                  icon: <Download className="h-3.5 w-3.5" />,
+                  onClick: handleDownloadSampleSupplier,
+                  disabled: downloadingSupplier,
+                },
+                {
+                  label: downloadingPricings ? 'Downloading…' : 'Export Sample Supplier Pricings',
+                  icon: <Download className="h-3.5 w-3.5" />,
+                  onClick: handleDownloadSamplePricings,
+                  disabled: downloadingPricings,
+                },
+                {
+                  label: 'Import',
+                  icon: <Upload className="h-3.5 w-3.5" />,
+                  onClick: () => setShowFMHImport(true),
+                },
+              ]}
+            />
             <Button onClick={() => setShowForm(true)}>
               <Plus className="h-4 w-4" />
               <span className="hidden sm:inline">Add Supplier</span>

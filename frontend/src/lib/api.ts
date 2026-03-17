@@ -256,6 +256,26 @@ async function fetchApiFormData<T>(
   return response.json();
 }
 
+async function fetchApiBlob(endpoint: string): Promise<Blob> {
+  const url = `${API_BASE}${endpoint}`;
+  const { jwt } = readAuthFromStorage();
+  const response = await fetch(url, {
+    headers: jwt ? { Authorization: `Bearer ${jwt}` } : {},
+  });
+  if (!response.ok) {
+    const errorText = await response.text();
+    let errorMessage = `HTTP ${response.status}`;
+    try {
+      const errorJson = JSON.parse(errorText);
+      if (errorJson.detail) errorMessage = errorJson.detail;
+    } catch {
+      if (errorText) errorMessage = errorText;
+    }
+    throw new ApiError(response.status, errorMessage);
+  }
+  return response.blob();
+}
+
 // ============ Recipes ============
 
 export async function getRecipes(params?: RecipeListParams): Promise<PaginatedResponse<Recipe>> {
@@ -1456,4 +1476,16 @@ export async function importIngredientsFMH(productsFile: File): Promise<FMHImpor
     method: 'POST',
     body: form,
   });
+}
+
+export async function downloadFMHSampleSupplier(): Promise<Blob> {
+  return fetchApiBlob('/suppliers/fmh-sample-supplier');
+}
+
+export async function downloadFMHSampleSupplierPricings(): Promise<Blob> {
+  return fetchApiBlob('/suppliers/fmh-sample-supplier-pricings');
+}
+
+export async function downloadFMHSampleItems(): Promise<Blob> {
+  return fetchApiBlob('/ingredients/fmh-sample-items');
 }

@@ -3,11 +3,13 @@
 import io
 
 from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile, status
+from fastapi.responses import Response
 from sqlmodel import Session
 
 import openpyxl
 
 from app.api.deps import get_session, get_current_user
+from app.domain.storage_service import StorageService, StorageError, is_storage_configured
 from app.models.supplier import (
     Supplier,
     SupplierCreate,
@@ -46,6 +48,47 @@ def list_suppliers(
     items = service.list_paginated(offset=offset, limit=page_size, active_only=active_only, search=search)
     total = service.count(active_only=active_only, search=search)
     return PaginatedResponse.create(items=items, total_count=total, page_number=page_number, page_size=page_size)
+
+
+_XLSX_CONTENT_TYPE = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+
+
+@router.get("/fmh-sample-supplier")
+async def download_fmh_sample_supplier() -> Response:
+    """Download the FMH sample suppliers XLSX template."""
+    print("[FMH] GET /fmh-sample-supplier hit")
+    print(f"[FMH] storage configured: {is_storage_configured()}")
+    if not is_storage_configured():
+        raise HTTPException(status_code=503, detail="Storage not configured")
+    try:
+        data = await StorageService().download_fmh_sample("Suppliers_sample.xlsx")
+    except StorageError as e:
+        print(f"[FMH] StorageError: {e}")
+        raise HTTPException(status_code=404, detail=str(e))
+    return Response(
+        content=data,
+        media_type=_XLSX_CONTENT_TYPE,
+        headers={"Content-Disposition": 'attachment; filename="Suppliers_sample.xlsx"'},
+    )
+
+
+@router.get("/fmh-sample-supplier-pricings")
+async def download_fmh_sample_supplier_pricings() -> Response:
+    """Download the FMH sample sponsored supplier pricings XLSX template."""
+    print("[FMH] GET /fmh-sample-supplier-pricings hit")
+    print(f"[FMH] storage configured: {is_storage_configured()}")
+    if not is_storage_configured():
+        raise HTTPException(status_code=503, detail="Storage not configured")
+    try:
+        data = await StorageService().download_fmh_sample("SponsoredSupplierPricings_sample.xlsx")
+    except StorageError as e:
+        print(f"[FMH] StorageError: {e}")
+        raise HTTPException(status_code=404, detail=str(e))
+    return Response(
+        content=data,
+        media_type=_XLSX_CONTENT_TYPE,
+        headers={"Content-Disposition": 'attachment; filename="SponsoredSupplierPricings_sample.xlsx"'},
+    )
 
 
 @router.get("/{supplier_id}", response_model=Supplier)

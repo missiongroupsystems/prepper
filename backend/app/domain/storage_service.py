@@ -115,6 +115,43 @@ class StorageService:
         )
         return public_url
 
+    async def download_fmh_sample(self, filename: str) -> bytes:
+        """
+        Fetch a sample file from Supabase Storage.
+
+        Args:
+            filename: Filename within the prepper/fmh-samples/ folder,
+                      e.g. "Suppliers_sample.xlsx"
+
+        Returns:
+            Raw file bytes.
+
+        Raises:
+            StorageError: If the file cannot be fetched.
+        """
+        path = f"fmh-samples/{filename}"
+        url = (
+            f"{self.settings.supabase_url}/storage/v1/object/public/"
+            f"{self.settings.supabase_bucket}/{path}"
+        )
+        print(f"[FMH] download_fmh_sample: fetching {url}")
+        client = get_http_client()
+        try:
+            response = await client.get(url, timeout=30.0)
+            print(f"[FMH] download_fmh_sample: response status {response.status_code}")
+            response.raise_for_status()
+            print(f"[FMH] download_fmh_sample: got {len(response.content)} bytes")
+            return response.content
+        except httpx.HTTPStatusError as e:
+            print(f"[FMH] download_fmh_sample: HTTP error {e.response.status_code} for {url}")
+            raise StorageError(
+                f"Sample file not found: {filename} "
+                f"(status {e.response.status_code})"
+            )
+        except httpx.HTTPError as e:
+            print(f"[FMH] download_fmh_sample: network error: {e}")
+            raise StorageError(f"Failed to fetch sample file: {str(e)}")
+
     async def delete_image(self, image_url: str) -> bool:
         """
         Delete an image from Supabase Storage.

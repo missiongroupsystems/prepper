@@ -16,3 +16,5 @@ export { ConfirmModal } from './ConfirmModal';
 export { Modal } from './Modal';
 export { Switch } from './Switch';
 export { ViewToggle } from './ViewToggle';
+export { DropdownButton } from './DropdownButton';
+export type { DropdownItem } from './DropdownButton';
