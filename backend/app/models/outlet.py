@@ -35,6 +35,7 @@ class Outlet(OutletBase, table=True):
 
     id: int | None = Field(default=None, primary_key=True)
     is_active: bool = Field(default=True)
+    source: str = Field(default="manual")
 
     # Optional: Parent outlet for hierarchical structures (franchises)
     parent_outlet_id: int | None = Field(
@@ -49,6 +50,7 @@ class OutletCreate(OutletBase):
     """Schema for creating a new outlet."""
 
     parent_outlet_id: int | None = None
+    source: str = "manual"
 
 
 class OutletUpdate(SQLModel):

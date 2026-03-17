@@ -1,7 +1,11 @@
 """Ingredient API routes."""
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+import io
+
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile, status
 from sqlmodel import Session
+
+import openpyxl
 
 from app.api.deps import get_session, get_current_user
 from app.models import (
@@ -19,6 +23,7 @@ from app.models import (
 )
 from app.domain import IngredientService
 from app.domain.category_service import CategoryService
+from app.domain.fmh_import_service import FMHImportResult, import_ingredients
 
 router = APIRouter()
 
@@ -62,6 +67,27 @@ def list_ingredients(
                          category_ids=parsed_category_ids, units=parsed_units, allergen_ids=parsed_allergen_ids, is_halal=parsed_is_halal)
     items, total = service.list_paginated_with_count(offset=offset, limit=page_size, **filter_kwargs)
     return PaginatedResponse.create(items=items, total_count=total, page_number=page_number, page_size=page_size)
+
+
+@router.post("/fmh-import", response_model=FMHImportResult)
+async def import_ingredients_fmh(
+    products_file: UploadFile = File(...),
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
+):
+    """Import FMH outlets, categories, ingredients, and supplier links. Admin only."""
+    if current_user.user_type != UserType.ADMIN:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin only")
+    if not (products_file.filename or "").lower().endswith(".xlsx"):
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"File '{products_file.filename}' must be an .xlsx file",
+        )
+    products_wb = openpyxl.load_workbook(io.BytesIO(await products_file.read()), read_only=True, data_only=True)
+    try:
+        return import_ingredients(session, products_wb)
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
 @router.get("/categories", response_model=list[Category])

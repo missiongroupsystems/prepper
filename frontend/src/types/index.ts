@@ -1,5 +1,18 @@
 // Types matching backend SQLModel schemas
 
+// ============ FMH Import Types ============
+
+export interface FMHImportResult {
+  suppliers_created: number;
+  suppliers_updated: number;
+  outlets_created: number;
+  categories_created: number;
+  ingredients_created: number;
+  supplier_ingredients_created: number;
+  outlet_supplier_ingredients_created: number;
+  warnings: string[];
+}
+
 export interface PaginatedResponse<T> {
   items: T[];
   page_number: number;

@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, Upload } from 'lucide-react';
 import { useIngredients, useDeactivateIngredient, useUpdateIngredient, useCategories, useCategoriesPaginated, useAllergens, useDebouncedValue } from '@/lib/hooks';
-import { IngredientCard, IngredientListRow, CategoriesTab, FilterButtons, AddIngredientModal, AllergensTab } from '@/components/ingredients';
+import { IngredientCard, IngredientListRow, CategoriesTab, FilterButtons, AddIngredientModal, AllergensTab, FMHIngredientImportModal } from '@/components/ingredients';
 import { PageHeader, SearchInput, Select, GroupSection, ListSection, Button, Skeleton, ViewToggle, Checkbox } from '@/components/ui';
 import { Pagination } from '@/components/ui/Pagination';
 import { toast } from 'sonner';
@@ -105,6 +105,7 @@ function IngredientsListTab() {
   useEffect(() => setPageNumber(1), [debouncedSearch]);
 
   const [showForm, setShowForm] = useState(false);
+  const [showFMHImport, setShowFMHImport] = useState(false);
   const [groupBy, setGroupBy] = useState<GroupByOption>('none');
   const [showArchived, setShowArchived] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
@@ -186,6 +187,7 @@ function IngredientsListTab() {
     <div className="h-full w-full overflow-auto">
       {/* Always render modal so it doesn't unmount on query error */}
       <AddIngredientModal isOpen={showForm} onClose={() => setShowForm(false)} />
+      <FMHIngredientImportModal isOpen={showFMHImport} onClose={() => setShowFMHImport(false)} />
 
       {error ? (
         <div className="p-6">
@@ -199,10 +201,16 @@ function IngredientsListTab() {
           title="Ingredients"
           description="Browse and manage your ingredient library"
         >
-          <Button type="button" onClick={() => setShowForm(true)} disabled={showForm}>
-            <Plus className="h-4 w-4" />
-            <span className="hidden sm:inline">Add Ingredient</span>
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button type="button" variant="outline" onClick={() => setShowFMHImport(true)}>
+              <Upload className="h-4 w-4" />
+              <span className="hidden sm:inline">Import (FMH)</span>
+            </Button>
+            <Button type="button" onClick={() => setShowForm(true)} disabled={showForm}>
+              <Plus className="h-4 w-4" />
+              <span className="hidden sm:inline">Add Ingredient</span>
+            </Button>
+          </div>
         </PageHeader>
         {/* Toolbar */}
         <div className="flex flex-col gap-4 mb-6 sm:flex-row sm:items-center">

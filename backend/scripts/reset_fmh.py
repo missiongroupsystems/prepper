@@ -4,9 +4,9 @@
 Deletes rows from:
   - supplier_ingredients  (where source = 'fmh')
   - ingredients           (where source = 'fmh')
-  - categories            (all rows — no source field)
-  - suppliers             (all rows — no source field)
-  - outlets               (all rows — no source field)
+  - categories            (where source = 'fmh')
+  - suppliers             (where source = 'fmh')
+  - outlets               (where source = 'fmh')
 
 Note: `outlet_supplier_ingredient` does not exist as a separate table;
 outlet references live inside `supplier_ingredients`.
@@ -56,18 +56,18 @@ def reset_fmh(session: Session) -> None:
     )
     print(f"  ingredients (source=fmh): {result.rowcount} rows deleted")
 
-    # 3. categories — NULL out category_id on any remaining non-fmh ingredients first
-    conn.execute(text("UPDATE ingredients SET category_id = NULL WHERE category_id IS NOT NULL"))
-    result = conn.execute(text("DELETE FROM categories"))
-    print(f"  categories: {result.rowcount} rows deleted")
+    # 3. categories — NULL out category_id on fmh ingredients first, then delete fmh categories
+    conn.execute(text("UPDATE ingredients SET category_id = NULL WHERE category_id IN (SELECT id FROM categories WHERE source = 'fmh')"))
+    result = conn.execute(text("DELETE FROM categories WHERE source = 'fmh'"))
+    print(f"  categories (source=fmh): {result.rowcount} rows deleted")
 
-    # 4. suppliers (no source field — delete all)
-    result = conn.execute(text("DELETE FROM suppliers"))
-    print(f"  suppliers: {result.rowcount} rows deleted")
+    # 4. suppliers (fmh source only)
+    result = conn.execute(text("DELETE FROM suppliers WHERE source = 'fmh'"))
+    print(f"  suppliers (source=fmh): {result.rowcount} rows deleted")
 
-    # 4. outlets (no source field — delete all)
-    result = conn.execute(text("DELETE FROM outlets"))
-    print(f"  outlets: {result.rowcount} rows deleted")
+    # 5. outlets (fmh source only)
+    result = conn.execute(text("DELETE FROM outlets WHERE source = 'fmh'"))
+    print(f"  outlets (source=fmh): {result.rowcount} rows deleted")
 
     session.commit()
 
@@ -85,9 +85,9 @@ def main() -> None:
         print("This will delete all FMH data from:")
         print("  - supplier_ingredients (source=fmh)")
         print("  - ingredients (source=fmh)")
-        print("  - categories (all)")
-        print("  - suppliers (all)")
-        print("  - outlets (all)")
+        print("  - categories (source=fmh)")
+        print("  - suppliers (source=fmh)")
+        print("  - outlets (source=fmh)")
         answer = input("Continue? [y/N] ").strip().lower()
         if answer != "y":
             print("Aborted.")

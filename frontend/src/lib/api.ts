@@ -1,3 +1,4 @@
+import type { FMHImportResult } from '@/types';
 import type {
   Recipe,
   Ingredient,
@@ -215,6 +216,43 @@ async function fetchApi<T>(
     return undefined as T;
   }
 
+  return response.json();
+}
+
+/**
+ * Like fetchApi but without a Content-Type header, so FormData can set its own
+ * multipart/form-data boundary automatically.
+ */
+async function fetchApiFormData<T>(
+  endpoint: string,
+  options: RequestInit = {}
+): Promise<T> {
+  const url = `${API_BASE}${endpoint}`;
+  const { jwt } = readAuthFromStorage();
+
+  const config: RequestInit = {
+    ...options,
+    headers: {
+      ...(jwt ? { Authorization: `Bearer ${jwt}` } : {}),
+      ...options.headers,
+    },
+  };
+
+  const response = await fetch(url, config);
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    let errorMessage = `HTTP ${response.status}`;
+    try {
+      const errorJson = JSON.parse(errorText);
+      if (errorJson.detail) errorMessage = errorJson.detail;
+    } catch {
+      if (errorText) errorMessage = errorText;
+    }
+    throw new ApiError(response.status, errorMessage);
+  }
+
+  if (response.status === 204) return undefined as T;
   return response.json();
 }
 
@@ -1394,4 +1432,28 @@ export async function getMenusByOutlet(outletId: number): Promise<Menu[]> {
 
 export async function getMenuItemsBySection(sectionId: number): Promise<MenuItemRead[]> {
   return fetchApi<MenuItemRead[]>(`/menu-items/${sectionId}`);
+}
+
+// ============ FMH Import ============
+
+export async function importSuppliersFMH(
+  suppliersFile: File,
+  pricingsFile: File
+): Promise<FMHImportResult> {
+  const form = new FormData();
+  form.append('suppliers_file', suppliersFile);
+  form.append('pricings_file', pricingsFile);
+  return fetchApiFormData<FMHImportResult>('/suppliers/fmh-import', {
+    method: 'POST',
+    body: form,
+  });
+}
+
+export async function importIngredientsFMH(productsFile: File): Promise<FMHImportResult> {
+  const form = new FormData();
+  form.append('products_file', productsFile);
+  return fetchApiFormData<FMHImportResult>('/ingredients/fmh-import', {
+    method: 'POST',
+    body: form,
+  });
 }

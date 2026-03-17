@@ -13,6 +13,8 @@ interface ModalProps {
   maxWidth?: string;
   /** Max height class for the modal. Defaults to 'max-h-[90vh]' */
   maxHeight?: string;
+  /** When true, blocks backdrop click, Escape key, and hides the close button */
+  disableClose?: boolean;
 }
 
 export function Modal({
@@ -22,6 +24,7 @@ export function Modal({
   children,
   maxWidth = 'max-w-md',
   maxHeight = 'max-h-[90vh]',
+  disableClose = false,
 }: ModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
 
@@ -29,7 +32,7 @@ export function Modal({
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        onClose();
+        if (!disableClose) onClose();
         return;
       }
 
@@ -60,7 +63,7 @@ export function Modal({
         }
       }
     },
-    [onClose]
+    [onClose, disableClose]
   );
 
   useEffect(() => {
@@ -87,11 +90,11 @@ export function Modal({
     <div
       className="fixed inset-0 z-50 flex items-center justify-center"
     >
-      {/* Backdrop - click to close */}
+      {/* Backdrop - click to close (blocked when disableClose) */}
       <div
         className="absolute inset-0 bg-black/50"
         aria-hidden="true"
-        onClick={onClose}
+        onClick={disableClose ? undefined : onClose}
       />
 
       {/* Modal content */}
@@ -117,13 +120,15 @@ export function Modal({
           >
             {title}
           </h2>
-          <button
-            onClick={onClose}
-            className="rounded p-1 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 dark:hover:bg-zinc-800 dark:hover:text-zinc-300"
-            aria-label="Close modal"
-          >
-            <X className="h-5 w-5" />
-          </button>
+          {!disableClose && (
+            <button
+              onClick={onClose}
+              className="rounded p-1 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 dark:hover:bg-zinc-800 dark:hover:text-zinc-300"
+              aria-label="Close modal"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          )}
         </div>
 
         {/* Body */}

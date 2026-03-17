@@ -18,6 +18,7 @@ class SupplierBase(SQLModel):
     email: str | None = Field(default=None)
     shipping_company_name: str | None = Field(default=None)
     code: str | None = Field(default=None)
+    source: str = Field(default="manual")
 
 
 class Supplier(SupplierBase, table=True):
@@ -45,6 +46,7 @@ class SupplierCreate(SQLModel):
     email: str | None = None
     shipping_company_name: str | None = None
     code: str | None = None
+    source: str = "manual"
 
 
 class SupplierUpdate(SQLModel):

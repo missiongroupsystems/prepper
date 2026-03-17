@@ -14,6 +14,7 @@ class CategoryBase(SQLModel):
 
     name: str = Field(index=True)
     description: str | None = Field(default=None)
+    source: str = Field(default="manual")
 
 
 class Category(CategoryBase, table=True):
@@ -40,6 +41,7 @@ class CategoryCreate(SQLModel):
 
     name: str
     description: str | None = None
+    source: str = "manual"
 
 
 class CategoryUpdate(SQLModel):

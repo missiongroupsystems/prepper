@@ -3,11 +3,11 @@
 import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { useDebouncedValue } from '@/lib/hooks/useDebouncedValue';
 import Link from 'next/link';
-import { Plus, Trash2, Check, X, MapPin, Phone, Mail, ArchiveRestore } from 'lucide-react';
+import { Plus, Trash2, Check, X, MapPin, Phone, Mail, ArchiveRestore, Upload } from 'lucide-react';
 import { useSuppliers, useUpdateSupplier, useDeactivateSupplier } from '@/lib/hooks';
 import { PageHeader, SearchInput, Button, Skeleton, Input, Card, CardHeader, CardTitle, CardContent, ViewToggle, Checkbox, Badge } from '@/components/ui';
 import { Pagination } from '@/components/ui/Pagination';
-import { AddSupplierModal, SupplierListRow } from '@/components/suppliers';
+import { AddSupplierModal, FMHSupplierImportModal, SupplierListRow } from '@/components/suppliers';
 import { toast } from 'sonner';
 import type { Supplier } from '@/types';
 
@@ -258,6 +258,7 @@ export default function SuppliersPage() {
   });
   const filteredSuppliers = data?.items ?? [];
   const [showForm, setShowForm] = useState(false);
+  const [showFMHImport, setShowFMHImport] = useState(false);
   const [view, setView] = useState<ViewType>('grid');
 
   if (error) {
@@ -277,12 +278,19 @@ export default function SuppliersPage() {
           title="Suppliers"
           description="Manage your ingredient suppliers"
         >
-          <Button onClick={() => setShowForm(true)}>
-            <Plus className="h-4 w-4" />
-            <span className="hidden sm:inline">Add Supplier</span>
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={() => setShowFMHImport(true)}>
+              <Upload className="h-4 w-4" />
+              <span className="hidden sm:inline">Import (FMH)</span>
+            </Button>
+            <Button onClick={() => setShowForm(true)}>
+              <Plus className="h-4 w-4" />
+              <span className="hidden sm:inline">Add Supplier</span>
+            </Button>
+          </div>
         </PageHeader>
         <AddSupplierModal isOpen={showForm} onClose={() => setShowForm(false)} />
+        <FMHSupplierImportModal isOpen={showFMHImport} onClose={() => setShowFMHImport(false)} />
         {/* Toolbar */}
         <div className="flex flex-col gap-4 mb-6 sm:flex-row sm:items-center">
           <div className="flex-1 max-w-md">

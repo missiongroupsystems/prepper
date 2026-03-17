@@ -1,7 +1,11 @@
 """Supplier API routes."""
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+import io
+
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile, status
 from sqlmodel import Session
+
+import openpyxl
 
 from app.api.deps import get_session, get_current_user
 from app.models.supplier import (
@@ -12,6 +16,7 @@ from app.models.supplier import (
 from app.models.supplier_ingredient import SupplierIngredientRead
 from app.models.user import User, UserType
 from app.domain.supplier_service import SupplierService
+from app.domain.fmh_import_service import FMHImportResult, import_suppliers
 
 router = APIRouter()
 
@@ -105,6 +110,27 @@ def delete_supplier(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Supplier not found",
         )
+
+
+@router.post("/fmh-import", response_model=FMHImportResult)
+async def import_suppliers_fmh(
+    suppliers_file: UploadFile = File(...),
+    pricings_file: UploadFile = File(...),
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
+):
+    """Import FMH suppliers and enrich with product codes. Admin only."""
+    if current_user.user_type != UserType.ADMIN:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin only")
+    for f in (suppliers_file, pricings_file):
+        if not (f.filename or "").lower().endswith(".xlsx"):
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=f"File '{f.filename}' must be an .xlsx file",
+            )
+    suppliers_wb = openpyxl.load_workbook(io.BytesIO(await suppliers_file.read()), read_only=True, data_only=True)
+    pricings_wb = openpyxl.load_workbook(io.BytesIO(await pricings_file.read()), read_only=True, data_only=True)
+    return import_suppliers(session, suppliers_wb, pricings_wb)
 
 
 @router.get("/{supplier_id}/ingredients", response_model=list[SupplierIngredientRead])
