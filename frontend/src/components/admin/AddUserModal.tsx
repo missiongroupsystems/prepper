@@ -90,7 +90,6 @@ export function AddUserModal({ isOpen, onClose }: AddUserModalProps) {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="user@example.com"
-            autoFocus
           />
         </div>
 

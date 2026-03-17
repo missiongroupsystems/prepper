@@ -60,7 +60,6 @@ export function AddCategoryModal({ isOpen, onClose }: AddCategoryModalProps) {
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="e.g., Proteins, Vegetables, Dairy"
-            autoFocus
           />
         </div>
 

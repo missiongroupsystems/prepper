@@ -163,11 +163,11 @@ test.describe('Tasting Session Detail Page (/tastings/[id])', () => {
     test.skip(!found, 'No sessions available');
     const addBtn = page.locator('button').filter({ hasText: /add recipe/i });
     if (await addBtn.isVisible()) {
-      await addBtn.click();
+      await addBtn.click({ force: true });
       const modal = page.locator('[role="dialog"]');
       await expect(modal).toBeVisible({ timeout: 5_000 });
       const cancelBtn = modal.locator('button').filter({ hasText: /cancel/i });
-      if (await cancelBtn.isVisible()) await cancelBtn.click();
+      if (await cancelBtn.isVisible()) await cancelBtn.click({ force: true });
     }
   });
 

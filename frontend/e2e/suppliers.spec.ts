@@ -50,7 +50,7 @@ test.describe('Suppliers List Page (/suppliers)', () => {
   test('"Add supplier" button opens a create modal', async ({ page }) => {
     const addBtn = page.locator('button').filter({ hasText: /add supplier/i });
     if (await addBtn.isVisible()) {
-      await addBtn.click();
+      await addBtn.click({ force: true });
       await expect(page.locator('[role="dialog"]')).toBeVisible({ timeout: 5_000 });
     }
   });
@@ -59,7 +59,7 @@ test.describe('Suppliers List Page (/suppliers)', () => {
     test('creating a supplier with an empty name is rejected', async ({ page }) => {
       const addBtn = page.locator('button').filter({ hasText: /add supplier/i });
       if (await addBtn.isVisible()) {
-        await addBtn.click();
+        await addBtn.click({ force: true });
         const modal = page.locator('[role="dialog"]');
         if (await modal.isVisible()) {
           // Submit button should be disabled when name is empty
@@ -75,14 +75,14 @@ test.describe('Suppliers List Page (/suppliers)', () => {
     test('email field with invalid format shows validation error', async ({ page }) => {
       const addBtn = page.locator('button').filter({ hasText: /add supplier/i });
       if (await addBtn.isVisible()) {
-        await addBtn.click();
+        await addBtn.click({ force: true });
         const modal = page.locator('[role="dialog"]');
         if (await modal.isVisible()) {
           const emailInput = modal.locator('input[type="email"], input[name="email"]').first();
           if (await emailInput.isVisible()) {
             await emailInput.fill('notanemail');
             const submitBtn = modal.locator('button[type="submit"]').first();
-            if (await submitBtn.isVisible()) await submitBtn.click();
+            if (await submitBtn.isVisible()) await submitBtn.click({ force: true });
             // HTML5 validation or custom validation blocks submission
             await expect(modal).toBeVisible({ timeout: 3_000 });
           }

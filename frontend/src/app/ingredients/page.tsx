@@ -182,18 +182,18 @@ function IngredientsListTab() {
     );
   };
 
-  if (error) {
-    return (
-      <div className="p-6">
-        <div className="rounded-lg bg-red-50 dark:bg-red-950 p-4 text-red-600 dark:text-red-400">
-          Failed to load ingredients. Please try again.
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="h-full w-full overflow-auto">
+      {/* Always render modal so it doesn't unmount on query error */}
+      <AddIngredientModal isOpen={showForm} onClose={() => setShowForm(false)} />
+
+      {error ? (
+        <div className="p-6">
+          <div className="rounded-lg bg-red-50 dark:bg-red-950 p-4 text-red-600 dark:text-red-400">
+            Failed to load ingredients. Please try again.
+          </div>
+        </div>
+      ) : (
       <div className="p-6 max-w-7xl mx-auto">
         <PageHeader
           title="Ingredients"
@@ -204,7 +204,6 @@ function IngredientsListTab() {
             <span className="hidden sm:inline">Add Ingredient</span>
           </Button>
         </PageHeader>
-        <AddIngredientModal isOpen={showForm} onClose={() => setShowForm(false)} />
         {/* Toolbar */}
         <div className="flex flex-col gap-4 mb-6 sm:flex-row sm:items-center">
           <div className="flex-1 max-w-md">
@@ -332,6 +331,7 @@ function IngredientsListTab() {
           />
         )}
       </div>
+      )}
     </div>
   );
 }

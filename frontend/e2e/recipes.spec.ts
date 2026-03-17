@@ -155,7 +155,7 @@ test.describe('Recipe Category Management Tab', () => {
   test('"Add category" button opens a modal', async ({ page }) => {
     const addBtn = page.locator('button').filter({ hasText: /add category/i });
     if (await addBtn.isVisible()) {
-      await addBtn.click();
+      await addBtn.click({ force: true });
       await expect(page.locator('[role="dialog"]')).toBeVisible({ timeout: 5_000 });
     }
   });
@@ -164,7 +164,7 @@ test.describe('Recipe Category Management Tab', () => {
     test('creating a category with an empty name shows a validation error', async ({ page }) => {
       const addBtn = page.locator('button').filter({ hasText: /add category/i });
       if (await addBtn.isVisible()) {
-        await addBtn.click();
+        await addBtn.click({ force: true });
         const modal = page.locator('[role="dialog"]');
         if (await modal.isVisible()) {
           // Submit without filling in the name

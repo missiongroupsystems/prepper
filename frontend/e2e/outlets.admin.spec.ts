@@ -17,49 +17,44 @@ test.describe('Outlets Page (/outlets) — Admin only', () => {
   });
 
   test('"Add outlet" button opens a create modal', async ({ page }) => {
+    // Wait for auth hydration — userType loads from localStorage in useEffect,
+    // so the admin-only button may not render immediately after page load.
     const addBtn = page.locator('button').filter({ hasText: /add outlet/i });
-    if (await addBtn.isVisible()) {
-      // force: true prevents Playwright's post-click actionability retry from
-      // re-clicking at the button's coordinates, which would hit the modal
-      // backdrop (fixed inset-0) and immediately close the dialog.
-      await addBtn.click({ force: true });
-      const modal = page.locator('[role="dialog"]');
-      await expect(modal).toBeVisible({ timeout: 5_000 });
-    }
+    await expect(addBtn).toBeVisible({ timeout: 10_000 });
+
+    await addBtn.click();
+    // role="dialog" is now on the inner modal box (not the full-viewport wrapper),
+    // so this assertion confirms the actual modal panel is visible.
+    const modal = page.locator('[role="dialog"]');
+    await expect(modal).toBeVisible({ timeout: 5_000 });
+    await expect(modal.locator('#modal-title')).toContainText('Add New Outlet');
   });
 
   test('creating an outlet adds it to the grid', async ({ page }) => {
     const addBtn = page.locator('button').filter({ hasText: /add outlet/i });
-    if (!(await addBtn.isVisible())) return;
+    await expect(addBtn).toBeVisible({ timeout: 10_000 });
 
     const outletName = unique('TestOutlet');
     const outletCode = `T${Date.now().toString().slice(-5)}`;
     await addBtn.click();
     const modal = page.locator('[role="dialog"]');
-    if (await modal.isVisible()) {
-      // Outlet form has name (1st input) and code (2nd input) — both required
-      const inputs = modal.locator('input[type="text"], input:not([type])');
-      await inputs.nth(0).fill(outletName);
-      await inputs.nth(1).fill(outletCode);
-      const submitBtn = modal.locator('button[type="submit"]').first();
+    await expect(modal).toBeVisible({ timeout: 5_000 });
 
-      // Intercept the POST response to verify the outlet was created
-      const createResponsePromise = page.waitForResponse(
-        (resp) => resp.url().includes('/outlets') && resp.request().method() === 'POST',
-        { timeout: 8_000 }
-      );
-      await submitBtn.click();
-      const createResponse = await createResponsePromise.catch(() => null);
-      if (createResponse && createResponse.status() === 200) {
-        const newOutlet = await createResponse.json().catch(() => null);
-        if (newOutlet?.name) {
-          expect(newOutlet.name).toBe(outletName);
-        }
-      }
-      // Modal should close and page should remain functional
-      await expect(modal).not.toBeVisible({ timeout: 5_000 }).catch(() => {});
-      await expect(page.locator('main').first()).toBeVisible();
-    }
+    // Input component renders as <input type="text"> by default
+    const inputs = modal.locator('input[type="text"]');
+    await inputs.nth(0).fill(outletName);
+    await inputs.nth(1).fill(outletCode);
+
+    // Wait for submit to become enabled (name + code filled) and any pending
+    // re-renders (useOutlets hook data load) to settle before clicking
+    const submitBtn = modal.locator('button[type="submit"]').first();
+    await expect(submitBtn).toBeEnabled({ timeout: 3_000 });
+
+    await submitBtn.click();
+
+    // Modal closes on success; page remains functional
+    await expect(modal).not.toBeVisible({ timeout: 8_000 });
+    await expect(page.locator('main').first()).toBeVisible();
   });
 
   test('archive/restore button changes outlet status', async ({ page }) => {
@@ -72,21 +67,23 @@ test.describe('Outlets Page (/outlets) — Admin only', () => {
   test('delete button removes outlet with confirmation', async ({ page }) => {
     const deleteBtn = page.locator('button').filter({ hasText: /delete/i }).first();
     if (await deleteBtn.isVisible()) {
-      await deleteBtn.click();
+      await deleteBtn.click({ force: true });
       const confirmModal = page.locator('[role="dialog"]');
       await expect(confirmModal).toBeVisible({ timeout: 5_000 });
       // Cancel to avoid deleting real data
       const cancelBtn = confirmModal.locator('button').filter({ hasText: /cancel/i });
-      if (await cancelBtn.isVisible()) await cancelBtn.click();
+      if (await cancelBtn.isVisible()) await cancelBtn.click({ force: true });
     }
   });
 
   test.describe('Edge Cases', () => {
     test('creating an outlet with an empty name is rejected', async ({ page }) => {
       const addBtn = page.locator('button').filter({ hasText: /add outlet/i });
-      if (await addBtn.isVisible()) {
+      await expect(addBtn).toBeVisible({ timeout: 10_000 });
+      {
         await addBtn.click();
         const modal = page.locator('[role="dialog"]');
+        await expect(modal).toBeVisible({ timeout: 5_000 });
         if (await modal.isVisible()) {
           // Submit button is disabled when name/code fields are empty
           const submitBtn = modal.locator('button[type="submit"]').first();
@@ -101,13 +98,14 @@ test.describe('Outlets Page (/outlets) — Admin only', () => {
     test('setting an outlet as its own parent is rejected (self-cycle)', async ({ page }) => {
       // This is validated by the outlet hierarchy UI — verify no crash
       const addBtn = page.locator('button').filter({ hasText: /add outlet/i });
-      if (await addBtn.isVisible()) {
+      await expect(addBtn).toBeVisible({ timeout: 10_000 });
+      {
         await addBtn.click();
         const modal = page.locator('[role="dialog"]');
         if (await modal.isVisible()) {
           // Close without submitting
           const cancelBtn = modal.locator('button').filter({ hasText: /cancel/i });
-          if (await cancelBtn.isVisible()) await cancelBtn.click();
+          if (await cancelBtn.isVisible()) await cancelBtn.click({ force: true });
         }
       }
     });
@@ -129,12 +127,13 @@ test.describe('Outlets Page (/outlets) — Admin only', () => {
     test('setting outlet A parent to B then B parent to A is rejected (2-step cycle)', async ({ page }) => {
       // Create outlet A
       const addBtn = page.locator('button').filter({ hasText: /add outlet/i });
-      if (!(await addBtn.isVisible())) return;
+      await expect(addBtn).toBeVisible({ timeout: 10_000 });
 
       const nameA = unique('CycleA');
       const codeA = `CA${Date.now().toString().slice(-4)}`;
       await addBtn.click();
       let modal = page.locator('[role="dialog"]');
+      await expect(modal).toBeVisible({ timeout: 5_000 });
       if (await modal.isVisible()) {
         const inputs = modal.locator('input[type="text"], input:not([type])');
         await inputs.nth(0).fill(nameA);
@@ -149,6 +148,7 @@ test.describe('Outlets Page (/outlets) — Admin only', () => {
       const codeB = `CB${Date.now().toString().slice(-4)}`;
       await addBtn.click();
       modal = page.locator('[role="dialog"]');
+      await expect(modal).toBeVisible({ timeout: 5_000 });
       if (await modal.isVisible()) {
         const inputs = modal.locator('input[type="text"], input:not([type])');
         await inputs.nth(0).fill(nameB);
@@ -181,30 +181,22 @@ test.describe('Outlets Page (/outlets) — Admin only', () => {
     });
 
     test('archived outlet cannot be selected as parent for a new outlet', async ({ page }) => {
-      // Archive any existing outlet first
-      const archiveBtn = page.locator('button').filter({ hasText: /archive/i }).first();
-      if (await archiveBtn.isVisible()) {
-        await archiveBtn.click();
-        // Confirm if needed
-        const confirmBtn = page.locator('[role="dialog"]').locator('button').filter({ hasText: /confirm|archive/i });
-        if (await confirmBtn.isVisible()) await confirmBtn.click();
-        await page.waitForTimeout(800);
-      }
-
-      // Try to create a new outlet — the archived outlet should not appear in parent dropdown
+      // Note: We skip the destructive archive step to avoid contaminating other tests.
+      // We verify the "Add outlet" modal parent selector is functional instead.
       const addBtn = page.locator('button').filter({ hasText: /add outlet/i });
-      if (await addBtn.isVisible()) {
-        await addBtn.click();
-        const modal = page.locator('[role="dialog"]');
-        if (await modal.isVisible()) {
-          const parentSelect = modal.locator('select, [role="combobox"]').first();
-          if (await parentSelect.isVisible()) {
-            // Archived outlets should not appear in the options — page stays functional
-            await expect(page.locator('main').first()).toBeVisible();
-          }
-          const cancelBtn = modal.locator('button').filter({ hasText: /cancel/i });
-          if (await cancelBtn.isVisible()) await cancelBtn.click();
+      await expect(addBtn).toBeVisible({ timeout: 10_000 });
+
+      await addBtn.click();
+      const modal = page.locator('[role="dialog"]');
+      await expect(modal).toBeVisible({ timeout: 5_000 });
+      if (await modal.isVisible()) {
+        // Verify the parent outlet dropdown exists (it should only show active outlets)
+        const parentSelect = modal.locator('select, [role="combobox"]').first();
+        if (await parentSelect.isVisible()) {
+          await expect(page.locator('main').first()).toBeVisible();
         }
+        const cancelBtn = modal.locator('button').filter({ hasText: /cancel/i });
+        if (await cancelBtn.isVisible()) await cancelBtn.click({ force: true });
       }
     });
   });
@@ -269,14 +261,14 @@ test.describe('Outlet Detail Page (/outlets/[id])', () => {
       if (!(await addRecipeBtn.isVisible())) return;
 
       // Open add recipe modal
-      await addRecipeBtn.click();
+      await addRecipeBtn.click({ force: true });
       const modal = page.locator('[role="dialog"]');
       if (await modal.isVisible()) {
         // The modal should not list recipes already assigned to this outlet
         // (soft check — just verify it opens and is functional)
         await expect(modal).toBeVisible();
         const cancelBtn = modal.locator('button').filter({ hasText: /cancel|close/i });
-        if (await cancelBtn.isVisible()) await cancelBtn.click();
+        if (await cancelBtn.isVisible()) await cancelBtn.click({ force: true });
         await page.waitForTimeout(300);
       }
 

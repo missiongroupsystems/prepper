@@ -219,7 +219,7 @@ test.describe('Modals', () => {
 
     const addBtn = page.locator('button').filter({ hasText: /add ingredient/i });
     if (await addBtn.isVisible()) {
-      await addBtn.click();
+      await addBtn.click({ force: true });
       const modal = page.locator('[role="dialog"]');
       await expect(modal).toBeVisible({ timeout: 5_000 });
       await page.keyboard.press('Escape');
@@ -241,7 +241,8 @@ test.describe('Modals', () => {
 
     const addBtn = page.locator('button').filter({ hasText: /add ingredient/i });
     if (await addBtn.isVisible()) {
-      await addBtn.click();
+      await addBtn.click({ force: true });
+      await page.waitForTimeout(500); // let React Query settle before interacting
       const modal = page.locator('[role="dialog"]');
       if (await modal.isVisible()) {
         const nameInput = modal.locator('input').first();
@@ -249,7 +250,7 @@ test.describe('Modals', () => {
           await nameInput.fill('Test Ingredient');
           const submitBtn = modal.locator('button[type="submit"]').first();
           if (await submitBtn.isVisible()) {
-            await submitBtn.click();
+            await submitBtn.click({ force: true });
             await expect(submitBtn).toBeDisabled({ timeout: 500 });
           }
         }
@@ -272,7 +273,8 @@ test.describe('Modals', () => {
 
       const addBtn = page.locator('button').filter({ hasText: /add ingredient/i });
       if (await addBtn.isVisible()) {
-        await addBtn.click();
+        await addBtn.click({ force: true });
+        await page.waitForTimeout(500); // let React Query settle before interacting
         const modal = page.locator('[role="dialog"]');
         if (await modal.isVisible()) {
           const nameInput = modal.locator('input').first();
@@ -280,7 +282,7 @@ test.describe('Modals', () => {
             await nameInput.fill('ESC During Submit Test');
             const submitBtn = modal.locator('button[type="submit"]').first();
             if (await submitBtn.isVisible()) {
-              await submitBtn.click();
+              await submitBtn.click({ force: true });
               // Immediately press Escape — modal should stay open while submitting
               await page.keyboard.press('Escape');
               await page.waitForTimeout(300);
@@ -299,7 +301,7 @@ test.describe('Modals', () => {
 
       const addBtn = page.locator('button').filter({ hasText: /add ingredient/i });
       if (await addBtn.isVisible()) {
-        await addBtn.click();
+        await addBtn.click({ force: true });
         const modal = page.locator('[role="dialog"]');
         await expect(modal).toBeVisible({ timeout: 5_000 });
 
@@ -322,12 +324,12 @@ test.describe('Confirm Modal', () => {
     // Find a delete button anywhere on the page
     const deleteBtn = page.locator('button').filter({ hasText: /delete/i }).first();
     if (await deleteBtn.isVisible()) {
-      await deleteBtn.click();
+      await deleteBtn.click({ force: true });
       const confirmModal = page.locator('[role="dialog"]');
       await expect(confirmModal).toBeVisible({ timeout: 5_000 });
       // Cancel to avoid deleting data
       const cancelBtn = confirmModal.locator('button').filter({ hasText: /cancel/i });
-      if (await cancelBtn.isVisible()) await cancelBtn.click();
+      if (await cancelBtn.isVisible()) await cancelBtn.click({ force: true });
     }
   });
 
@@ -338,11 +340,11 @@ test.describe('Confirm Modal', () => {
 
     const deleteBtn = page.locator('button').filter({ hasText: /delete|remove/i }).first();
     if (await deleteBtn.isVisible()) {
-      await deleteBtn.click();
+      await deleteBtn.click({ force: true });
       const modal = page.locator('[role="dialog"]');
       if (await modal.isVisible()) {
         const cancelBtn = modal.locator('button').filter({ hasText: /cancel/i });
-        await cancelBtn.click();
+        await cancelBtn.click({ force: true });
         await expect(modal).not.toBeVisible({ timeout: 3_000 });
       }
     }
@@ -362,7 +364,7 @@ test.describe('Confirm Modal', () => {
 
       const deleteBtn = page.locator('button').filter({ hasText: /delete|remove/i }).first();
       if (await deleteBtn.isVisible()) {
-        await deleteBtn.click();
+        await deleteBtn.click({ force: true });
         const modal = page.locator('[role="dialog"]');
         if (await modal.isVisible()) {
           // Click the backdrop (outside the modal dialog box)
@@ -384,7 +386,7 @@ test.describe('Confirm Modal', () => {
 
       const deleteBtn = page.locator('button').filter({ hasText: /delete|remove/i }).first();
       if (await deleteBtn.isVisible()) {
-        await deleteBtn.click();
+        await deleteBtn.click({ force: true });
         const modal = page.locator('[role="dialog"]');
         if (await modal.isVisible()) {
           await page.keyboard.press('Escape');
@@ -406,11 +408,11 @@ test.describe('Confirm Modal', () => {
 
       const deleteBtn = page.locator('button').filter({ hasText: /delete|remove/i }).first();
       if (await deleteBtn.isVisible()) {
-        await deleteBtn.click();
+        await deleteBtn.click({ force: true });
         const modal = page.locator('[role="dialog"]');
         if (await modal.isVisible()) {
           const confirmBtn = modal.locator('button').filter({ hasText: /confirm|delete|yes/i });
-          await confirmBtn.dblclick();
+          await confirmBtn.dblclick({ force: true });
           await page.waitForTimeout(500);
           expect(deleteCallCount).toBeLessThanOrEqual(1);
         }
@@ -799,7 +801,7 @@ test.describe('Responsiveness', () => {
 
       const addBtn = page.locator('button').filter({ hasText: /add ingredient/i });
       if (await addBtn.isVisible()) {
-        await addBtn.click();
+        await addBtn.click({ force: true });
         const modal = page.locator('[role="dialog"]');
         if (await modal.isVisible()) {
           const modalBox = await modal.boundingBox();

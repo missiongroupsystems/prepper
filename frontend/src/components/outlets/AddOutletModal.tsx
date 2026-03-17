@@ -77,7 +77,6 @@ export function AddOutletModal({ isOpen, onClose }: AddOutletModalProps) {
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="e.g., Main Branch, Downtown Location"
-            autoFocus
           />
         </div>
 

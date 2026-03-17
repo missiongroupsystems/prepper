@@ -59,7 +59,6 @@ export function AddRecipeCategoryModal({ isOpen, onClose }: AddRecipeCategoryMod
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="e.g., Appetizers, Main Courses, Desserts"
-            autoFocus
           />
         </div>
 

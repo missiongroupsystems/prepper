@@ -61,11 +61,14 @@ test.describe('Ingredients List Page (/ingredients)', () => {
   });
 
   test('"Add ingredient" button opens a create modal', async ({ page }) => {
+    // Button always visible (no admin gate on ingredients page)
     const addBtn = page.locator('button').filter({ hasText: /add ingredient/i });
-    if (await addBtn.isVisible()) {
-      await addBtn.click();
-      await expect(page.locator('[role="dialog"]')).toBeVisible({ timeout: 5_000 });
-    }
+    await expect(addBtn).toBeVisible({ timeout: 10_000 });
+
+    await addBtn.click();
+    const modal = page.locator('[role="dialog"]');
+    await expect(modal).toBeVisible({ timeout: 5_000 });
+    await expect(modal.locator('#modal-title')).toContainText('Add New Ingredient');
   });
 
   test.describe('Filters', () => {
@@ -136,18 +139,18 @@ test.describe('Ingredients List Page (/ingredients)', () => {
 
     test('creating ingredient with empty name is rejected', async ({ page }) => {
       const addBtn = page.locator('button').filter({ hasText: /add ingredient/i });
-      if (await addBtn.isVisible()) {
-        await addBtn.click();
-        const modal = page.locator('[role="dialog"]');
-        if (await modal.isVisible()) {
-          // Submit button should be disabled when name is empty
-          const submitBtn = modal.locator('button[type="submit"]').first();
-          if (await submitBtn.isVisible()) {
-            await expect(submitBtn).toBeDisabled();
-          }
-          await expect(modal).toBeVisible({ timeout: 3_000 });
-        }
-      }
+      await expect(addBtn).toBeVisible({ timeout: 10_000 });
+
+      await addBtn.click();
+      const modal = page.locator('[role="dialog"]');
+      await expect(modal).toBeVisible({ timeout: 5_000 });
+
+      // Submit button is disabled when name is empty
+      const submitBtn = modal.locator('button[type="submit"]').first();
+      await expect(submitBtn).toBeVisible();
+      await expect(submitBtn).toBeDisabled();
+      // Modal remains open
+      await expect(modal).toBeVisible();
     });
   });
 });

@@ -66,6 +66,12 @@ export function AddIngredientModal({ isOpen, onClose }: AddIngredientModalProps)
     setIsSubmitting(false);
   }, []);
 
+  const handleClose = useCallback(() => {
+    if (!isSubmitting) {
+      onClose();
+    }
+  }, [isSubmitting, onClose]);
+
   const handleAddSupplierEntry = () => {
     if (availableSuppliers.length === 0) return;
 
@@ -189,7 +195,7 @@ export function AddIngredientModal({ isOpen, onClose }: AddIngredientModalProps)
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Add New Ingredient" maxWidth="max-w-2xl">
+    <Modal isOpen={isOpen} onClose={handleClose} title="Add New Ingredient" maxWidth="max-w-2xl">
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Basic Info Section */}
         <div className="space-y-4">
@@ -205,7 +211,6 @@ export function AddIngredientModal({ isOpen, onClose }: AddIngredientModalProps)
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g., Olive Oil, Chicken Breast"
-              autoFocus
             />
           </div>
 
@@ -288,7 +293,7 @@ export function AddIngredientModal({ isOpen, onClose }: AddIngredientModalProps)
 
         {/* Footer */}
         <div className="flex justify-end gap-3 pt-4 border-t border-zinc-200 dark:border-zinc-700">
-          <Button type="button" variant="outline" onClick={onClose}>
+          <Button type="button" variant="outline" onClick={handleClose}>
             Cancel
           </Button>
           <Button type="submit" disabled={isSubmitting || !name.trim()}>
