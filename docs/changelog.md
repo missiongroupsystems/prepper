@@ -1,38 +1,84 @@
 # Changelog
 
-All notable changes to this project will be documented in this file.
+All notable changes to Prepper are documented here.
 
 ---
 
-## Version History
+## Index
 
-- **0.0.27** (2026-03-17) - Playwright E2E Testing, FMH Import Optimization & Sample File Downloads: Full E2E test suite (213 tests), N+1→bulk DB round-trips (~2500→~6), FMH import modals, sample XLSX download endpoints & DropdownButton component
-- **0.0.26** (2026-03-13) - Cross-Category Unit Conversion in Canvas: Weight↔Volume unit switching (g/kg↔ml/l) with automatic quantity and price conversion in CanvasLayout ingredient table and cards
-- **0.0.25** (2026-03-12) - FMH Import Pipeline, Recipe-Category Search, Menu UX Enhancements, Recipe Category Soft Delete, Ingredient Filter Pagination & UI Polish
-- **0.0.24** (2026-03-09) - Lark Integration & Tasting UX: Lark DM Invitations, Add-to-Calendar Applink, Branded Email Template, Inline Recipe Feedback Modal, Derived Session Ingredients & Sequential Lark Fix
-- **0.0.23** (2026-03-06) - Performance Audit Fixes: Singleton Supabase Client, Local JWT Verification, N+1 Elimination, Centralized Outlet Hierarchy, Shared httpx Client & Bounded Costing Cache
-- **0.0.22** (2026-03-06) - Bug Fixes: Canvas Navigation, Recipe Creation Race Condition, Untitled Recipe Flash, Submit Button Logic, Tasting Session UX & Ingredient/Recipe Tasting DTOs
-- **0.0.21** (2026-03-05) - Participant-Only Feedback, Canvas Unit Price Auto-Conversion & Recipe Loading Fix
-- **0.0.20** (2026-03-04) - Server-Side Pagination & Performance: Paginated List Endpoints, Server-Side Search/Filtering, Database Indexes, Connection Pooling & Next.js Optimization
-- **0.0.19** (2026-03-03) - Outlet-Scoped Supplier Ingredients: Per-Outlet Pricing, Hierarchical Access Control & Outlet Selector UI
-- **0.0.18** (2026-03-02) - Supplier-Ingredient Normalization & UX Improvements: JSONB-to-Join-Table Refactor, Canvas Supplier Selection, Costing Integration, Session Creator Tracking, ID-Based Participants & Quick-Add Ingredients
-- **0.0.17** (2026-02-27) - UI Redesign & Performance Optimization: Canvas Layout Overhaul, Supplier UI Polish, Menu Publish/Unpublish & Backend Query Optimization
-- **0.0.16** (2026-02-26) - SMS Invitations, Tasting Participant Association & Menu Management: Twilio SMS Integration, User-Based Session Relationships & Drag-and-Drop Menu Reordering
-- **0.0.15** (2026-02-23) - Access Control & Allergen Management: Admin User Management, Hierarchical Access Control, Allergen Tracking & Supplier Soft Delete
-- **0.0.14** (2026-02-12) - Parent Outlet Recipes Display: Read-Only Table for Multi-Brand Recipe Management
-- **0.0.13** (2026-01-28) - Ingredient Tasting & Text-Based Features: Standalone Tasting Notes, Direct Ingredient Input, Collapsible UI & Image Support
-- **0.0.12** (2026-01-21) - Wastage, Outlets & Recipe Enhancements: Multi-Image Gallery, Outlet Hierarchy, Profit Margins, AI Feedback Summary & R&D Workflow
-- **0.0.11** (2026-01-23) - User Authentication & Recipe Categories: Supabase Auth Integration, Full CRUD Category Management, Tasting Note Images & Branding
-- **0.0.10** (2025-12-18) - Tasting Notes: R&D Feedback Tracking with Sessions, Ratings, Decisions & Recipe History Integration
-- **0.0.9** (2025-12-17) - Bugfix: Enum-to-VARCHAR Mismatch Fix for Ingredients API + CORS Update for Vercel
-- **0.0.8** (2025-12-17) - Frontend Multi-Page Expansion: Ingredients Library, Recipes Gallery, Recipe Detail, R&D Workspace, Finance Placeholder
-- **0.0.7** (2025-12-17) - Recipe Extensions: Sub-Recipe BOM Hierarchy, Authorship Tracking, Outlet/Brand Attribution
-- **0.0.6** (2025-12-17) - Ingredient Data Model Enhancements: Multi-Supplier Pricing, Master Ingredient Linking, Food Categories & Source Tracking
-- **0.0.5** (2025-12-03) - AI-Powered Instructions Parsing: Vercel AI SDK + GPT-5.1 for Freeform→Structured Conversion, UX Improvements & CORS Fixes
-- **0.0.4** (2025-12-02) - Backend Deployment: Fly.io Production Setup with Supabase PostgreSQL
-- **0.0.3** (2024-11-27) - Database Migration: Alembic Initial Tables to Supabase + PostgreSQL JSON Compatibility Fix
-- **0.0.2** (2024-11-27) - Frontend Implementation: Next.js 15 Recipe Canvas with Drag-and-Drop, Autosave & TanStack Query
-- **0.0.1** (2024-11-27) - Backend Foundation: FastAPI + SQLModel with 17 API Endpoints, Domain Services & Unit Conversio
+- **[0.0.28](#0028---2026-03-25)** — Menu Sketch Canvas: Freeform JSON-section menu builder at `/menu-sketch` — `menus_sketch` table, CRUD + fork API, list & editor pages, TanStack Query hooks, TopNav updated from `/menu` → `/menu-sketch`
+- **[0.0.27](#0027---2026-03-17)** — Playwright E2E Testing, FMH Import Optimization & Sample File Downloads: Full E2E test suite (213 tests), N+1→bulk DB round-trips (~2500→~6), FMH import modals, sample XLSX download endpoints & DropdownButton component
+- **[0.0.26](#0026---2026-03-13)** — Cross-Category Unit Conversion in Canvas: Weight↔Volume unit switching (g/kg↔ml/l) with automatic quantity and price conversion in CanvasLayout ingredient table and cards
+- **[0.0.25](#0025---2026-03-12)** — FMH Import Pipeline, Recipe-Category Search, Menu UX Enhancements, Recipe Category Soft Delete, Ingredient Filter Pagination & UI Polish
+- **[0.0.24](#0024---2026-03-09)** — Lark Integration & Tasting UX: Lark DM Invitations, Add-to-Calendar Applink, Branded Email Template, Inline Recipe Feedback Modal, Derived Session Ingredients & Sequential Lark Fix
+- **[0.0.23](#0023---2026-03-06)** — Performance Audit Fixes: Singleton Supabase Client, Local JWT Verification, N+1 Elimination, Centralized Outlet Hierarchy, Shared httpx Client & Bounded Costing Cache
+- **[0.0.22](#0022---2026-03-06)** — Bug Fixes: Canvas Navigation, Recipe Creation Race Condition, Untitled Recipe Flash, Submit Button Logic, Tasting Session UX & Ingredient/Recipe Tasting DTOs
+- **[0.0.21](#0021---2026-03-05)** — Participant-Only Feedback, Canvas Unit Price Auto-Conversion & Recipe Loading Fix
+- **[0.0.20](#0020---2026-03-04)** — Server-Side Pagination & Performance: Paginated List Endpoints, Server-Side Search/Filtering, Database Indexes, Connection Pooling & Next.js Optimization
+- **[0.0.19](#0019---2026-03-03)** — Outlet-Scoped Supplier Ingredients: Per-Outlet Pricing, Hierarchical Access Control & Outlet Selector UI
+- **[0.0.18](#0018---2026-03-02)** — Supplier-Ingredient Normalization & UX Improvements: JSONB-to-Join-Table Refactor, Canvas Supplier Selection, Costing Integration, Session Creator Tracking, ID-Based Participants & Quick-Add Ingredients
+- **[0.0.17](#0017---2026-02-27)** — UI Redesign & Performance Optimization: Canvas Layout Overhaul, Supplier UI Polish, Menu Publish/Unpublish & Backend Query Optimization
+- **[0.0.16](#0016---2026-02-26)** — SMS Invitations, Tasting Participant Association & Menu Management: Twilio SMS Integration, User-Based Session Relationships & Drag-and-Drop Menu Reordering
+- **[0.0.15](#0015---2026-02-23)** — Access Control & Allergen Management: Admin User Management, Hierarchical Access Control, Allergen Tracking & Supplier Soft Delete
+- **[0.0.14](#0014---2026-02-12)** — Parent Outlet Recipes Display: Read-Only Table for Multi-Brand Recipe Management
+- **[0.0.13](#0013---2026-01-28)** — Ingredient Tasting & Text-Based Features: Standalone Tasting Notes, Direct Ingredient Input, Collapsible UI & Image Support
+- **[0.0.12](#0012---2026-01-21)** — Wastage, Outlets & Recipe Enhancements: Multi-Image Gallery, Outlet Hierarchy, Profit Margins, AI Feedback Summary & R&D Workflow
+- **[0.0.11](#0011---2026-01-23)** — User Authentication & Recipe Categories: Supabase Auth Integration, Full CRUD Category Management, Tasting Note Images & Branding
+- **[0.0.10](#0010---2025-12-18)** — Tasting Notes: R&D Feedback Tracking with Sessions, Ratings, Decisions & Recipe History Integration
+- **[0.0.9](#009---2025-12-17)** — Bugfix: Enum-to-VARCHAR Mismatch Fix for Ingredients API + CORS Update for Vercel
+- **[0.0.8](#008---2025-12-17)** — Frontend Multi-Page Expansion: Ingredients Library, Recipes Gallery, Recipe Detail, R&D Workspace, Finance Placeholder
+- **[0.0.7](#007---2025-12-17)** — Recipe Extensions: Sub-Recipe BOM Hierarchy, Authorship Tracking, Outlet/Brand Attribution
+- **[0.0.6](#006---2025-12-17)** — Ingredient Data Model Enhancements: Multi-Supplier Pricing, Master Ingredient Linking, Food Categories & Source Tracking
+- **[0.0.5](#005---2025-12-03)** — AI-Powered Instructions Parsing: Vercel AI SDK + GPT-5.1 for Freeform→Structured Conversion, UX Improvements & CORS Fixes
+- **[0.0.4](#004---2025-12-02)** — Backend Deployment: Fly.io Production Setup with Supabase PostgreSQL
+- **[0.0.3](#003---2024-11-27)** — Database Migration: Alembic Initial Tables to Supabase + PostgreSQL JSON Compatibility Fix
+- **[0.0.2](#002---2024-11-27)** — Frontend Implementation: Next.js 15 Recipe Canvas with Drag-and-Drop, Autosave & TanStack Query
+- **[0.0.1](#001---2024-11-27)** — Backend Foundation: FastAPI + SQLModel with 17 API Endpoints, Domain Services & Unit Conversion
+---
+
+## [0.0.28] - 2026-03-25
+
+### Added
+
+#### Menu Sketch Canvas — Freeform Menu Builder
+
+New `/menu-sketch` feature: a freeform, canvas-based sketch system for rapid menu brainstorming, replacing the structured `/menu` builder in the top nav.
+
+**Backend:**
+- `MenuSketch` model (`menus_sketch` table) — `id`, `version`, `name`, and freeform `sections` stored as JSON (list of sketch section objects, each containing a list of dishes)
+- `MenuSketchService` — `list_sketches()` (ordered by `updated_at`), `get_sketch()`, `create_sketch()`, `update_sketch()`, `fork_sketch()` (copies all fields, increments `version`)
+- API router at `/api/v1/menu-sketches`: `GET /`, `GET /{id}`, `POST /`, `PATCH /{id}`, `POST /{id}/fork`
+- Alembic migration `c5d6e7f8a9b0` — creates `menus_sketch` table with `version`, `name`, `sections` (JSON), `created_at`, `updated_at`
+
+**Files Created:**
+- `backend/app/models/menu_sketch.py` — `MenuSketch`, `MenuSketchCreate`, `MenuSketchUpdate`, `MenuSketchRead`
+- `backend/app/domain/menu_sketch_service.py`
+- `backend/app/api/menu_sketches.py`
+- `backend/alembic/versions/c5d6e7f8a9b0_add_menus_sketch_table.py`
+- `backend/tests/test_menu_sketches.py`
+
+**Files Modified:**
+- `backend/app/models/__init__.py`, `backend/app/domain/__init__.py`, `backend/app/main.py` — register new model, service, and router
+
+**Frontend:**
+- `/menu-sketch` list page — card grid showing sketch name, version badge (`v{n}`), and last-updated relative timestamp; "New Menu" button auto-navigates to the new sketch editor
+- `/menu-sketch/[id]` canvas editor page — freeform layout editing with autosave
+- `useMenuSketches`, `useMenuSketch`, `useCreateMenuSketch`, `useUpdateMenuSketch`, `useForkMenuSketch` TanStack Query hooks
+- `AuthGuard` route patterns extended for `/menu-sketch` and `/menu-sketch/[id]`
+- TopNav "Menu" entry updated from `/menu` → `/menu-sketch`
+
+**Files Created:**
+- `frontend/src/app/menu-sketch/page.tsx`
+- `frontend/src/app/menu-sketch/[id]/page.tsx`
+- `frontend/src/lib/hooks/useMenuSketches.ts`
+
+**Files Modified:**
+- `frontend/src/lib/api.ts` — `getMenuSketches`, `getMenuSketch`, `createMenuSketch`, `updateMenuSketch`, `forkMenuSketch`
+- `frontend/src/types/index.ts` — `MenuSketch`, `CreateMenuSketchRequest`, `UpdateMenuSketchRequest`
+- `frontend/src/components/layout/TopNav.tsx` — `/menu` → `/menu-sketch`
+- `frontend/src/components/AuthGuard.tsx` — added `/menu-sketch` route patterns
+- `frontend/src/lib/hooks/index.ts` — export barrel updated
+
 ---
 
 ## [0.0.27] - 2026-03-17

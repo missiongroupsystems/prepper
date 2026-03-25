@@ -839,3 +839,37 @@ export interface UpdateMenuRequest {
     }>;
   }>;
 }
+
+// ============================================================================
+// Menu Sketch Types (freeform input-driven menu builder)
+// ============================================================================
+
+export interface SketchDish {
+  name: string;
+  ingredients: string[];
+  sales_price: number;
+  cost_price: number;
+}
+
+export interface SketchSection {
+  name: string;
+  dishes: SketchDish[];
+}
+
+export interface MenuSketch {
+  id: number;
+  version: number;
+  name: string;
+  sections: SketchSection[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateMenuSketchRequest {
+  name?: string;
+}
+
+export interface UpdateMenuSketchRequest {
+  name?: string;
+  sections?: SketchSection[];
+}

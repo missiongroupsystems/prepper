@@ -19,7 +19,7 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { href: '/outlets', label: 'Outlets', icon: Building2 },
-  { href: '/menu', label: 'Menu', icon: UtensilsCrossed },
+  { href: '/menu-sketch', label: 'Menu', icon: UtensilsCrossed },
   { href: '/ingredients', label: 'Ingredients', icon: Package },
   { href: '/suppliers', label: 'Suppliers', icon: Truck },
   { href: '/recipes', label: 'Recipes', icon: BookOpen },

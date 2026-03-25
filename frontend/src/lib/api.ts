@@ -78,6 +78,9 @@ import type {
   MenuSectionRead,
   CreateMenuRequest,
   UpdateMenuRequest,
+  MenuSketch,
+  CreateMenuSketchRequest,
+  UpdateMenuSketchRequest,
   PaginatedResponse,
 } from '@/types';
 
@@ -1488,4 +1491,39 @@ export async function downloadFMHSampleSupplierPricings(): Promise<Blob> {
 
 export async function downloadFMHSampleItems(): Promise<Blob> {
   return fetchApiBlob('/ingredients/fmh-sample-items');
+}
+
+// ============ Menu Sketches ============
+
+export async function getMenuSketches(): Promise<MenuSketch[]> {
+  return fetchApi<MenuSketch[]>('/menu-sketches');
+}
+
+export async function getMenuSketch(id: number): Promise<MenuSketch> {
+  return fetchApi<MenuSketch>(`/menu-sketches/${id}`);
+}
+
+export async function createMenuSketch(
+  data?: CreateMenuSketchRequest
+): Promise<MenuSketch> {
+  return fetchApi<MenuSketch>('/menu-sketches', {
+    method: 'POST',
+    body: JSON.stringify(data ?? {}),
+  });
+}
+
+export async function updateMenuSketch(
+  id: number,
+  data: UpdateMenuSketchRequest
+): Promise<MenuSketch> {
+  return fetchApi<MenuSketch>(`/menu-sketches/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function forkMenuSketch(id: number): Promise<MenuSketch> {
+  return fetchApi<MenuSketch>(`/menu-sketches/${id}/fork`, {
+    method: 'POST',
+  });
 }

@@ -165,6 +165,12 @@ from app.models.menu import (
     MenuOutletCreate,
     MenuDetail,
 )
+from app.models.menu_sketch import (
+    MenuSketch,
+    MenuSketchCreate,
+    MenuSketchUpdate,
+    MenuSketchRead,
+)
 
 __all__ = [
     # Ingredient
@@ -310,4 +316,9 @@ __all__ = [
     "MenuOutlet",
     "MenuOutletCreate",
     "MenuDetail",
+    # MenuSketch
+    "MenuSketch",
+    "MenuSketchCreate",
+    "MenuSketchUpdate",
+    "MenuSketchRead",
 ]

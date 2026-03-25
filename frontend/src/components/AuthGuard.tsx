@@ -34,6 +34,8 @@ const VALID_ROUTE_PATTERNS = [
   /^\/menu\/new$/,                           // New menu
   /^\/menu\/edit\/[^/]+$/,                   // Edit menu
   /^\/menu\/preview\/[^/]+$/,                // Preview menu
+  /^\/menu-sketch$/,                         // Menu sketch list
+  /^\/menu-sketch\/[^/]+$/,                  // Menu sketch editor
   /^\/design-system$/,                       // Design system
   /^\/admin\/users$/,                        // Admin users management
 ];
