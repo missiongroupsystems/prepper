@@ -113,11 +113,11 @@ export default function NewTastingSessionPage() {
       <div className="p-6 max-w-2xl mx-auto">
         <div className="mb-6">
           <Link
-            href="/tastings"
+            href="/rnd"
             className="inline-flex items-center gap-1 text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to Tasting Sessions
+            Back to R&D
           </Link>
         </div>
 
@@ -289,7 +289,7 @@ export default function NewTastingSessionPage() {
             <Button type="submit" disabled={createSession.isPending}>
               {createSession.isPending ? 'Creating...' : 'Create Session'}
             </Button>
-            <Link href="/tastings">
+            <Link href="/rnd">
               <Button type="button" variant="outline">
                 Cancel
               </Button>

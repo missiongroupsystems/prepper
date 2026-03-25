@@ -1,22 +1,22 @@
 'use client';
 
-import { RecipeManagementTab, RecipeCategoriesTab } from '@/components/recipes';
+import { RecipeManagementTab } from '@/components/recipes';
+import MenuPage from '@/app/menu/page';
 import { useAppState, type RecipeTab as RecipeTabType } from '@/lib/store';
 import { cn } from '@/lib/utils';
 
 const RECIPE_TABS: { id: RecipeTabType; label: string }[] = [
-  { id: 'management', label: 'Recipe Management' },
-  { id: 'categories', label: 'Category Management' },
+  { id: 'management', label: 'Recipes' },
+  { id: 'menus',      label: 'Menus'   },
 ];
 
 function TabContent() {
   const { recipeTab } = useAppState();
 
   switch (recipeTab) {
+    case 'menus':
+      return <MenuPage />;
     case 'management':
-      return <RecipeManagementTab />;
-    case 'categories':
-      return <RecipeCategoriesTab />;
     default:
       return <RecipeManagementTab />;
   }
@@ -27,7 +27,6 @@ export default function RecipesPage() {
 
   return (
     <div className="flex h-full flex-col">
-      {/* Tab Navigation Header */}
       <header className="shrink-0 border-b border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
         <nav className="flex gap-1 px-4" aria-label="Recipe tabs">
           {RECIPE_TABS.map((tab) => (
@@ -46,8 +45,6 @@ export default function RecipesPage() {
           ))}
         </nav>
       </header>
-
-      {/* Tab Content */}
       <div className="flex flex-1 overflow-hidden">
         <TabContent />
       </div>

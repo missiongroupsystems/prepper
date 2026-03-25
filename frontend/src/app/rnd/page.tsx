@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
+import TastingsPage from '@/app/tastings/page';
 import Image from 'next/image';
 import { useQueryClient } from '@tanstack/react-query';
 import { FlaskConical, ClipboardList, Loader2, CheckCircle, GitFork, ImagePlus, ExternalLink, Wine, Plus, ChevronDown, ChevronUp, RotateCcw, RefreshCw } from 'lucide-react';
@@ -525,7 +526,7 @@ interface WipGroup {
   forks: Recipe[];
 }
 
-export default function RndPage() {
+function PipelinesTab() {
   const { userId } = useAppState();
   const { data: recipesWithFeedback, isLoading: isLoadingFeedback, error: feedbackError } = useRecipesWithFeedback(userId);
   const { data: allRecipesData, isLoading: isLoadingRecipes } = useRecipes({ page_size: 30 });
@@ -647,8 +648,8 @@ export default function RndPage() {
   }
 
   return (
-    <div className="h-full overflow-auto">
-      <div className="p-6">
+    <div className="h-full w-full overflow-auto">
+      <div className="p-6 max-w-7xl mx-auto">
         <PageHeader
           title="R&D Workspace"
           description="Track and iterate on recipes with tasting feedback"
@@ -773,6 +774,43 @@ export default function RndPage() {
             </div>
           </div>
         )}
+      </div>
+    </div>
+  );
+}
+
+const RND_TABS = [
+  { id: 'pipelines', label: 'Pipelines' },
+  { id: 'tastings',  label: 'Tastings'  },
+] as const;
+
+type RndTab = typeof RND_TABS[number]['id'];
+
+export default function RndPage() {
+  const [tab, setTab] = useState<RndTab>('pipelines');
+
+  return (
+    <div className="flex h-full flex-col">
+      <header className="shrink-0 border-b border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
+        <nav className="flex gap-1 px-4" aria-label="R&D tabs">
+          {RND_TABS.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setTab(t.id)}
+              className={cn(
+                'px-4 py-2 text-sm font-medium transition-colors',
+                tab === t.id
+                  ? 'border-b-2 border-zinc-900 text-zinc-900 dark:border-zinc-100 dark:text-zinc-100'
+                  : 'text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-300'
+              )}
+            >
+              {t.label}
+            </button>
+          ))}
+        </nav>
+      </header>
+      <div className="flex flex-1 overflow-hidden">
+        {tab === 'tastings' ? <TastingsPage /> : <PipelinesTab />}
       </div>
     </div>
   );

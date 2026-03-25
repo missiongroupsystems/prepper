@@ -83,7 +83,7 @@ export default function SupplierPage({ params }: SupplierPageProps) {
     deactivateSupplierMutation.mutate(supplierId, {
       onSuccess: () => {
         toast.success('Supplier archived');
-        router.push('/suppliers');
+        router.push('/ingredients');
       },
       onError: () => toast.error('Failed to archive supplier'),
     });
@@ -175,11 +175,11 @@ export default function SupplierPage({ params }: SupplierPageProps) {
     return (
       <div className="p-6">
         <Link
-          href="/suppliers"
+          href="/ingredients"
           className="inline-flex items-center gap-2 text-sm text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-300 mb-6"
         >
           <ArrowLeft className="h-4 w-4" />
-          Back to Suppliers
+          Back to Ingredients
         </Link>
         <div className="rounded-lg bg-red-50 dark:bg-red-950 p-4 text-red-600 dark:text-red-400">
           Supplier not found or failed to load.
@@ -193,11 +193,11 @@ export default function SupplierPage({ params }: SupplierPageProps) {
       <div className="p-6 max-w-5xl mx-auto">
         {/* Back Link */}
         <Link
-          href="/suppliers"
+          href="/ingredients"
           className="inline-flex items-center gap-2 text-sm text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-300 mb-6"
         >
           <ArrowLeft className="h-4 w-4" />
-          Back to Suppliers
+          Back to Ingredients
         </Link>
 
         {isLoading ? (

@@ -21,11 +21,11 @@ export default function EditMenuPage({ params }: EditMenuPageProps) {
   // Check authorization
   useEffect(() => {
     if (!isLoading && (error || !menu)) {
-      router.push('/menu');
+      router.push('/recipes');
       return;
     }
     if (userType !== 'admin' && !isManager) {
-      router.push('/menu');
+      router.push('/recipes');
     }
   }, [userType, isManager, router, isLoading, error, menu]);
 

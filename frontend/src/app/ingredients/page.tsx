@@ -4,6 +4,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { Plus, Upload, Download } from 'lucide-react'; // Upload/Download used in DropdownButton items
 import { useIngredients, useDeactivateIngredient, useUpdateIngredient, useCategories, useCategoriesPaginated, useAllergens, useDebouncedValue } from '@/lib/hooks';
 import { IngredientCard, IngredientListRow, CategoriesTab, FilterButtons, AddIngredientModal, AllergensTab, FMHIngredientImportModal } from '@/components/ingredients';
+import SuppliersPage from '@/app/suppliers/page';
 import { PageHeader, SearchInput, Select, GroupSection, ListSection, Button, Skeleton, ViewToggle, Checkbox, DropdownButton } from '@/components/ui';
 import { Pagination } from '@/components/ui/Pagination';
 import { toast } from 'sonner';
@@ -29,8 +30,10 @@ const SORT_BY_OPTIONS = [
 ];
 
 const INGREDIENT_TABS: { id: IngredientTab; label: string }[] = [
+  { id: 'products', label: 'Products' },
   { id: 'ingredients', label: 'Ingredients' },
-  { id: 'categories', label: 'Categories' },
+  { id: 'categories', label: 'Tags (Ingredients)' },
+  { id: 'suppliers', label: 'Suppliers' },
   { id: 'allergens', label: 'Allergens' },
 ];
 
@@ -374,10 +377,13 @@ function TabContent() {
   const { ingredientTab } = useAppState();
 
   switch (ingredientTab) {
+    case 'products':
     case 'ingredients':
       return <IngredientsListTab />;
     case 'categories':
       return <CategoriesTab />;
+    case 'suppliers':
+      return <SuppliersPage />;
     case 'allergens':
       return <AllergensTab />;
     default:

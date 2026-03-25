@@ -12,7 +12,7 @@ export default function NewMenuPage() {
   // Check authorization
   useEffect(() => {
     if (userType !== 'admin' && !isManager) {
-      router.push('/menu');
+      router.push('/recipes');
     }
   }, [userType, isManager, router]);
 

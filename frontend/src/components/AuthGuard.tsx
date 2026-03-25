@@ -36,8 +36,7 @@ const VALID_ROUTE_PATTERNS = [
   /^\/menu\/preview\/[^/]+$/,                // Preview menu
   /^\/menu-sketch$/,                         // Menu sketch list
   /^\/menu-sketch\/[^/]+$/,                  // Menu sketch editor
-  /^\/design-system$/,                       // Design system
-  /^\/admin\/users$/,                        // Admin users management
+  /^\/settings$/,                            // Settings
 ];
 
 // Routes that bypass auth checks (accessible by both authenticated and unauthenticated users)
@@ -47,7 +46,7 @@ function isValidRoute(pathname: string): boolean {
   return VALID_ROUTE_PATTERNS.some((pattern) => pattern.test(pathname));
 }
 const LAST_ROUTE_KEY = 'prepper_last_route';
-const DEFAULT_ROUTE = '/outlets';
+const DEFAULT_ROUTE = '/recipes';
 
 /** Only allow relative paths that start with `/` (no `//`, `javascript:`, etc.) */
 function isValidRedirectPath(path: string): boolean {
@@ -104,7 +103,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
       const lastRouteIsAdminRoute = lastRoute.startsWith('/admin');
       if (lastRouteIsAdminRoute && userType !== 'admin') {
         // Don't redirect to admin routes for non-admin users
-        router.replace('/outlets');
+        router.replace('/recipes');
       } else {
         router.replace(lastRoute);
       }
@@ -115,7 +114,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
       router.replace('/login');
     } else if (isAdminRoute && userType && userType !== 'admin') {
       // Non-admin user on admin route -> redirect to outlets
-      router.replace('/outlets');
+      router.replace('/recipes');
     }
   }, [isAuthenticated, isPublicRoute, isAdminRoute, isPassthroughRoute, userType, router]);
 

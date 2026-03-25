@@ -832,7 +832,7 @@ export function MenuBuilder({ mode, menu }: MenuBuilderProps) {
           outlet_ids: selectedOutletIds,
           sections: createSectionData,
         });
-        router.push('/menu');
+        router.push('/recipes');
       } else if (menu) {
         const updateSectionData = sections.map((s) => ({
           id: s.id,
@@ -858,7 +858,7 @@ export function MenuBuilder({ mode, menu }: MenuBuilderProps) {
             sections: updateSectionData,
           },
         });
-        router.push('/menu');
+        router.push('/recipes');
       }
     } catch (error) {
       console.error('Error saving menu:', error);
@@ -869,7 +869,7 @@ export function MenuBuilder({ mode, menu }: MenuBuilderProps) {
     if (!menu) return;
     try {
       await forkMenuMutation.mutateAsync(menu.id);
-      router.push('/menu');
+      router.push('/recipes');
     } catch (error) {
       console.error('Error forking menu:', error);
     }
@@ -1004,7 +1004,7 @@ export function MenuBuilder({ mode, menu }: MenuBuilderProps) {
 
       {/* Actions */}
       <div className="flex gap-3 justify-end border-t border-zinc-200 pt-6 dark:border-zinc-800">
-        <Button variant="outline" onClick={() => router.push('/menu')}>
+        <Button variant="outline" onClick={() => router.push('/recipes')}>
           Cancel
         </Button>
         {mode === 'edit' && menu && (

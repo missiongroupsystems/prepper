@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import { FlaskConical, DollarSign, Package, BookOpen, Wine, Truck, LogOut, Palette, Building2, Users, UtensilsCrossed, LucideIcon, Menu, X } from 'lucide-react';
+import { FlaskConical, DollarSign, Package, BookOpen, NotebookPen, Settings, LogOut, LucideIcon, Menu, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAppState } from '@/lib/store';
 import { logoutUser } from '@/lib/api';
@@ -18,17 +18,12 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { href: '/outlets', label: 'Outlets', icon: Building2 },
-  { href: '/menu-sketch', label: 'Menu', icon: UtensilsCrossed },
+  { href: '/menu-sketch', label: 'Drafts',      icon: NotebookPen },
+  { href: '/recipes',     label: 'Recipes',     icon: BookOpen },
   { href: '/ingredients', label: 'Ingredients', icon: Package },
-  { href: '/suppliers', label: 'Suppliers', icon: Truck },
-  { href: '/recipes', label: 'Recipes', icon: BookOpen },
-  { href: '/tastings', label: 'Tastings', icon: Wine },
-
-  { href: '/rnd', label: 'R&D', icon: FlaskConical },
-  { href: '/finance', label: 'Finance', icon: DollarSign },
-  { href: '/design-system', label: 'Design', icon: Palette },
-  { href: '/admin/users', label: 'Admin', icon: Users, adminOnly: true },
+  { href: '/rnd',         label: 'R&D',         icon: FlaskConical },
+  { href: '/finance',     label: 'Reports',     icon: DollarSign },
+  { href: '/settings',    label: 'Settings',    icon: Settings },
 ];
 
 export function TopNav() {

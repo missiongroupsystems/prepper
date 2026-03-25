@@ -300,7 +300,7 @@ export default function SuppliersPage() {
   }
 
   return (
-    <div className="h-full overflow-auto">
+    <div className="h-full w-full overflow-auto">
       <div className="p-6 max-w-7xl mx-auto">
         <PageHeader
           title="Suppliers"

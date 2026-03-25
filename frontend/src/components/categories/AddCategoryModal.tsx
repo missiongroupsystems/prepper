@@ -50,11 +50,11 @@ export function AddCategoryModal({ isOpen, onClose }: AddCategoryModalProps) {
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Add New Category">
+    <Modal isOpen={isOpen} onClose={onClose} title="Add New Tag">
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1">
-            Category Name *
+            Tag Name *
           </label>
           <Input
             value={name}
@@ -70,7 +70,7 @@ export function AddCategoryModal({ isOpen, onClose }: AddCategoryModalProps) {
           <Textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="Optional description for this category"
+            placeholder="Optional description for this tag"
             rows={3}
           />
         </div>
@@ -81,7 +81,7 @@ export function AddCategoryModal({ isOpen, onClose }: AddCategoryModalProps) {
             Cancel
           </Button>
           <Button type="submit" disabled={isSubmitting || !name.trim()}>
-            {isSubmitting ? 'Creating...' : 'Create Category'}
+            {isSubmitting ? 'Creating...' : 'Create Tag'}
           </Button>
         </div>
       </form>

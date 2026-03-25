@@ -157,12 +157,12 @@ export function CategoriesTab() {
     <div className="h-full w-full overflow-auto">
       <div className="p-6 max-w-7xl mx-auto">
         <PageHeader
-          title="Categories"
-          description="Manage ingredient categories"
+          title="Tags (Ingredients)"
+          description="Manage ingredient tags"
         >
           <Button onClick={() => setShowForm(true)}>
             <Plus className="h-4 w-4" />
-            <span className="hidden sm:inline">Add Category</span>
+            <span className="hidden sm:inline">Add Tag</span>
           </Button>
         </PageHeader>
 

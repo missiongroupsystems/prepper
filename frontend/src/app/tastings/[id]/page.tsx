@@ -573,7 +573,7 @@ export default function TastingSessionDetailPage() {
     if (!sessionId) return;
     try {
       await deleteSession.mutateAsync(sessionId);
-      router.push('/tastings');
+      router.push('/rnd');
     } catch (error) {
       console.error('Failed to delete session:', error);
     }
@@ -597,8 +597,8 @@ export default function TastingSessionDetailPage() {
         <div className="rounded-lg bg-red-50 dark:bg-red-950 p-4 text-red-600 dark:text-red-400">
           <p className="font-medium">Access Denied</p>
           <p className="text-sm mt-1">You are not invited to this tasting session.</p>
-          <Link href="/tastings" className="text-red-600 dark:text-red-400 hover:underline text-sm mt-2 inline-block">
-            Back to sessions
+          <Link href="/rnd" className="text-red-600 dark:text-red-400 hover:underline text-sm mt-2 inline-block">
+            Back to R&D
           </Link>
         </div>
       </div>
@@ -621,8 +621,8 @@ export default function TastingSessionDetailPage() {
         <div className="rounded-lg bg-red-50 dark:bg-red-950 p-4 text-red-600 dark:text-red-400">
           <p className="font-medium">Access Denied</p>
           <p className="text-sm mt-1">You are not invited to this tasting session.</p>
-          <Link href="/tastings" className="text-red-600 dark:text-red-400 hover:underline text-sm mt-2 inline-block">
-            Back to sessions
+          <Link href="/rnd" className="text-red-600 dark:text-red-400 hover:underline text-sm mt-2 inline-block">
+            Back to R&D
           </Link>
         </div>
       </div>
@@ -634,11 +634,11 @@ export default function TastingSessionDetailPage() {
       <div className="p-6 max-w-4xl mx-auto">
         <div className="mb-6">
           <Link
-            href="/tastings"
+            href="/rnd"
             className="inline-flex items-center gap-1 text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to Tasting Sessions
+            Back to R&D
           </Link>
         </div>
 
