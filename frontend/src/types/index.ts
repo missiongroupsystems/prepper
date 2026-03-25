@@ -849,6 +849,7 @@ export interface SketchDish {
   ingredients: string[];
   sales_price: number;
   cost_price: number;
+  description?: string;
 }
 
 export interface SketchSection {

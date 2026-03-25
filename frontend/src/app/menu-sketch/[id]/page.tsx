@@ -45,7 +45,7 @@ function chunk<T>(arr: T[], n: number): T[][] {
 
 // ─── Empty factories ──────────────────────────────────────────────────────────
 function emptyDish(name = ''): SketchDish {
-  return { name, ingredients: [], sales_price: 0, cost_price: 0 };
+  return { name, ingredients: [], sales_price: 0, cost_price: 0, description: '' };
 }
 
 function emptySection(name = ''): SketchSection {
@@ -60,28 +60,34 @@ function DishPreviewCell({ dish }: { dish: SketchDish | undefined }) {
       : '—';
   if (!dish) return <div className="px-4 py-3" />;
   return (
-    <div className="px-4 py-3">
-      {/* Name + prices on the same row */}
-      <div className="flex items-start gap-2">
-        <span className="flex-1 font-semibold text-zinc-900 dark:text-zinc-50 leading-snug">
-          {dish.name || '—'}
-        </span>
+    <div className="px-4 py-3 space-y-0.5">
+      {/* Prices row (right-aligned) */}
+      <div className="flex items-center gap-2">
+        <span className="flex-1" />
         <div className="flex shrink-0 gap-4 text-right text-xs tabular-nums">
-          <span className="text-zinc-700 dark:text-zinc-300">
+          <span className="text-zinc-700 dark:text-zinc-300 w-14">
             ${dish.sales_price.toFixed(2)}
           </span>
-          <span className="text-zinc-500 dark:text-zinc-400">
+          <span className="text-zinc-500 dark:text-zinc-400 w-14">
             ${dish.cost_price.toFixed(2)}
           </span>
           <span className="text-zinc-400 dark:text-zinc-500 w-12">{costPct}</span>
         </div>
       </div>
-      {/* Ingredients below, no separator */}
-      {dish.ingredients.length > 0 && (
-        <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
-          {dish.ingredients.join(', ')}
-        </p>
-      )}
+      {/* Dish name — full width */}
+      <p className="font-semibold text-zinc-900 dark:text-zinc-50 leading-snug">
+        {dish.name || '—'}
+      </p>
+      {/* Ingredients */}
+      <p className="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">
+        <span className="font-semibold">Ingredients:</span>{' '}
+        {dish.ingredients.length > 0 ? dish.ingredients.join(', ') : '—'}
+      </p>
+      {/* Description — always shown */}
+      <p className="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">
+        <span className="font-semibold">Description:</span>{' '}
+        {dish.description?.trim() || 'n/a'}
+      </p>
     </div>
   );
 }
@@ -246,6 +252,17 @@ function DishCard({
             />
           </div>
         </div>
+
+        <div>
+          <label className="mb-1 block text-xs font-medium text-zinc-500 dark:text-zinc-400">Description</label>
+          <textarea
+            rows={2}
+            value={dish.description ?? ''}
+            onChange={(e) => onChange({ description: e.target.value })}
+            placeholder="Optional dish description…"
+            className="w-full rounded-md border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-400 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:placeholder-zinc-600 resize-y"
+          />
+        </div>
       </div>
     </div>
   );
@@ -293,64 +310,77 @@ function DishRow({
     <div
       ref={setNodeRef}
       style={style}
-      className="group grid grid-cols-[auto_1fr_auto] rounded-lg border border-zinc-200 bg-white transition-shadow hover:shadow-sm dark:border-zinc-700 dark:bg-zinc-900"
+      className="group rounded-lg border border-zinc-200 bg-white transition-shadow hover:shadow-sm dark:border-zinc-700 dark:bg-zinc-900"
     >
-      <div
-        {...attributes}
-        {...listeners}
-        className="flex cursor-grab touch-none items-center px-2 text-zinc-300 hover:text-zinc-500 dark:text-zinc-600 dark:hover:text-zinc-400"
-      >
-        <GripVertical className="h-4 w-4" />
+      {/* Main row */}
+      <div className="grid grid-cols-[auto_1fr_auto]">
+        <div
+          {...attributes}
+          {...listeners}
+          className="flex cursor-grab touch-none items-center px-2 text-zinc-300 hover:text-zinc-500 dark:text-zinc-600 dark:hover:text-zinc-400"
+        >
+          <GripVertical className="h-4 w-4" />
+        </div>
+        <div className="grid grid-cols-[1fr_1fr_80px_80px] divide-x divide-zinc-100 dark:divide-zinc-800">
+          <input
+            ref={nameRef}
+            type="text"
+            placeholder="Dish name"
+            value={dish.name}
+            onChange={(e) => onChange({ name: e.target.value })}
+            onKeyDown={(e) => e.key === 'Enter' && onEnter()}
+            className="px-3 py-2 text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-zinc-900/10 dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder-zinc-600"
+          />
+          <input
+            type="text"
+            placeholder="Ingredients (comma-separated)"
+            value={ingredientsText}
+            onChange={(e) => setIngredientsText(e.target.value)}
+            onBlur={(e) => {
+              const ingredients = e.target.value
+                .split(',')
+                .map((s) => s.trim())
+                .filter(Boolean);
+              onChange({ ingredients });
+            }}
+            className="px-3 py-2 text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-zinc-900/10 dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder-zinc-600"
+          />
+          <input
+            type="number"
+            placeholder="Sale"
+            step="0.01"
+            min="0"
+            value={dish.sales_price || ''}
+            onChange={(e) => onChange({ sales_price: parseFloat(e.target.value) || 0 })}
+            className="px-3 py-2 text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-zinc-900/10 dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder-zinc-600"
+          />
+          <input
+            type="number"
+            placeholder="Cost"
+            step="0.01"
+            min="0"
+            value={dish.cost_price || ''}
+            onChange={(e) => onChange({ cost_price: parseFloat(e.target.value) || 0 })}
+            className="px-3 py-2 text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-zinc-900/10 dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder-zinc-600"
+          />
+        </div>
+        <button
+          onClick={onRemove}
+          className="flex items-center justify-center rounded-tr-lg border-l border-zinc-200 px-2 opacity-0 transition-opacity group-hover:opacity-100 hover:bg-red-50 hover:text-red-500 dark:border-zinc-700 dark:hover:bg-red-950/20"
+        >
+          <X className="h-3.5 w-3.5" />
+        </button>
       </div>
-      <div className="grid grid-cols-[1fr_1fr_80px_80px] divide-x divide-zinc-100 dark:divide-zinc-800">
-        <input
-          ref={nameRef}
-          type="text"
-          placeholder="Dish name"
-          value={dish.name}
-          onChange={(e) => onChange({ name: e.target.value })}
-          onKeyDown={(e) => e.key === 'Enter' && onEnter()}
-          className="px-3 py-2 text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-zinc-900/10 dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder-zinc-600"
-        />
-        <input
-          type="text"
-          placeholder="Ingredients (comma-separated)"
-          value={ingredientsText}
-          onChange={(e) => setIngredientsText(e.target.value)}
-          onBlur={(e) => {
-            const ingredients = e.target.value
-              .split(',')
-              .map((s) => s.trim())
-              .filter(Boolean);
-            onChange({ ingredients });
-          }}
-          className="px-3 py-2 text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-zinc-900/10 dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder-zinc-600"
-        />
-        <input
-          type="number"
-          placeholder="Sale"
-          step="0.01"
-          min="0"
-          value={dish.sales_price || ''}
-          onChange={(e) => onChange({ sales_price: parseFloat(e.target.value) || 0 })}
-          className="px-3 py-2 text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-zinc-900/10 dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder-zinc-600"
-        />
-        <input
-          type="number"
-          placeholder="Cost"
-          step="0.01"
-          min="0"
-          value={dish.cost_price || ''}
-          onChange={(e) => onChange({ cost_price: parseFloat(e.target.value) || 0 })}
-          className="px-3 py-2 text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-zinc-900/10 dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder-zinc-600"
+      {/* Description sub-row */}
+      <div className="border-t border-zinc-100 dark:border-zinc-800">
+        <textarea
+          rows={2}
+          placeholder="Description (optional)"
+          value={dish.description ?? ''}
+          onChange={(e) => onChange({ description: e.target.value })}
+          className="w-full resize-y px-3 py-1.5 text-xs text-zinc-600 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-zinc-900/10 dark:bg-zinc-900 dark:text-zinc-400 dark:placeholder-zinc-600"
         />
       </div>
-      <button
-        onClick={onRemove}
-        className="flex items-center justify-center rounded-r-lg border-l border-zinc-200 px-2 opacity-0 transition-opacity group-hover:opacity-100 hover:bg-red-50 hover:text-red-500 dark:border-zinc-700 dark:hover:bg-red-950/20"
-      >
-        <X className="h-3.5 w-3.5" />
-      </button>
     </div>
   );
 }
