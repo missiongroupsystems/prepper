@@ -171,6 +171,12 @@ from app.models.menu_sketch import (
     MenuSketchUpdate,
     MenuSketchRead,
 )
+from app.models.supplier_ingredient_tag import (
+    SupplierIngredientTag,
+    SupplierIngredientTagLink,
+    SupplierIngredientTagRead,
+    SupplierIngredientTagCreate,
+)
 
 __all__ = [
     # Ingredient
@@ -321,4 +327,9 @@ __all__ = [
     "MenuSketchCreate",
     "MenuSketchUpdate",
     "MenuSketchRead",
+    # SupplierIngredientTag
+    "SupplierIngredientTag",
+    "SupplierIngredientTagLink",
+    "SupplierIngredientTagRead",
+    "SupplierIngredientTagCreate",
 ]

@@ -6,6 +6,7 @@ import { useSupplierIngredientsPaginated } from '@/lib/hooks';
 import { useDebouncedValue } from '@/lib/hooks';
 import { SearchInput, Skeleton } from '@/components/ui';
 import { Pagination } from '@/components/ui/Pagination';
+import { TagsCell } from './TagsCell';
 
 function formatCurrency(value: number): string {
   return new Intl.NumberFormat('en-SG', {
@@ -52,6 +53,7 @@ export function ProductsTab() {
                 <th className="px-4 py-3 text-left font-medium text-zinc-600 dark:text-zinc-400">Category</th>
                 <th className="px-4 py-3 text-left font-medium text-zinc-600 dark:text-zinc-400">SKU</th>
                 <th className="px-4 py-3 text-left font-medium text-zinc-600 dark:text-zinc-400">Supplier</th>
+                <th className="px-4 py-3 text-left font-medium text-zinc-600 dark:text-zinc-400">Tags</th>
                 <th className="px-4 py-3 text-left font-medium text-zinc-600 dark:text-zinc-400">Unit</th>
                 <th className="px-4 py-3 text-right font-medium text-zinc-600 dark:text-zinc-400">Price / Pack</th>
               </tr>
@@ -60,7 +62,7 @@ export function ProductsTab() {
               {isLoading && (
                 Array.from({ length: 5 }).map((_, i) => (
                   <tr key={i} className="border-b border-zinc-100 dark:border-zinc-800">
-                    {Array.from({ length: 6 }).map((_, j) => (
+                    {Array.from({ length: 7 }).map((_, j) => (
                       <td key={j} className="px-4 py-3">
                         <Skeleton className="h-4 rounded" />
                       </td>
@@ -71,7 +73,7 @@ export function ProductsTab() {
 
               {!isLoading && items.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-4 py-12 text-center text-zinc-500 dark:text-zinc-400">
+                  <td colSpan={7} className="px-4 py-12 text-center text-zinc-500 dark:text-zinc-400">
                     {debouncedSearch ? 'No products match your search' : 'No products yet'}
                   </td>
                 </tr>
@@ -103,6 +105,9 @@ export function ProductsTab() {
                     >
                       {item.supplier_name ?? '—'}
                     </Link>
+                  </td>
+                  <td className="px-4 py-3">
+                    <TagsCell siId={item.id} />
                   </td>
                   <td className="px-4 py-3 text-zinc-600 dark:text-zinc-400">
                     {item.unit}

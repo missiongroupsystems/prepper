@@ -83,6 +83,7 @@ import type {
   UpdateMenuSketchRequest,
   PaginatedResponse,
   SupplierIngredientItem,
+  SupplierIngredientTag,
 } from '@/types';
 
 // ============ Pagination Param Interfaces ============
@@ -1535,6 +1536,41 @@ export interface SupplierIngredientsPaginatedParams {
   page_number?: number;
   page_size?: number;
   search?: string;
+}
+
+// ============ Supplier Ingredient Tags ============
+
+export async function getSupplierIngredientTags(): Promise<SupplierIngredientTag[]> {
+  return fetchApi<SupplierIngredientTag[]>('/supplier-ingredient-tags');
+}
+
+export async function createSupplierIngredientTag(name: string): Promise<SupplierIngredientTag> {
+  return fetchApi<SupplierIngredientTag>('/supplier-ingredient-tags', {
+    method: 'POST',
+    body: JSON.stringify({ name }),
+  });
+}
+
+export async function deleteSupplierIngredientTag(tagId: number): Promise<SupplierIngredientTag> {
+  return fetchApi<SupplierIngredientTag>(`/supplier-ingredient-tags/${tagId}`, {
+    method: 'DELETE',
+  });
+}
+
+export async function getTagsForSupplierIngredient(siId: number): Promise<SupplierIngredientTag[]> {
+  return fetchApi<SupplierIngredientTag[]>(`/supplier-ingredient-tags/supplier-ingredient/${siId}`);
+}
+
+export async function addTagToSupplierIngredient(siId: number, tagId: number): Promise<void> {
+  return fetchApi<void>(`/supplier-ingredient-tags/supplier-ingredient/${siId}/${tagId}`, {
+    method: 'POST',
+  });
+}
+
+export async function removeTagFromSupplierIngredient(siId: number, tagId: number): Promise<void> {
+  return fetchApi<void>(`/supplier-ingredient-tags/supplier-ingredient/${siId}/${tagId}`, {
+    method: 'DELETE',
+  });
 }
 
 export async function getSupplierIngredientsPaginated(

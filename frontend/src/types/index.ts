@@ -886,3 +886,15 @@ export interface UpdateMenuSketchRequest {
   name?: string;
   sections?: SketchSection[];
 }
+
+// ============ Supplier Ingredient Tag Types ============
+
+export interface SupplierIngredientTag {
+  id: number;
+  name: string;
+  is_active: boolean;
+}
+
+export interface CreateSupplierIngredientTagRequest {
+  name: string;
+}
