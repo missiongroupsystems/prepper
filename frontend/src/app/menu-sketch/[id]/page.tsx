@@ -167,6 +167,7 @@ function DishCard({
   };
 
   const [ingredientsText, setIngredientsText] = useState(dish.ingredients.join(', '));
+  const [descOpen, setDescOpen] = useState(!!dish.description?.trim());
 
   const prevRef = useRef(dish.ingredients);
   useEffect(() => {
@@ -254,14 +255,23 @@ function DishCard({
         </div>
 
         <div>
-          <label className="mb-1 block text-xs font-medium text-zinc-500 dark:text-zinc-400">Description</label>
-          <textarea
-            rows={2}
-            value={dish.description ?? ''}
-            onChange={(e) => onChange({ description: e.target.value })}
-            placeholder="Optional dish description…"
-            className="w-full rounded-md border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-400 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:placeholder-zinc-600 resize-y"
-          />
+          <button
+            type="button"
+            onClick={() => setDescOpen((v) => !v)}
+            className="mb-1 flex items-center gap-1 text-xs font-medium text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
+          >
+            {descOpen ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+            Description
+          </button>
+          {descOpen && (
+            <textarea
+              rows={2}
+              value={dish.description ?? ''}
+              onChange={(e) => onChange({ description: e.target.value })}
+              placeholder="Optional dish description…"
+              className="w-full rounded-md border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-400 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:placeholder-zinc-600 resize-y"
+            />
+          )}
         </div>
       </div>
     </div>
@@ -293,6 +303,7 @@ function DishRow({
 
   const nameRef = useRef<HTMLInputElement>(null);
   const [ingredientsText, setIngredientsText] = useState(dish.ingredients.join(', '));
+  const [descOpen, setDescOpen] = useState(!!dish.description?.trim());
 
   useEffect(() => {
     if (autoFocus) nameRef.current?.focus();
@@ -371,15 +382,25 @@ function DishRow({
           <X className="h-3.5 w-3.5" />
         </button>
       </div>
-      {/* Description sub-row */}
+      {/* Description toggle + sub-row */}
       <div className="border-t border-zinc-100 dark:border-zinc-800">
-        <textarea
-          rows={2}
-          placeholder="Description (optional)"
-          value={dish.description ?? ''}
-          onChange={(e) => onChange({ description: e.target.value })}
-          className="w-full resize-y px-3 py-1.5 text-xs text-zinc-600 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-zinc-900/10 dark:bg-zinc-900 dark:text-zinc-400 dark:placeholder-zinc-600"
-        />
+        <button
+          type="button"
+          onClick={() => setDescOpen((v) => !v)}
+          className="flex w-full items-center gap-1 px-3 py-1 text-left text-xs text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+        >
+          {descOpen ? <ChevronUp className="h-3 w-3 shrink-0" /> : <ChevronDown className="h-3 w-3 shrink-0" />}
+          <span>Description</span>
+        </button>
+        {descOpen && (
+          <textarea
+            rows={2}
+            placeholder="Description (optional)"
+            value={dish.description ?? ''}
+            onChange={(e) => onChange({ description: e.target.value })}
+            className="w-full resize-y border-t border-zinc-100 px-3 py-1.5 text-xs text-zinc-600 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-zinc-900/10 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400 dark:placeholder-zinc-600"
+          />
+        )}
       </div>
     </div>
   );
