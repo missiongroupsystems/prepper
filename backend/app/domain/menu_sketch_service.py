@@ -54,7 +54,8 @@ class MenuSketchService:
         update_data = data.model_dump(exclude_unset=True)
         for field, value in update_data.items():
             setattr(sketch, field, value)
-        sketch.updated_at = datetime.utcnow()
+        if 'name' in update_data or 'sections' in update_data:
+            sketch.updated_at = datetime.utcnow()
 
         self.session.add(sketch)
         self.session.commit()

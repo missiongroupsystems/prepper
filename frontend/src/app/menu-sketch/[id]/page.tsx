@@ -4,7 +4,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { useMenuSketch, useUpdateMenuSketch, useForkMenuSketch } from '@/lib/hooks';
-import type { SketchSection, SketchDish } from '@/types';
+import type { SketchSection, SketchDish, SketchComment, SketchComments } from '@/types';
 import {
   GitFork,
   Save,
@@ -18,7 +18,11 @@ import {
   Eye,
   Pencil,
   SendHorizonal,
+  MessageSquare,
 } from 'lucide-react';
+import { CommentsPanel } from './CommentsPanel';
+import { DishCommentsModal } from './DishCommentsModal';
+import { ConfirmModal } from '@/components/ui';
 import {
   DndContext,
   closestCenter,
@@ -52,7 +56,7 @@ function chunk<T>(arr: T[], n: number): T[][] {
 
 // ─── Empty factories ──────────────────────────────────────────────────────────
 function emptyDish(name = ''): SketchDish {
-  return { name, ingredients: [], sales_price: 0, cost_price: 0, description: '' };
+  return { id: crypto.randomUUID(), name, ingredients: [], sales_price: 0, cost_price: 0, description: '' };
 }
 
 function emptySection(name = ''): SketchSection {
@@ -60,14 +64,24 @@ function emptySection(name = ''): SketchSection {
 }
 
 // ─── Preview components ───────────────────────────────────────────────────────
-function DishPreviewCell({ dish }: { dish: SketchDish | undefined }) {
+function DishPreviewCell({
+  dish,
+  comments,
+  onOpenComments,
+}: {
+  dish: SketchDish | undefined;
+  comments?: SketchComments;
+  onOpenComments?: () => void;
+}) {
   const costPct =
     dish && dish.sales_price > 0
       ? ((dish.cost_price / dish.sales_price) * 100).toFixed(2) + '%'
       : '—';
+  const commentCount =
+    dish?.id ? (comments?.[dish.id] ?? []).filter((c) => !c.resolved).length : 0;
   if (!dish) return <div className="px-4 py-3" />;
   return (
-    <div className="px-4 py-3 space-y-0.5">
+    <div className="relative px-4 py-3 space-y-0.5">
       {/* Prices row (right-aligned) */}
       <div className="flex items-center gap-2">
         <span className="flex-1" />
@@ -81,10 +95,21 @@ function DishPreviewCell({ dish }: { dish: SketchDish | undefined }) {
           <span className="text-muted-foreground/70 w-12 font-medium">{costPct}</span>
         </div>
       </div>
-      {/* Dish name — full width */}
-      <p className="font-semibold text-foreground leading-snug">
-        {dish.name || '—'}
-      </p>
+      {/* Dish name row with comment badge */}
+      <div className="flex items-center justify-between gap-2">
+        <p className="flex-1 font-semibold text-foreground leading-snug">
+          {dish.name || '—'}
+        </p>
+        {commentCount > 0 && (
+          <button
+            type="button"
+            onClick={onOpenComments}
+            className="shrink-0 rounded-full border border-border bg-muted px-1.5 text-[10px] text-muted-foreground hover:text-foreground"
+          >
+            {commentCount}
+          </button>
+        )}
+      </div>
       {/* Ingredients */}
       <p className="text-sm text-muted-foreground leading-relaxed">
         <span className="font-semibold">Ingredients:</span>{' '}
@@ -100,7 +125,17 @@ function DishPreviewCell({ dish }: { dish: SketchDish | undefined }) {
   );
 }
 
-function MenuSketchPreview({ name, sections }: { name: string; sections: SketchSection[] }) {
+function MenuSketchPreview({
+  name,
+  sections,
+  comments,
+  onOpenComments,
+}: {
+  name: string;
+  sections: SketchSection[];
+  comments?: SketchComments;
+  onOpenComments?: (dishId: string) => void;
+}) {
   return (
     <div className="mx-auto max-w-5xl px-6 py-8 space-y-8 text-sm">
       {name && (
@@ -144,8 +179,8 @@ function MenuSketchPreview({ name, sections }: { name: string; sections: SketchS
                 key={pi}
                 className={`grid grid-cols-2 divide-x divide-border ${pi > 0 ? 'border-t border-border' : ''}`}
               >
-                <DishPreviewCell dish={d1} />
-                <DishPreviewCell dish={d2} />
+                <DishPreviewCell dish={d1} comments={comments} onOpenComments={d1?.id ? () => onOpenComments?.(d1.id!) : undefined} />
+                <DishPreviewCell dish={d2} comments={comments} onOpenComments={d2?.id ? () => onOpenComments?.(d2.id!) : undefined} />
               </div>
             ))}
           </div>
@@ -161,11 +196,15 @@ function DishCard({
   dish,
   onChange,
   onRemove,
+  commentCount,
+  onOpenComments,
 }: {
   id: string;
   dish: SketchDish;
   onChange: (patch: Partial<SketchDish>) => void;
   onRemove: () => void;
+  commentCount: number;
+  onOpenComments: () => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
   const style = {
@@ -289,6 +328,17 @@ function DishCard({
             />
           )}
         </div>
+
+        <div className="flex justify-end pt-1">
+          <button
+            type="button"
+            onClick={onOpenComments}
+            className="flex items-center gap-1 rounded px-1.5 py-0.5 text-xs text-muted-foreground hover:text-foreground"
+          >
+            <MessageSquare className="h-3 w-3" />
+            {commentCount > 0 ? `Comments (${commentCount})` : 'Comments'}
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -302,6 +352,8 @@ function DishRow({
   onRemove,
   onEnter,
   autoFocus,
+  commentCount,
+  onOpenComments,
 }: {
   id: string;
   dish: SketchDish;
@@ -309,6 +361,8 @@ function DishRow({
   onRemove: () => void;
   onEnter: () => void;
   autoFocus?: boolean;
+  commentCount: number;
+  onOpenComments: () => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
   const style = {
@@ -403,16 +457,30 @@ function DishRow({
           <X className="h-3.5 w-3.5" />
         </button>
       </div>
-      {/* Description toggle + sub-row */}
+      {/* Description toggle + Comments button + sub-row */}
       <div className="border-t border-border">
-        <button
-          type="button"
-          onClick={() => setDescOpen((v) => !v)}
-          className="flex w-full items-center gap-1 px-3 py-1 text-left text-xs text-muted-foreground hover:text-foreground"
-        >
-          {descOpen ? <ChevronUp className="h-3 w-3 shrink-0" /> : <ChevronDown className="h-3 w-3 shrink-0" />}
-          <span>Description</span>
-        </button>
+        <div className="flex items-center">
+          <button
+            type="button"
+            onClick={() => setDescOpen((v) => !v)}
+            className="flex flex-1 items-center gap-1 px-3 py-1 text-left text-xs text-muted-foreground hover:text-foreground"
+          >
+            {descOpen ? <ChevronUp className="h-3 w-3 shrink-0" /> : <ChevronDown className="h-3 w-3 shrink-0" />}
+            <span>Description</span>
+          </button>
+          <button
+            type="button"
+            onClick={onOpenComments}
+            className="flex items-center gap-1 border-l border-border px-3 py-1 text-xs text-muted-foreground hover:text-foreground"
+          >
+            <MessageSquare className="h-3 w-3" />
+            {commentCount > 0 && (
+              <span className="rounded-full border border-border bg-muted px-1 text-[10px]">
+                {commentCount}
+              </span>
+            )}
+          </button>
+        </div>
         {descOpen && (
           <textarea
             rows={1}
@@ -438,8 +506,11 @@ function SectionCard({
   viewMode,
   onChange,
   onRemove,
+  onDishRemoved,
   onEnterInName,
   autoFocusName,
+  comments,
+  onOpenComments,
 }: {
   id: string;
   sectionIndex: number;
@@ -447,8 +518,11 @@ function SectionCard({
   viewMode: 'list' | 'card';
   onChange: (patch: Partial<SketchSection>) => void;
   onRemove: () => void;
+  onDishRemoved: (dishId: string) => void;
   onEnterInName: () => void;
   autoFocusName?: boolean;
+  comments: SketchComments;
+  onOpenComments: (dishId: string) => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
   const style = {
@@ -460,6 +534,8 @@ function SectionCard({
   const nameRef = useRef<HTMLInputElement>(null);
   const [collapsed, setCollapsed] = useState(false);
   const [newDishName, setNewDishName] = useState('');
+  const [confirmRemoveSection, setConfirmRemoveSection] = useState(false);
+  const [confirmRemoveDishIdx, setConfirmRemoveDishIdx] = useState<number | null>(null);
 
   useEffect(() => {
     if (autoFocusName) nameRef.current?.focus();
@@ -521,12 +597,38 @@ function SectionCard({
           {section.dishes.length} {section.dishes.length === 1 ? 'dish' : 'dishes'}
         </span>
         <button
-          onClick={onRemove}
+          onClick={() => setConfirmRemoveSection(true)}
           className="ml-1 rounded p-1 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
         >
           <X className="h-3.5 w-3.5" />
         </button>
       </div>
+
+      <ConfirmModal
+        isOpen={confirmRemoveSection}
+        onClose={() => setConfirmRemoveSection(false)}
+        onConfirm={() => { onRemove(); setConfirmRemoveSection(false); }}
+        title="Delete section"
+        message="Are you sure you want to delete this section and all its dishes? This cannot be undone."
+        confirmLabel="Delete"
+        variant="destructive"
+      />
+      <ConfirmModal
+        isOpen={confirmRemoveDishIdx !== null}
+        onClose={() => setConfirmRemoveDishIdx(null)}
+        onConfirm={() => {
+          if (confirmRemoveDishIdx !== null) {
+            const dish = section.dishes[confirmRemoveDishIdx];
+            if (dish?.id) onDishRemoved(dish.id);
+            removeDish(confirmRemoveDishIdx);
+            setConfirmRemoveDishIdx(null);
+          }
+        }}
+        title="Delete dish"
+        message="Are you sure you want to delete this dish? This cannot be undone."
+        confirmLabel="Delete"
+        variant="destructive"
+      />
 
       {!collapsed && (
         <div className="px-4 pb-4 space-y-2">
@@ -550,9 +652,11 @@ function SectionCard({
                     id={`dish-${sectionIndex}-${i}`}
                     dish={dish}
                     onChange={(patch) => updateDish(i, patch)}
-                    onRemove={() => removeDish(i)}
+                    onRemove={() => setConfirmRemoveDishIdx(i)}
                     onEnter={() => {}}
                     autoFocus={false}
+                    commentCount={dish.id ? (comments[dish.id] ?? []).filter((c) => !c.resolved).length : 0}
+                    onOpenComments={() => dish.id && onOpenComments(dish.id)}
                   />
                 ))}
               </SortableContext>
@@ -566,7 +670,9 @@ function SectionCard({
                     id={`dish-${sectionIndex}-${i}`}
                     dish={dish}
                     onChange={(patch) => updateDish(i, patch)}
-                    onRemove={() => removeDish(i)}
+                    onRemove={() => setConfirmRemoveDishIdx(i)}
+                    commentCount={dish.id ? (comments[dish.id] ?? []).filter((c) => !c.resolved).length : 0}
+                    onOpenComments={() => dish.id && onOpenComments(dish.id)}
                   />
                 ))}
               </div>
@@ -619,17 +725,37 @@ export default function MenuSketchEditorPage() {
   const [newSectionIndex, setNewSectionIndex] = useState<number | null>(null);
   const [viewMode, setViewMode] = useState<'list' | 'card'>('list');
   const [previewMode, setPreviewMode] = useState(true);
+  const [showComments, setShowComments] = useState(true);
+  const [comments, setComments] = useState<SketchComments>({});
+  const [activeDishId, setActiveDishId] = useState<string | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   );
 
+  const commentsSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   useEffect(() => {
     if (sketch) {
       setName(sketch.name);
-      setSections(sketch.sections ?? []);
+      setComments(sketch.comments ?? {});
+
+      // Lazily assign stable UUIDs to any dishes that lack one
+      const hadMissingIds = (sketch.sections ?? []).some((s) =>
+        s.dishes.some((d) => !d.id),
+      );
+      const sectionsWithIds = (sketch.sections ?? []).map((s) => ({
+        ...s,
+        dishes: s.dishes.map((d) => ({ ...d, id: d.id ?? crypto.randomUUID() })),
+      }));
+      setSections(sectionsWithIds);
+
+      if (hadMissingIds) {
+        updateMutation.mutate({ id: sketchId, data: { sections: sectionsWithIds } });
+      }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sketch]);
 
   const handleSave = () => {
@@ -637,6 +763,24 @@ export default function MenuSketchEditorPage() {
       { id: sketchId, data: { name, sections } },
       { onSuccess: () => toast.success('Menu saved') },
     );
+  };
+
+  const handleCommentsChange = (c: SketchComments) => {
+    setComments(c);
+    if (commentsSaveTimer.current) clearTimeout(commentsSaveTimer.current);
+    commentsSaveTimer.current = setTimeout(() => {
+      updateMutation.mutate({ id: sketchId, data: { comments: c } });
+    }, 600);
+  };
+
+  const handleDishCommentChange = (dishId: string, updated: SketchComment[]) => {
+    const next = { ...comments };
+    if (updated.length === 0) {
+      delete next[dishId];
+    } else {
+      next[dishId] = updated;
+    }
+    handleCommentsChange(next);
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
@@ -682,7 +826,24 @@ export default function MenuSketchEditorPage() {
   };
 
   const removeSection = (i: number) => {
+    const dishIds = sections[i]?.dishes.map((d) => d.id).filter(Boolean) as string[];
     setSections((prev) => prev.filter((_, idx) => idx !== i));
+    if (dishIds?.length) {
+      setComments((prev) => {
+        const next = { ...prev };
+        dishIds.forEach((id) => delete next[id]);
+        return next;
+      });
+    }
+  };
+
+  const handleDishRemoved = (dishId: string) => {
+    setComments((prev) => {
+      if (!prev[dishId]) return prev;
+      const next = { ...prev };
+      delete next[dishId];
+      return next;
+    });
   };
 
   if (isLoading) {
@@ -776,6 +937,18 @@ export default function MenuSketchEditorPage() {
           {previewMode ? 'Edit' : 'Preview'}
         </button>
 
+        {/* Comments panel toggle */}
+        <button
+          onClick={() => setShowComments((v) => !v)}
+          title={showComments ? 'Hide comments' : 'Show comments'}
+          className={`flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-xs font-medium transition-colors hover:bg-muted ${
+            showComments ? 'bg-muted text-foreground' : 'text-muted-foreground'
+          }`}
+        >
+          <MessageSquare className="h-3.5 w-3.5" />
+          Comments
+        </button>
+
         {/* Fork */}
         <button
           onClick={() => forkMutation.mutate(sketchId)}
@@ -797,10 +970,11 @@ export default function MenuSketchEditorPage() {
         </button>
       </div>
 
-      {/* Editor body / Preview */}
-      <div className="flex-1 overflow-auto">
+      {/* Editor body / Preview + Comments panel */}
+      <div className="flex flex-1 overflow-hidden">
+        <div className="flex-1 overflow-auto min-w-0">
         {previewMode ? (
-          <MenuSketchPreview name={name} sections={sections} />
+          <MenuSketchPreview name={name} sections={sections} comments={comments} onOpenComments={setActiveDishId} />
         ) : (
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             <div className="mx-auto max-w-4xl px-6 py-8 space-y-4">
@@ -818,6 +992,7 @@ export default function MenuSketchEditorPage() {
                     viewMode={viewMode}
                     onChange={(patch) => updateSection(i, patch)}
                     onRemove={() => removeSection(i)}
+                    onDishRemoved={handleDishRemoved}
                     onEnterInName={() => {
                       const el = document.querySelector<HTMLInputElement>(
                         'input[placeholder*="section name"]',
@@ -825,6 +1000,8 @@ export default function MenuSketchEditorPage() {
                       el?.focus();
                     }}
                     autoFocusName={newSectionIndex === i}
+                    comments={comments}
+                    onOpenComments={setActiveDishId}
                   />
                 ))}
               </SortableContext>
@@ -859,7 +1036,33 @@ export default function MenuSketchEditorPage() {
             </div>
           </DndContext>
         )}
+        </div>
+
+        {/* Right: Comments panel */}
+        {showComments && (
+          <div className="hidden lg:flex w-[300px] shrink-0 overflow-hidden flex-col">
+            <CommentsPanel
+              sections={sections}
+              comments={comments}
+              onChange={handleCommentsChange}
+            />
+          </div>
+        )}
       </div>
+
+      {/* Dish comments modal — rendered outside scroll container */}
+      {activeDishId && (() => {
+        const activeDish = sections.flatMap((s) => s.dishes).find((d) => d.id === activeDishId);
+        if (!activeDish) return null;
+        return (
+          <DishCommentsModal
+            dishName={activeDish.name}
+            dishComments={comments[activeDishId] ?? []}
+            onClose={() => setActiveDishId(null)}
+            onChange={(updated) => handleDishCommentChange(activeDishId, updated)}
+          />
+        );
+      })()}
     </div>
   );
 }
