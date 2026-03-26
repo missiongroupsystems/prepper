@@ -1,5 +1,7 @@
 # Plan 21 — Menu Sketch: Further Feedback
 
+**Status: COMPLETE** — shipped in v0.0.30 (2026-03-26)
+
 ---
 
 ## Refined Changes Overview

@@ -6,6 +6,7 @@ All notable changes to Prepper are documented here.
 
 ## Index
 
+- **[0.0.30](#0030---2026-03-26)** — Menu Sketch UX Refinements: Design Tokens, Preview Fixes, Dish Comments Panel & Tiptap Notes Editor
 - **[0.0.29](#0029---2026-03-26)** — Nav Restructure, Products Tab, Menu Sketch Enhancements & Supplier Ingredient Tags
 - **[0.0.28](#0028---2026-03-25)** — Menu Sketch Canvas: Freeform JSON-section menu builder at `/menu-sketch` — `menus_sketch` table, CRUD + fork API, list & editor pages, TanStack Query hooks, TopNav updated from `/menu` → `/menu-sketch`
 - **[0.0.27](#0027---2026-03-17)** — Playwright E2E Testing, FMH Import Optimization & Sample File Downloads: Full E2E test suite (213 tests), N+1→bulk DB round-trips (~2500→~6), FMH import modals, sample XLSX download endpoints & DropdownButton component
@@ -35,6 +36,65 @@ All notable changes to Prepper are documented here.
 - **[0.0.3](#003---2024-11-27)** — Database Migration: Alembic Initial Tables to Supabase + PostgreSQL JSON Compatibility Fix
 - **[0.0.2](#002---2024-11-27)** — Frontend Implementation: Next.js 15 Recipe Canvas with Drag-and-Drop, Autosave & TanStack Query
 - **[0.0.1](#001---2024-11-27)** — Backend Foundation: FastAPI + SQLModel with 17 API Endpoints, Domain Services & Unit Conversion
+---
+
+## [0.0.30] - 2026-03-26
+
+### Changed
+
+#### Menu Sketch — Design System Alignment (Part 1)
+
+- Replaced all raw `zinc-*` Tailwind classes with design-system CSS variable tokens (`bg-background`, `bg-card`, `border-border`, `text-foreground`, `text-muted-foreground`, etc.) across both `/menu-sketch` and `/menu-sketch/[id]`
+- List page now uses `PageHeader` and `Button` from `@/components/ui`
+
+#### Menu Sketch — Preview & Edit Fixes (Part 2)
+
+- Default mode on editor load changed to **preview** (was edit)
+- Preview: empty/null/whitespace dish descriptions no longer rendered — row hidden entirely
+- Preview: `%` column header promoted to `font-semibold`; per-dish `%` value promoted to `font-medium`, matching the `Price` and `Cost` column weights
+- Edit: ingredient field in both card and row views switched from `<input>` to `<textarea>`
+- Quick-add inputs (new section, new dish) gain a visible `SendHorizonal` send button alongside the existing Enter-key handler
+
+### Added
+
+#### Menu Sketch — Backend Columns (Part 3)
+
+- `comments` JSON column on `menus_sketch` (default `{}`) — stores per-dish comments keyed by stable dish UUID
+- `notes` VARCHAR column on `menus_sketch` (nullable) — stores menu-wide rich-text HTML
+- Alembic migration adds both columns
+- Frontend types updated: `SketchComment`, `SketchComments`, `SketchDish.id?`, `MenuSketch.comments`, `MenuSketch.notes`, `UpdateMenuSketchRequest.comments/notes`
+
+#### Menu Sketch — Dish Comments Panel (Part 4)
+
+- Right-hand `CommentsPanel` sidebar always visible in the editor; collapses to icon toggle on narrow (`< lg`) viewports
+- Per-dish comment threads with add / inline-edit / resolve / delete (confirm modal) actions
+- "Show resolved" toggle reveals greyed-out resolved comments
+- Stable UUIDs lazily assigned to dishes on first load; immediately persisted
+- Save isolation: comment changes `PATCH { comments }` only — never touches `sections` or `notes`
+- `DishCommentsModal` — per-dish modal variant accessible from the dish row/card
+- Preview mode: unresolved comment count badge shown bottom-right of each dish cell
+
+#### Menu Sketch — Tiptap Notes Editor (Part 5)
+
+- Collapsible **Menu Notes** block below the editor, expanded by default
+- `NotesEditor` component powered by Tiptap v3 (`@tiptap/react`, `@tiptap/pm`, `@tiptap/starter-kit`, `@tiptap/extension-link`, `@tiptap/extension-underline`)
+- Toolbar: Bold, Italic, Underline, Strikethrough, Link
+- Links rendered as external (`target="_blank" rel="noopener noreferrer"`) with primary-colour underline styling to distinguish from plain text
+- Custom link-insert modal replaces browser `window.prompt`
+- Save triggers on editor blur (not keystroke); isolation: `PATCH { notes }` only
+- SSR hydration resolved via `immediatelyRender: false` + `next/dynamic` with `ssr: false`
+
+**Files created:**
+- `frontend/src/app/menu-sketch/[id]/CommentsPanel.tsx`
+- `frontend/src/app/menu-sketch/[id]/DishCommentsModal.tsx`
+- `frontend/src/app/menu-sketch/[id]/NotesEditor.tsx`
+
+**Files modified:**
+- `frontend/src/app/menu-sketch/page.tsx`
+- `frontend/src/app/menu-sketch/[id]/page.tsx`
+- `frontend/src/types/index.ts`
+- `frontend/package.json`
+
 ---
 
 ## [0.0.29] - 2026-03-26
