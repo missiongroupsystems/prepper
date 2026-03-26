@@ -103,7 +103,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     selectedRecipeId: null,
     instructionsTab: 'freeform',
     canvasTab: 'canvas',
-    ingredientTab: 'ingredients',
+    ingredientTab: 'products',
     recipeTab: 'management',
     canvasHasUnsavedChanges: false,
     isDragDropEnabled: true,

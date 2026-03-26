@@ -246,6 +246,49 @@ class TestOutletScopedSupplierIngredients:
             assert resp.status_code == 200
             assert resp.json() == []
 
+    def test_outlet_shown_is_users_accessible_outlet_not_first_inserted(self, session, admin_client):
+        """Regression: when a supplier-ingredient is linked to multiple outlets, the outlet
+        shown to a non-admin user must be the one within their accessible tree — not
+        whichever outlet link happens to be first in DB insertion order.
+
+        Before the fix, _build_supplier_ingredient_read blindly picked outlet_links[0],
+        causing the wrong outlet to be displayed whenever the user's outlet was not
+        the first-inserted link.
+        """
+        from app.models.outlet_supplier_ingredient import OutletSupplierIngredient
+
+        # Two independent outlet trees
+        outlet_a = _create_outlet(admin_client, "Outlet Alpha", "AL")
+        outlet_b = _create_outlet(admin_client, "Outlet Beta", "BE")
+
+        ing_id = _create_ingredient(admin_client, "Truffle")
+        sup_id = _create_supplier(admin_client, "Luxury Farms")
+
+        # Create the supplier-ingredient linked to outlet_a FIRST (becomes outlet_links[0])
+        si_id = _add_supplier_ingredient(admin_client, ing_id, sup_id, outlet_a)
+
+        # Directly add a second outlet link to outlet_b (simulates multi-outlet sharing)
+        session.add(OutletSupplierIngredient(supplier_ingredient_id=si_id, outlet_id=outlet_b))
+        session.commit()
+
+        # User assigned to outlet_b only — should see outlet_b, not outlet_a
+        user_b = User(
+            id="user-b",
+            email="b@test.com",
+            username="userb",
+            user_type=UserType.NORMAL,
+            outlet_id=outlet_b,
+        )
+        for c in _make_client(session, user_b):
+            resp = c.get(f"/api/v1/ingredients/{ing_id}/suppliers")
+            assert resp.status_code == 200
+            data = resp.json()
+            assert len(data) == 1
+            assert data[0]["outlet_id"] == outlet_b, (
+                "outlet_id should be the user's accessible outlet, not the first-inserted link"
+            )
+            assert data[0]["outlet_name"] == "Outlet Beta"
+
     def test_non_admin_cannot_change_outlet(self, session, admin_client):
         """Non-admin user cannot change outlet_id on a supplier-ingredient link."""
         outlet_id = _create_outlet(admin_client, "Test Out", "TX")

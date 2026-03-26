@@ -82,6 +82,7 @@ import type {
   CreateMenuSketchRequest,
   UpdateMenuSketchRequest,
   PaginatedResponse,
+  SupplierIngredientItem,
 } from '@/types';
 
 // ============ Pagination Param Interfaces ============
@@ -1526,4 +1527,25 @@ export async function forkMenuSketch(id: number): Promise<MenuSketch> {
   return fetchApi<MenuSketch>(`/menu-sketches/${id}/fork`, {
     method: 'POST',
   });
+}
+
+// ============ Supplier Ingredients (cross-supplier product view) ============
+
+export interface SupplierIngredientsPaginatedParams {
+  page_number?: number;
+  page_size?: number;
+  search?: string;
+}
+
+export async function getSupplierIngredientsPaginated(
+  params?: SupplierIngredientsPaginatedParams
+): Promise<PaginatedResponse<SupplierIngredientItem>> {
+  const searchParams = new URLSearchParams();
+  if (params?.page_number) searchParams.set('page_number', String(params.page_number));
+  if (params?.page_size) searchParams.set('page_size', String(params.page_size));
+  if (params?.search) searchParams.set('search', params.search);
+  const query = searchParams.toString();
+  return fetchApi<PaginatedResponse<SupplierIngredientItem>>(
+    `/supplier-ingredients${query ? `?${query}` : ''}`
+  );
 }

@@ -191,20 +191,33 @@ class IngredientService:
     # -------------------------------------------------------------------------
 
     def _build_supplier_ingredient_read(
-        self, si: SupplierIngredient
+        self,
+        si: SupplierIngredient,
+        accessible_outlet_ids: set[int] | None = None,
     ) -> SupplierIngredientRead:
-        """Build a SupplierIngredientRead DTO from a SupplierIngredient row."""
+        """Build a SupplierIngredientRead DTO from a SupplierIngredient row.
+
+        If accessible_outlet_ids is provided, the outlet shown is the first link
+        whose outlet_id is in that set (non-admin scoping).
+        """
         supplier_name = si.supplier.name if si.supplier else None
         ingredient_name = si.ingredient.name if si.ingredient else None
 
-        # Derive outlet_id and outlet_name from the first outlet link
+        # Derive outlet_id and outlet_name from outlet links.
+        # When scoped to accessible outlets, pick the first matching link.
         outlet_id = None
         outlet_name = None
         if si.outlet_links:
-            first_link = si.outlet_links[0]
-            outlet_id = first_link.outlet_id
-            if first_link.outlet:
-                outlet_name = first_link.outlet.name
+            links = (
+                [lnk for lnk in si.outlet_links if lnk.outlet_id in accessible_outlet_ids]
+                if accessible_outlet_ids is not None
+                else si.outlet_links
+            )
+            if links:
+                first_link = links[0]
+                outlet_id = first_link.outlet_id
+                if first_link.outlet:
+                    outlet_name = first_link.outlet.name
 
         return SupplierIngredientRead(
             id=si.id,
@@ -273,6 +286,7 @@ class IngredientService:
             )
         )
 
+        accessible: set[int] | None = None
         if not is_admin:
             if user_outlet_id is None:
                 return []
@@ -287,7 +301,7 @@ class IngredientService:
             )
 
         rows = self.session.exec(statement).all()
-        return [self._build_supplier_ingredient_read(si) for si in rows]
+        return [self._build_supplier_ingredient_read(si, accessible_outlet_ids=accessible) for si in rows]
 
     def add_ingredient_supplier(
         self, ingredient_id: int, data: SupplierIngredientCreate
@@ -460,7 +474,7 @@ class IngredientService:
         )
         preferred = self.session.exec(statement).first()
         if preferred:
-            return self._build_supplier_ingredient_read(preferred)
+            return self._build_supplier_ingredient_read(preferred, accessible_outlet_ids=accessible)
 
         # Fall back to first supplier
         statement = _outlet_filter(
@@ -470,7 +484,7 @@ class IngredientService:
             .limit(1)
         )
         first = self.session.exec(statement).first()
-        return self._build_supplier_ingredient_read(first) if first else None
+        return self._build_supplier_ingredient_read(first, accessible_outlet_ids=accessible) if first else None
 
     def _unset_preferred(self, ingredient_id: int) -> None:
         """Unset is_preferred on all supplier links for an ingredient."""

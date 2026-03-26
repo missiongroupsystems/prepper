@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Plus, Upload, Download } from 'lucide-react'; // Upload/Download used in DropdownButton items
 import { useIngredients, useDeactivateIngredient, useUpdateIngredient, useCategories, useCategoriesPaginated, useAllergens, useDebouncedValue } from '@/lib/hooks';
-import { IngredientCard, IngredientListRow, CategoriesTab, FilterButtons, AddIngredientModal, AllergensTab, FMHIngredientImportModal } from '@/components/ingredients';
+import { IngredientCard, IngredientListRow, CategoriesTab, FilterButtons, AddIngredientModal, AllergensTab, FMHIngredientImportModal, ProductsTab } from '@/components/ingredients';
 import SuppliersPage from '@/app/suppliers/page';
 import { PageHeader, SearchInput, Select, GroupSection, ListSection, Button, Skeleton, ViewToggle, Checkbox, DropdownButton } from '@/components/ui';
 import { Pagination } from '@/components/ui/Pagination';
@@ -378,6 +378,7 @@ function TabContent() {
 
   switch (ingredientTab) {
     case 'products':
+      return <ProductsTab />;
     case 'ingredients':
       return <IngredientsListTab />;
     case 'categories':

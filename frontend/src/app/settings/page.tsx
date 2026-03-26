@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useAppState } from '@/lib/store';
 import { OutletManagementTab } from '@/components/recipes';
 import { UserManagementTab } from '@/components/admin';
+import { UserProfileTab } from '@/components/settings/UserProfileTab';
 import DesignSystemPage from '@/app/design-system/page';
 import { cn } from '@/lib/utils';
 
@@ -39,11 +40,7 @@ export default function SettingsPage() {
         return <DesignSystemPage />;
       case 'users':
       default:
-        return (
-          <div className="p-6 text-sm text-zinc-500">
-            User management — coming in Part 2.
-          </div>
-        );
+        return <UserProfileTab />;
     }
   }
 

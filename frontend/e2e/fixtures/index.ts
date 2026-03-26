@@ -31,6 +31,7 @@ export const test = base.extend<{
         ).toBeVisible({ timeout: 5_000 });
       },
     });
+    // eslint-disable-next-line react-hooks/rules-of-hooks
     await use(extended);
   },
 });

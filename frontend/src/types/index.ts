@@ -21,6 +21,18 @@ export interface PaginatedResponse<T> {
   total_pages: number;
 }
 
+export interface SupplierIngredientItem {
+  id: number;
+  ingredient_id: number;
+  ingredient_name: string | null;
+  category_name: string | null;
+  sku: string | null;
+  supplier_id: number;
+  supplier_name: string | null;
+  unit: string;
+  price_per_pack: number;
+}
+
 export interface AuthApiError {
   message?: string;
 }
