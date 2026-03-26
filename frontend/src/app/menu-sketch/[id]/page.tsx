@@ -106,8 +106,9 @@ function DishPreviewCell({
           <button
             type="button"
             onClick={onOpenComments}
-            className="shrink-0 rounded-full border border-border bg-muted px-1.5 text-[10px] text-muted-foreground hover:text-foreground"
+            className="shrink-0 flex items-center gap-0.5 rounded-full border border-border bg-muted px-1.5 text-[10px] text-muted-foreground hover:text-foreground"
           >
+            <MessageSquare className="h-2.5 w-2.5" />
             {commentCount}
           </button>
         )}
