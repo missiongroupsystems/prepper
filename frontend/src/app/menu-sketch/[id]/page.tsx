@@ -17,6 +17,7 @@ import {
   GripVertical,
   Eye,
   Pencil,
+  SendHorizonal,
 } from 'lucide-react';
 import {
   DndContext,
@@ -37,6 +38,12 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
+function autoResize(el: HTMLTextAreaElement | null) {
+  if (!el) return;
+  el.style.height = 'auto';
+  el.style.height = el.scrollHeight + 'px';
+}
+
 function chunk<T>(arr: T[], n: number): T[][] {
   const result: T[][] = [];
   for (let i = 0; i < arr.length; i += n) result.push(arr.slice(i, i + n));
@@ -71,7 +78,7 @@ function DishPreviewCell({ dish }: { dish: SketchDish | undefined }) {
           <span className="text-muted-foreground w-14">
             ${dish.cost_price.toFixed(2)}
           </span>
-          <span className="text-muted-foreground/70 w-12">{costPct}</span>
+          <span className="text-muted-foreground/70 w-12 font-medium">{costPct}</span>
         </div>
       </div>
       {/* Dish name — full width */}
@@ -83,11 +90,12 @@ function DishPreviewCell({ dish }: { dish: SketchDish | undefined }) {
         <span className="font-semibold">Ingredients:</span>{' '}
         {dish.ingredients.length > 0 ? dish.ingredients.join(', ') : '—'}
       </p>
-      {/* Description — always shown */}
-      <p className="text-sm text-muted-foreground leading-relaxed">
-        <span className="font-semibold">Description:</span>{' '}
-        {dish.description?.trim() || 'n/a'}
-      </p>
+      {dish.description?.trim() && (
+        <p className="text-sm text-muted-foreground leading-relaxed">
+          <span className="font-semibold">Description:</span>{' '}
+          {dish.description}
+        </p>
+      )}
     </div>
   );
 }
@@ -117,7 +125,7 @@ function MenuSketchPreview({ name, sections }: { name: string; sections: SketchS
                   <div className="flex shrink-0 gap-4 text-right text-xs font-semibold text-muted-foreground tabular-nums">
                     <span className="w-14">Price</span>
                     <span className="w-14">Cost</span>
-                    <span className="w-12">%</span>
+                    <span className="w-12 font-semibold">%</span>
                   </div>
                 </div>
               ))}
@@ -168,12 +176,14 @@ function DishCard({
 
   const [ingredientsText, setIngredientsText] = useState(dish.ingredients.join(', '));
   const [descOpen, setDescOpen] = useState(!!dish.description?.trim());
+  const ingredientsRef = useRef<HTMLTextAreaElement>(null);
 
   const prevRef = useRef(dish.ingredients);
   useEffect(() => {
     if (prevRef.current !== dish.ingredients) {
       setIngredientsText(dish.ingredients.join(', '));
       prevRef.current = dish.ingredients;
+      autoResize(ingredientsRef.current);
     }
   }, [dish.ingredients]);
 
@@ -211,8 +221,9 @@ function DishCard({
 
         <div>
           <label className="mb-1 block text-xs font-medium text-muted-foreground">Ingredients</label>
-          <input
-            type="text"
+          <textarea
+            ref={ingredientsRef}
+            rows={1}
             value={ingredientsText}
             onChange={(e) => setIngredientsText(e.target.value)}
             onBlur={(e) => {
@@ -222,8 +233,10 @@ function DishCard({
                 .filter(Boolean);
               onChange({ ingredients });
             }}
+            onInput={(e) => autoResize(e.currentTarget)}
+            onFocus={(e) => autoResize(e.currentTarget)}
             placeholder="e.g. chicken stock, cream, butter"
-            className="w-full rounded-md border border-border bg-muted px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            className="w-full rounded-md border border-border bg-muted px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring overflow-hidden"
           />
         </div>
 
@@ -237,7 +250,7 @@ function DishCard({
               value={dish.sales_price || ''}
               onChange={(e) => onChange({ sales_price: parseFloat(e.target.value) || 0 })}
               placeholder="0.00"
-              className="w-full rounded-md border border-border bg-muted px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              className="w-full rounded-md border border-border bg-muted px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
             />
           </div>
           <div>
@@ -249,7 +262,7 @@ function DishCard({
               value={dish.cost_price || ''}
               onChange={(e) => onChange({ cost_price: parseFloat(e.target.value) || 0 })}
               placeholder="0.00"
-              className="w-full rounded-md border border-border bg-muted px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              className="w-full rounded-md border border-border bg-muted px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
             />
           </div>
         </div>
@@ -265,11 +278,14 @@ function DishCard({
           </button>
           {descOpen && (
             <textarea
-              rows={2}
+              rows={1}
               value={dish.description ?? ''}
               onChange={(e) => onChange({ description: e.target.value })}
+              onInput={(e) => autoResize(e.currentTarget)}
+              onFocus={(e) => autoResize(e.currentTarget)}
+              ref={(el) => autoResize(el)}
               placeholder="Optional dish description…"
-              className="w-full rounded-md border border-border bg-muted px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-y"
+              className="w-full rounded-md border border-border bg-muted px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring overflow-hidden"
             />
           )}
         </div>
@@ -304,6 +320,7 @@ function DishRow({
   const nameRef = useRef<HTMLInputElement>(null);
   const [ingredientsText, setIngredientsText] = useState(dish.ingredients.join(', '));
   const [descOpen, setDescOpen] = useState(!!dish.description?.trim());
+  const ingredientsRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     if (autoFocus) nameRef.current?.focus();
@@ -314,6 +331,7 @@ function DishRow({
     if (prevRef.current !== dish.ingredients) {
       setIngredientsText(dish.ingredients.join(', '));
       prevRef.current = dish.ingredients;
+      autoResize(ingredientsRef.current);
     }
   }, [dish.ingredients]);
 
@@ -342,8 +360,9 @@ function DishRow({
             onKeyDown={(e) => e.key === 'Enter' && onEnter()}
             className="px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground bg-card focus:outline-none focus:ring-2 focus:ring-inset focus:ring-ring/10"
           />
-          <input
-            type="text"
+          <textarea
+            ref={ingredientsRef}
+            rows={1}
             placeholder="Ingredients (comma-separated)"
             value={ingredientsText}
             onChange={(e) => setIngredientsText(e.target.value)}
@@ -354,7 +373,9 @@ function DishRow({
                 .filter(Boolean);
               onChange({ ingredients });
             }}
-            className="px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground bg-card focus:outline-none focus:ring-2 focus:ring-inset focus:ring-ring/10"
+            onInput={(e) => autoResize(e.currentTarget)}
+            onFocus={(e) => autoResize(e.currentTarget)}
+            className="px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground bg-card focus:outline-none focus:ring-2 focus:ring-inset focus:ring-ring/10 overflow-hidden"
           />
           <input
             type="number"
@@ -363,7 +384,7 @@ function DishRow({
             min="0"
             value={dish.sales_price || ''}
             onChange={(e) => onChange({ sales_price: parseFloat(e.target.value) || 0 })}
-            className="px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground bg-card focus:outline-none focus:ring-2 focus:ring-inset focus:ring-ring/10"
+            className="px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground bg-card focus:outline-none focus:ring-2 focus:ring-inset focus:ring-ring/10 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
           />
           <input
             type="number"
@@ -372,7 +393,7 @@ function DishRow({
             min="0"
             value={dish.cost_price || ''}
             onChange={(e) => onChange({ cost_price: parseFloat(e.target.value) || 0 })}
-            className="px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground bg-card focus:outline-none focus:ring-2 focus:ring-inset focus:ring-ring/10"
+            className="px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground bg-card focus:outline-none focus:ring-2 focus:ring-inset focus:ring-ring/10 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
           />
         </div>
         <button
@@ -394,11 +415,14 @@ function DishRow({
         </button>
         {descOpen && (
           <textarea
-            rows={2}
+            rows={1}
             placeholder="Description (optional)"
             value={dish.description ?? ''}
             onChange={(e) => onChange({ description: e.target.value })}
-            className="w-full resize-y border-t border-border px-3 py-1.5 text-xs text-muted-foreground placeholder:text-muted-foreground bg-card focus:outline-none focus:ring-2 focus:ring-inset focus:ring-ring/10"
+            onInput={(e) => autoResize(e.currentTarget)}
+            onFocus={(e) => autoResize(e.currentTarget)}
+            ref={(el) => autoResize(el)}
+            className="w-full overflow-hidden border-t border-border px-3 py-1.5 text-xs text-muted-foreground placeholder:text-muted-foreground bg-card focus:outline-none focus:ring-2 focus:ring-inset focus:ring-ring/10"
           />
         )}
       </div>
@@ -506,16 +530,6 @@ function SectionCard({
 
       {!collapsed && (
         <div className="px-4 pb-4 space-y-2">
-          {/* Quick-add dish input */}
-          <input
-            type="text"
-            placeholder="Type a dish name and press Enter to add…"
-            value={newDishName}
-            onChange={(e) => setNewDishName(e.target.value)}
-            onKeyDown={handleNewDishKeyDown}
-            className="w-full rounded-lg border border-dashed border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-0"
-          />
-
           {/* Dishes */}
           {viewMode === 'list' ? (
             <div className="space-y-1.5">
@@ -558,6 +572,30 @@ function SectionCard({
               </div>
             </SortableContext>
           )}
+
+          {/* Quick-add dish input */}
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Type a dish name and press Enter to add…"
+              value={newDishName}
+              onChange={(e) => setNewDishName(e.target.value)}
+              onKeyDown={handleNewDishKeyDown}
+              className="w-full rounded-lg border border-dashed border-border bg-card px-3 py-2 pr-9 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-0"
+            />
+            <button
+              type="button"
+              onClick={() => {
+                if (newDishName.trim()) {
+                  addDish(newDishName.trim());
+                  setNewDishName('');
+                }
+              }}
+              className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-muted-foreground hover:text-foreground"
+            >
+              <SendHorizonal className="h-3.5 w-3.5" />
+            </button>
+          </div>
         </div>
       )}
     </div>
@@ -580,7 +618,7 @@ export default function MenuSketchEditorPage() {
   const [newSectionName, setNewSectionName] = useState('');
   const [newSectionIndex, setNewSectionIndex] = useState<number | null>(null);
   const [viewMode, setViewMode] = useState<'list' | 'card'>('list');
-  const [previewMode, setPreviewMode] = useState(false);
+  const [previewMode, setPreviewMode] = useState(true);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -766,16 +804,6 @@ export default function MenuSketchEditorPage() {
         ) : (
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             <div className="mx-auto max-w-4xl px-6 py-8 space-y-4">
-              {/* New section input at top */}
-              <input
-                type="text"
-                placeholder="Type a section name and press Enter to add…"
-                value={newSectionName}
-                onChange={(e) => setNewSectionName(e.target.value)}
-                onKeyDown={handleNewSectionKeyDown}
-                className="w-full rounded-xl border border-dashed border-border bg-card px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none"
-              />
-
               {/* Sections */}
               <SortableContext
                 items={sections.map((_, i) => `section-${i}`)}
@@ -800,6 +828,34 @@ export default function MenuSketchEditorPage() {
                   />
                 ))}
               </SortableContext>
+
+              {/* New section input at bottom */}
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Type a section name and press Enter to add…"
+                  value={newSectionName}
+                  onChange={(e) => setNewSectionName(e.target.value)}
+                  onKeyDown={handleNewSectionKeyDown}
+                  className="w-full rounded-xl border border-dashed border-border bg-card px-4 py-3 pr-11 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (newSectionName.trim()) {
+                      setSections((prev) => {
+                        const next = [...prev, emptySection(newSectionName.trim())];
+                        setNewSectionIndex(next.length - 1);
+                        return next;
+                      });
+                      setNewSectionName('');
+                    }
+                  }}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded p-1 text-muted-foreground hover:text-foreground"
+                >
+                  <SendHorizonal className="h-3.5 w-3.5" />
+                </button>
+              </div>
             </div>
           </DndContext>
         )}
