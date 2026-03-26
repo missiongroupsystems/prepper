@@ -65,26 +65,26 @@ function DishPreviewCell({ dish }: { dish: SketchDish | undefined }) {
       <div className="flex items-center gap-2">
         <span className="flex-1" />
         <div className="flex shrink-0 gap-4 text-right text-xs tabular-nums">
-          <span className="text-zinc-700 dark:text-zinc-300 w-14">
+          <span className="text-foreground w-14">
             ${dish.sales_price.toFixed(2)}
           </span>
-          <span className="text-zinc-500 dark:text-zinc-400 w-14">
+          <span className="text-muted-foreground w-14">
             ${dish.cost_price.toFixed(2)}
           </span>
-          <span className="text-zinc-400 dark:text-zinc-500 w-12">{costPct}</span>
+          <span className="text-muted-foreground/70 w-12">{costPct}</span>
         </div>
       </div>
       {/* Dish name — full width */}
-      <p className="font-semibold text-zinc-900 dark:text-zinc-50 leading-snug">
+      <p className="font-semibold text-foreground leading-snug">
         {dish.name || '—'}
       </p>
       {/* Ingredients */}
-      <p className="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">
+      <p className="text-sm text-muted-foreground leading-relaxed">
         <span className="font-semibold">Ingredients:</span>{' '}
         {dish.ingredients.length > 0 ? dish.ingredients.join(', ') : '—'}
       </p>
       {/* Description — always shown */}
-      <p className="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">
+      <p className="text-sm text-muted-foreground leading-relaxed">
         <span className="font-semibold">Description:</span>{' '}
         {dish.description?.trim() || 'n/a'}
       </p>
@@ -96,25 +96,25 @@ function MenuSketchPreview({ name, sections }: { name: string; sections: SketchS
   return (
     <div className="mx-auto max-w-5xl px-6 py-8 space-y-8 text-sm">
       {name && (
-        <h1 className="text-center text-2xl font-bold tracking-wide text-zinc-900 dark:text-zinc-50 uppercase">
+        <h1 className="text-center text-2xl font-bold tracking-wide text-foreground uppercase">
           {name}
         </h1>
       )}
       {sections.map((section, si) => {
         const pairs = chunk(section.dishes, 2);
         return (
-          <div key={si} className="rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-700 shadow-sm">
+          <div key={si} className="rounded-xl overflow-hidden border border-border shadow-sm">
             {/* Section header */}
-            <div className="text-center font-bold tracking-widest uppercase text-sm py-2.5 px-4 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
+            <div className="text-center font-bold tracking-widest uppercase text-sm py-2.5 px-4 bg-muted text-foreground">
               {section.name || 'Unnamed Section'}
             </div>
 
             {/* Column headers */}
-            <div className="grid grid-cols-2 divide-x divide-zinc-200 dark:divide-zinc-700 border-t border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900/60">
+            <div className="grid grid-cols-2 divide-x divide-border border-t border-border bg-muted/30">
               {[0, 1].map((col) => (
                 <div key={col} className="flex items-center gap-2 px-4 py-1.5">
                   <span className="flex-1" />
-                  <div className="flex shrink-0 gap-4 text-right text-xs font-semibold text-zinc-500 dark:text-zinc-400 tabular-nums">
+                  <div className="flex shrink-0 gap-4 text-right text-xs font-semibold text-muted-foreground tabular-nums">
                     <span className="w-14">Price</span>
                     <span className="w-14">Cost</span>
                     <span className="w-12">%</span>
@@ -125,7 +125,7 @@ function MenuSketchPreview({ name, sections }: { name: string; sections: SketchS
 
             {/* No dishes */}
             {pairs.length === 0 && (
-              <div className="px-4 py-4 text-zinc-400 italic text-xs text-center">
+              <div className="px-4 py-4 text-muted-foreground italic text-xs text-center">
                 No dishes
               </div>
             )}
@@ -134,7 +134,7 @@ function MenuSketchPreview({ name, sections }: { name: string; sections: SketchS
             {pairs.map(([d1, d2], pi) => (
               <div
                 key={pi}
-                className={`grid grid-cols-2 divide-x divide-zinc-200 dark:divide-zinc-700 ${pi > 0 ? 'border-t border-zinc-200 dark:border-zinc-700' : ''}`}
+                className={`grid grid-cols-2 divide-x divide-border ${pi > 0 ? 'border-t border-border' : ''}`}
               >
                 <DishPreviewCell dish={d1} />
                 <DishPreviewCell dish={d2} />
@@ -181,36 +181,36 @@ function DishCard({
     <div
       ref={setNodeRef}
       style={style}
-      className="relative rounded-lg border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-700 dark:bg-zinc-900"
+      className="relative rounded-lg border border-border bg-card p-4 shadow-sm"
     >
       <div
         {...attributes}
         {...listeners}
-        className="absolute left-2 top-3 cursor-grab touch-none text-zinc-300 hover:text-zinc-500 dark:text-zinc-600 dark:hover:text-zinc-400"
+        className="absolute left-2 top-3 cursor-grab touch-none text-muted-foreground/40 hover:text-muted-foreground"
       >
         <GripVertical className="h-4 w-4" />
       </div>
       <button
         onClick={onRemove}
-        className="absolute right-2 top-2 rounded p-1 text-zinc-400 hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-950/20"
+        className="absolute right-2 top-2 rounded p-1 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
       >
         <X className="h-3.5 w-3.5" />
       </button>
 
       <div className="space-y-3 pl-5 pr-6">
         <div>
-          <label className="mb-1 block text-xs font-medium text-zinc-500 dark:text-zinc-400">Dish</label>
+          <label className="mb-1 block text-xs font-medium text-muted-foreground">Dish</label>
           <input
             type="text"
             value={dish.name}
             onChange={(e) => onChange({ name: e.target.value })}
             placeholder="Dish name"
-            className="w-full rounded-md border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-400 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:placeholder-zinc-600"
+            className="w-full rounded-md border border-border bg-muted px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
           />
         </div>
 
         <div>
-          <label className="mb-1 block text-xs font-medium text-zinc-500 dark:text-zinc-400">Ingredients</label>
+          <label className="mb-1 block text-xs font-medium text-muted-foreground">Ingredients</label>
           <input
             type="text"
             value={ingredientsText}
@@ -223,13 +223,13 @@ function DishCard({
               onChange({ ingredients });
             }}
             placeholder="e.g. chicken stock, cream, butter"
-            className="w-full rounded-md border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-400 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:placeholder-zinc-600"
+            className="w-full rounded-md border border-border bg-muted px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
           />
         </div>
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="mb-1 block text-xs font-medium text-zinc-500 dark:text-zinc-400">Sale price</label>
+            <label className="mb-1 block text-xs font-medium text-muted-foreground">Sale price</label>
             <input
               type="number"
               step="0.01"
@@ -237,11 +237,11 @@ function DishCard({
               value={dish.sales_price || ''}
               onChange={(e) => onChange({ sales_price: parseFloat(e.target.value) || 0 })}
               placeholder="0.00"
-              className="w-full rounded-md border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-400 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:placeholder-zinc-600"
+              className="w-full rounded-md border border-border bg-muted px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-zinc-500 dark:text-zinc-400">Cost price</label>
+            <label className="mb-1 block text-xs font-medium text-muted-foreground">Cost price</label>
             <input
               type="number"
               step="0.01"
@@ -249,7 +249,7 @@ function DishCard({
               value={dish.cost_price || ''}
               onChange={(e) => onChange({ cost_price: parseFloat(e.target.value) || 0 })}
               placeholder="0.00"
-              className="w-full rounded-md border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-400 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:placeholder-zinc-600"
+              className="w-full rounded-md border border-border bg-muted px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
             />
           </div>
         </div>
@@ -258,7 +258,7 @@ function DishCard({
           <button
             type="button"
             onClick={() => setDescOpen((v) => !v)}
-            className="mb-1 flex items-center gap-1 text-xs font-medium text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
+            className="mb-1 flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground"
           >
             {descOpen ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
             Description
@@ -269,7 +269,7 @@ function DishCard({
               value={dish.description ?? ''}
               onChange={(e) => onChange({ description: e.target.value })}
               placeholder="Optional dish description…"
-              className="w-full rounded-md border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-400 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:placeholder-zinc-600 resize-y"
+              className="w-full rounded-md border border-border bg-muted px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-y"
             />
           )}
         </div>
@@ -321,18 +321,18 @@ function DishRow({
     <div
       ref={setNodeRef}
       style={style}
-      className="group rounded-lg border border-zinc-200 bg-white transition-shadow hover:shadow-sm dark:border-zinc-700 dark:bg-zinc-900"
+      className="group rounded-lg border border-border bg-card transition-shadow hover:shadow-sm"
     >
       {/* Main row */}
       <div className="grid grid-cols-[auto_1fr_auto]">
         <div
           {...attributes}
           {...listeners}
-          className="flex cursor-grab touch-none items-center px-2 text-zinc-300 hover:text-zinc-500 dark:text-zinc-600 dark:hover:text-zinc-400"
+          className="flex cursor-grab touch-none items-center px-2 text-muted-foreground/40 hover:text-muted-foreground"
         >
           <GripVertical className="h-4 w-4" />
         </div>
-        <div className="grid grid-cols-[1fr_1fr_80px_80px] divide-x divide-zinc-100 dark:divide-zinc-800">
+        <div className="grid grid-cols-[1fr_1fr_80px_80px] divide-x divide-border">
           <input
             ref={nameRef}
             type="text"
@@ -340,7 +340,7 @@ function DishRow({
             value={dish.name}
             onChange={(e) => onChange({ name: e.target.value })}
             onKeyDown={(e) => e.key === 'Enter' && onEnter()}
-            className="px-3 py-2 text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-zinc-900/10 dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder-zinc-600"
+            className="px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground bg-card focus:outline-none focus:ring-2 focus:ring-inset focus:ring-ring/10"
           />
           <input
             type="text"
@@ -354,7 +354,7 @@ function DishRow({
                 .filter(Boolean);
               onChange({ ingredients });
             }}
-            className="px-3 py-2 text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-zinc-900/10 dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder-zinc-600"
+            className="px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground bg-card focus:outline-none focus:ring-2 focus:ring-inset focus:ring-ring/10"
           />
           <input
             type="number"
@@ -363,7 +363,7 @@ function DishRow({
             min="0"
             value={dish.sales_price || ''}
             onChange={(e) => onChange({ sales_price: parseFloat(e.target.value) || 0 })}
-            className="px-3 py-2 text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-zinc-900/10 dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder-zinc-600"
+            className="px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground bg-card focus:outline-none focus:ring-2 focus:ring-inset focus:ring-ring/10"
           />
           <input
             type="number"
@@ -372,22 +372,22 @@ function DishRow({
             min="0"
             value={dish.cost_price || ''}
             onChange={(e) => onChange({ cost_price: parseFloat(e.target.value) || 0 })}
-            className="px-3 py-2 text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-zinc-900/10 dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder-zinc-600"
+            className="px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground bg-card focus:outline-none focus:ring-2 focus:ring-inset focus:ring-ring/10"
           />
         </div>
         <button
           onClick={onRemove}
-          className="flex items-center justify-center rounded-tr-lg border-l border-zinc-200 px-2 opacity-0 transition-opacity group-hover:opacity-100 hover:bg-red-50 hover:text-red-500 dark:border-zinc-700 dark:hover:bg-red-950/20"
+          className="flex items-center justify-center rounded-tr-lg border-l border-border px-2 opacity-0 transition-opacity group-hover:opacity-100 hover:bg-destructive/10 hover:text-destructive"
         >
           <X className="h-3.5 w-3.5" />
         </button>
       </div>
       {/* Description toggle + sub-row */}
-      <div className="border-t border-zinc-100 dark:border-zinc-800">
+      <div className="border-t border-border">
         <button
           type="button"
           onClick={() => setDescOpen((v) => !v)}
-          className="flex w-full items-center gap-1 px-3 py-1 text-left text-xs text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+          className="flex w-full items-center gap-1 px-3 py-1 text-left text-xs text-muted-foreground hover:text-foreground"
         >
           {descOpen ? <ChevronUp className="h-3 w-3 shrink-0" /> : <ChevronDown className="h-3 w-3 shrink-0" />}
           <span>Description</span>
@@ -398,7 +398,7 @@ function DishRow({
             placeholder="Description (optional)"
             value={dish.description ?? ''}
             onChange={(e) => onChange({ description: e.target.value })}
-            className="w-full resize-y border-t border-zinc-100 px-3 py-1.5 text-xs text-zinc-600 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-zinc-900/10 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400 dark:placeholder-zinc-600"
+            className="w-full resize-y border-t border-border px-3 py-1.5 text-xs text-muted-foreground placeholder:text-muted-foreground bg-card focus:outline-none focus:ring-2 focus:ring-inset focus:ring-ring/10"
           />
         )}
       </div>
@@ -467,20 +467,20 @@ function SectionCard({
     <div
       ref={setNodeRef}
       style={style}
-      className="rounded-xl border border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900/50"
+      className="rounded-xl border border-border bg-muted/30"
     >
       {/* Section header */}
       <div className="flex items-center gap-2 px-4 py-3">
         <div
           {...attributes}
           {...listeners}
-          className="cursor-grab touch-none text-zinc-300 hover:text-zinc-500 dark:text-zinc-600 dark:hover:text-zinc-400"
+          className="cursor-grab touch-none text-muted-foreground/40 hover:text-muted-foreground"
         >
           <GripVertical className="h-4 w-4" />
         </div>
         <button
           onClick={() => setCollapsed((v) => !v)}
-          className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+          className="text-muted-foreground hover:text-foreground"
         >
           {collapsed ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
         </button>
@@ -491,14 +491,14 @@ function SectionCard({
           value={section.name}
           onChange={(e) => onChange({ name: e.target.value })}
           onKeyDown={(e) => e.key === 'Enter' && onEnterInName()}
-          className="flex-1 bg-transparent text-sm font-semibold text-zinc-900 placeholder-zinc-400 focus:outline-none dark:text-zinc-100 dark:placeholder-zinc-600"
+          className="flex-1 bg-transparent text-sm font-semibold text-foreground placeholder:text-muted-foreground focus:outline-none"
         />
-        <span className="text-xs text-zinc-400">
+        <span className="text-xs text-muted-foreground">
           {section.dishes.length} {section.dishes.length === 1 ? 'dish' : 'dishes'}
         </span>
         <button
           onClick={onRemove}
-          className="ml-1 rounded p-1 text-zinc-400 hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-950/20"
+          className="ml-1 rounded p-1 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
         >
           <X className="h-3.5 w-3.5" />
         </button>
@@ -513,14 +513,14 @@ function SectionCard({
             value={newDishName}
             onChange={(e) => setNewDishName(e.target.value)}
             onKeyDown={handleNewDishKeyDown}
-            className="w-full rounded-lg border border-dashed border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder-zinc-400 focus:border-zinc-400 focus:outline-none focus:ring-0 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder-zinc-600 dark:focus:border-zinc-500"
+            className="w-full rounded-lg border border-dashed border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-0"
           />
 
           {/* Dishes */}
           {viewMode === 'list' ? (
             <div className="space-y-1.5">
               {section.dishes.length > 0 && (
-                <div className="grid grid-cols-[32px_1fr_1fr_80px_80px_32px] px-1 text-xs font-medium uppercase tracking-wide text-zinc-400">
+                <div className="grid grid-cols-[32px_1fr_1fr_80px_80px_32px] px-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
                   <span />
                   <span className="px-2">Dish</span>
                   <span className="px-2">Ingredients</span>
@@ -650,38 +650,38 @@ export default function MenuSketchEditorPage() {
   if (isLoading) {
     return (
       <div className="flex h-[calc(100vh-4rem)] items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-900 dark:border-zinc-700 dark:border-t-zinc-100" />
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-border border-t-foreground" />
       </div>
     );
   }
 
   if (!sketch) {
     return (
-      <div className="flex h-[calc(100vh-4rem)] items-center justify-center text-zinc-400">
+      <div className="flex h-[calc(100vh-4rem)] items-center justify-center text-muted-foreground">
         Sketch not found
       </div>
     );
   }
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] flex-col bg-zinc-50 dark:bg-zinc-950">
+    <div className="flex h-[calc(100vh-4rem)] flex-col bg-background">
       {/* Top bar */}
-      <div className="flex shrink-0 items-center gap-3 border-b border-zinc-200 bg-white px-6 py-3 dark:border-zinc-800 dark:bg-zinc-950">
+      <div className="flex shrink-0 items-center gap-3 border-b border-border bg-card px-6 py-3">
         {/* Back */}
         <button
           onClick={() => router.push('/menu-sketch')}
-          className="flex items-center gap-1 rounded-md p-1.5 text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-700 dark:hover:bg-zinc-800 dark:hover:text-zinc-300"
+          className="flex items-center gap-1 rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
         >
           <ArrowLeft className="h-4 w-4" />
         </button>
 
-        <div className="mx-1 h-4 w-px bg-zinc-200 dark:bg-zinc-700" />
+        <div className="mx-1 h-4 w-px bg-border" />
 
         {/* Editable name */}
         {editingName ? (
           <input
             autoFocus
-            className="rounded border border-zinc-300 px-2 py-1 text-sm font-semibold text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
+            className="rounded border border-border bg-card px-2 py-1 text-sm font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
             value={name}
             onChange={(e) => setName(e.target.value)}
             onBlur={() => setEditingName(false)}
@@ -689,14 +689,14 @@ export default function MenuSketchEditorPage() {
           />
         ) : (
           <button
-            className="text-sm font-semibold text-zinc-900 hover:underline dark:text-zinc-50"
+            className="text-sm font-semibold text-foreground hover:underline"
             onClick={() => setEditingName(true)}
           >
             {name || 'Untitled Menu'}
           </button>
         )}
 
-        <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
+        <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
           v{sketch.version}
         </span>
 
@@ -704,13 +704,13 @@ export default function MenuSketchEditorPage() {
 
         {/* View toggle (hidden in preview mode) */}
         {!previewMode && (
-          <div className="flex items-center gap-0.5 rounded-md border border-zinc-200 p-0.5 dark:border-zinc-700">
+          <div className="flex items-center gap-0.5 rounded-md border border-border p-0.5">
             <button
               onClick={() => setViewMode('list')}
               className={`rounded p-1.5 transition-colors ${
                 viewMode === 'list'
-                  ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900'
-                  : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               <List className="h-3.5 w-3.5" />
@@ -719,8 +719,8 @@ export default function MenuSketchEditorPage() {
               onClick={() => setViewMode('card')}
               className={`rounded p-1.5 transition-colors ${
                 viewMode === 'card'
-                  ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900'
-                  : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               <LayoutGrid className="h-3.5 w-3.5" />
@@ -732,7 +732,7 @@ export default function MenuSketchEditorPage() {
         <button
           onClick={() => setPreviewMode((v) => !v)}
           title={previewMode ? 'Back to edit' : 'Preview'}
-          className="flex items-center gap-1.5 rounded-md border border-zinc-200 px-3 py-1.5 text-xs font-medium text-zinc-700 transition-colors hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+          className="flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted"
         >
           {previewMode ? <Pencil className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
           {previewMode ? 'Edit' : 'Preview'}
@@ -742,7 +742,7 @@ export default function MenuSketchEditorPage() {
         <button
           onClick={() => forkMutation.mutate(sketchId)}
           disabled={forkMutation.isPending}
-          className="flex items-center gap-1.5 rounded-md border border-zinc-200 px-3 py-1.5 text-xs font-medium text-zinc-700 transition-colors hover:bg-zinc-50 disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+          className="flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted disabled:opacity-50"
         >
           <GitFork className="h-3.5 w-3.5" />
           Fork
@@ -752,7 +752,7 @@ export default function MenuSketchEditorPage() {
         <button
           onClick={handleSave}
           disabled={updateMutation.isPending}
-          className="flex items-center gap-1.5 rounded-md bg-zinc-900 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-zinc-700 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
+          className="flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
         >
           <Save className="h-3.5 w-3.5" />
           {updateMutation.isPending ? 'Saving…' : 'Save'}
@@ -773,7 +773,7 @@ export default function MenuSketchEditorPage() {
                 value={newSectionName}
                 onChange={(e) => setNewSectionName(e.target.value)}
                 onKeyDown={handleNewSectionKeyDown}
-                className="w-full rounded-xl border border-dashed border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-900 placeholder-zinc-400 focus:border-zinc-400 focus:outline-none dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder-zinc-600 dark:focus:border-zinc-500"
+                className="w-full rounded-xl border border-dashed border-border bg-card px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none"
               />
 
               {/* Sections */}
