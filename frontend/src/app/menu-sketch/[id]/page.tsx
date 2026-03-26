@@ -22,6 +22,8 @@ import {
 } from 'lucide-react';
 import { CommentsPanel } from './CommentsPanel';
 import { DishCommentsModal } from './DishCommentsModal';
+import dynamic from 'next/dynamic';
+const NotesEditor = dynamic(() => import('./NotesEditor').then((m) => m.NotesEditor), { ssr: false });
 import { ConfirmModal } from '@/components/ui';
 import {
   DndContext,
@@ -728,6 +730,8 @@ export default function MenuSketchEditorPage() {
   const [showComments, setShowComments] = useState(true);
   const [comments, setComments] = useState<SketchComments>({});
   const [activeDishId, setActiveDishId] = useState<string | null>(null);
+  const [notes, setNotes] = useState<string | null>(null);
+  const [notesOpen, setNotesOpen] = useState(true);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -740,6 +744,7 @@ export default function MenuSketchEditorPage() {
     if (sketch) {
       setName(sketch.name);
       setComments(sketch.comments ?? {});
+      setNotes(sketch.notes ?? null);
 
       // Lazily assign stable UUIDs to any dishes that lack one
       const hadMissingIds = (sketch.sections ?? []).some((s) =>
@@ -763,6 +768,10 @@ export default function MenuSketchEditorPage() {
       { id: sketchId, data: { name, sections } },
       { onSuccess: () => toast.success('Menu saved') },
     );
+  };
+
+  const handleNotesSave = (html: string) => {
+    updateMutation.mutate({ id: sketchId, data: { notes: html } });
   };
 
   const handleCommentsChange = (c: SketchComments) => {
@@ -1046,6 +1055,23 @@ export default function MenuSketchEditorPage() {
               comments={comments}
               onChange={handleCommentsChange}
             />
+          </div>
+        )}
+      </div>
+
+      {/* Notes section */}
+      <div className="shrink-0 border-t border-border">
+        <button
+          type="button"
+          onClick={() => setNotesOpen((v) => !v)}
+          className="flex w-full items-center gap-2 px-6 py-2 text-sm font-medium text-muted-foreground hover:text-foreground"
+        >
+          {notesOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+          Menu Notes
+        </button>
+        {notesOpen && (
+          <div className="px-6 pb-4">
+            <NotesEditor initialContent={notes} onChange={setNotes} onSave={handleNotesSave} />
           </div>
         )}
       </div>
