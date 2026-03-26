@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Pencil, Check, Trash2, SendHorizonal } from 'lucide-react';
+import { toast } from 'sonner';
 import { ConfirmModal } from '@/components/ui';
 import type { SketchSection, SketchComment, SketchComments } from '@/types';
 
@@ -49,6 +50,7 @@ export function CommentsPanel({ sections, comments, onChange }: CommentsPanelPro
       c.id === commentId ? { ...c, resolved: true } : c,
     );
     onChange({ ...comments, [dishId]: updated });
+    toast.success('Comment resolved');
   };
 
   const startEdit = (comment: SketchComment) => {
@@ -76,6 +78,7 @@ export function CommentsPanel({ sections, comments, onChange }: CommentsPanelPro
     }
     onChange(next);
     setDeletingComment(null);
+    toast.success('Comment deleted');
   };
 
   const allDishes = sections.flatMap((s) =>

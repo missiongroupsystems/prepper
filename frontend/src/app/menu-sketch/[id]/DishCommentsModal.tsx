@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Pencil, Check, Trash2, SendHorizonal, X } from 'lucide-react';
+import { toast } from 'sonner';
 import { ConfirmModal } from '@/components/ui';
 import type { SketchComment } from '@/types';
 
@@ -54,6 +55,7 @@ export function DishCommentsModal({
     onChange(
       dishComments.map((c) => (c.id === commentId ? { ...c, resolved: true } : c)),
     );
+    toast.success('Comment resolved');
   };
 
   const startEdit = (comment: SketchComment) => {
@@ -73,6 +75,7 @@ export function DishCommentsModal({
   const deleteComment = (commentId: string) => {
     onChange(dishComments.filter((c) => c.id !== commentId));
     setDeletingId(null);
+    toast.success('Comment deleted');
   };
 
   const resolvedCount = dishComments.filter((c) => c.resolved).length;

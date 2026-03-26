@@ -610,7 +610,7 @@ function SectionCard({
       <ConfirmModal
         isOpen={confirmRemoveSection}
         onClose={() => setConfirmRemoveSection(false)}
-        onConfirm={() => { onRemove(); setConfirmRemoveSection(false); }}
+        onConfirm={() => { onRemove(); setConfirmRemoveSection(false); toast.success('Section deleted'); }}
         title="Delete section"
         message="Are you sure you want to delete this section and all its dishes? This cannot be undone."
         confirmLabel="Delete"
@@ -625,6 +625,7 @@ function SectionCard({
             if (dish?.id) onDishRemoved(dish.id);
             removeDish(confirmRemoveDishIdx);
             setConfirmRemoveDishIdx(null);
+            toast.success('Dish deleted');
           }
         }}
         title="Delete dish"
