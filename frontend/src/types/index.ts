@@ -856,7 +856,17 @@ export interface UpdateMenuRequest {
 // Menu Sketch Types (freeform input-driven menu builder)
 // ============================================================================
 
+export interface SketchComment {
+  id: string;
+  text: string;
+  resolved: boolean;
+  created_at: string;
+}
+
+export type SketchComments = Record<string, SketchComment[]>; // keyed by dish id
+
 export interface SketchDish {
+  id?: string;          // stable UUID — assigned on creation
   name: string;
   ingredients: string[];
   sales_price: number;
@@ -874,6 +884,8 @@ export interface MenuSketch {
   version: number;
   name: string;
   sections: SketchSection[];
+  comments: SketchComments;
+  notes?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -885,6 +897,8 @@ export interface CreateMenuSketchRequest {
 export interface UpdateMenuSketchRequest {
   name?: string;
   sections?: SketchSection[];
+  comments?: SketchComments;
+  notes?: string | null;
 }
 
 // ============ Supplier Ingredient Tag Types ============

@@ -35,6 +35,8 @@ class MenuSketchService:
             name=data.name,
             version=1,
             sections=[],
+            comments={},
+            notes=None,
         )
         self.session.add(sketch)
         self.session.commit()
@@ -69,6 +71,8 @@ class MenuSketchService:
             name=original.name,
             version=original.version + 1,
             sections=list(original.sections),
+            comments={},
+            notes=None,
         )
         self.session.add(forked)
         self.session.commit()
