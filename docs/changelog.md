@@ -6,6 +6,7 @@ All notable changes to Prepper are documented here.
 
 ## Index
 
+- **[0.0.29](#0029---2026-03-26)** — Nav Restructure, Products Tab, Menu Sketch Enhancements & Supplier Ingredient Tags
 - **[0.0.28](#0028---2026-03-25)** — Menu Sketch Canvas: Freeform JSON-section menu builder at `/menu-sketch` — `menus_sketch` table, CRUD + fork API, list & editor pages, TanStack Query hooks, TopNav updated from `/menu` → `/menu-sketch`
 - **[0.0.27](#0027---2026-03-17)** — Playwright E2E Testing, FMH Import Optimization & Sample File Downloads: Full E2E test suite (213 tests), N+1→bulk DB round-trips (~2500→~6), FMH import modals, sample XLSX download endpoints & DropdownButton component
 - **[0.0.26](#0026---2026-03-13)** — Cross-Category Unit Conversion in Canvas: Weight↔Volume unit switching (g/kg↔ml/l) with automatic quantity and price conversion in CanvasLayout ingredient table and cards
@@ -34,6 +35,82 @@ All notable changes to Prepper are documented here.
 - **[0.0.3](#003---2024-11-27)** — Database Migration: Alembic Initial Tables to Supabase + PostgreSQL JSON Compatibility Fix
 - **[0.0.2](#002---2024-11-27)** — Frontend Implementation: Next.js 15 Recipe Canvas with Drag-and-Drop, Autosave & TanStack Query
 - **[0.0.1](#001---2024-11-27)** — Backend Foundation: FastAPI + SQLModel with 17 API Endpoints, Domain Services & Unit Conversion
+---
+
+## [0.0.29] - 2026-03-26
+
+### Added
+
+#### Nav Restructure & Page Consolidation
+
+Replaced the flat top nav with grouped dropdown nav groups, and consolidated standalone pages into tabbed shells.
+
+- `NAV_GROUPS` replaces `NAV_ITEMS` — groups: Drafts, Recipes, Ingredients, R&D, Reports, Settings; each with dropdown sub-items
+- `recipes/page.tsx` — Menus tab added, rendering `MenuPage` inline
+- `ingredients/page.tsx` — Products (default) and Suppliers tabs added; Categories renamed to Tags
+- `rnd/page.tsx` — split into Pipelines and Tastings tabs
+- `settings/page.tsx` — new shell with Users, Outlets, Admin, and Design tabs
+- Removed standalone `/outlets/page.tsx` and `/admin/users/page.tsx` routes
+- `next.config.ts` redirects added for old routes pointing to new parent pages
+- All back buttons and redirects updated to new parent routes
+- Layout consistency fix: `w-full` + `max-w-7xl` applied to all tab content roots
+
+#### Products Tab (Ingredients Page)
+
+New paginated supplier-ingredients view as the default tab on `/ingredients`.
+
+**Backend:**
+- `GET /api/v1/supplier-ingredients` — paginated endpoint with `search` (name/SKU), `page_number`, `page_size`; returns `SupplierIngredientPaginatedResponse`
+
+**Frontend:**
+- `ProductsTab` component — table with Product Name, Category, SKU, Supplier, Tags, Unit, Price/Pack columns; clickable product and supplier links; SGD currency formatting
+- `useSupplierIngredientsPaginated` TanStack Query hook
+- `getSupplierIngredientsPaginated` API helper
+- `UserProfileTab` added to Settings → Users tab (current user account + outlet view)
+
+#### Menu Sketch Dish Description
+
+Optional `description` field on `SketchDish` entries.
+
+- Edit mode: resizable `description` textarea in both card and list views
+- Preview: restructured dish cell — prices top row, name full-width, then bold `Ingredients` / `Description` labels at `text-sm`; description shows `n/a` when empty
+- Collapsible description field in the edit modal to reduce visual noise
+
+#### Supplier Ingredient Tags
+
+Full product-level tagging system for supplier ingredients.
+
+**Backend:**
+- `supplier_ingredient_tags` table — `id`, `name` (unique), `is_active` (soft-delete)
+- `supplier_ingredient_supplier_ingredient_tags` join table — cascade FKs, unique constraint on `(supplier_ingredient_id, supplier_ingredient_tag_id)`
+- Alembic migration `a2b3c4d5e6f7`
+- Service: `list_tags`, `create_tag`, `delete_tag` (soft), `get_tags_for_supplier_ingredient`, `add_tag_to_supplier_ingredient` (idempotent), `remove_tag_from_supplier_ingredient`
+- API router at `/api/v1/supplier-ingredient-tags` — 6 endpoints (GET list, POST create, DELETE soft-delete, GET per-product, POST link, DELETE unlink)
+- 9 unit tests (all passing)
+
+**Frontend:**
+- `TagsCell` component — displays linked tag badges + edit icon that opens `TagManagementModal`
+- `TagManagementModal` — checkbox toggle per tag to link/unlink, inline soft-delete with confirm, create new global tag (creates then links immediately)
+- Tags column added to `ProductsTab` between Supplier and Unit
+- `useSupplierIngredientTags`, `useCreateSupplierIngredientTag`, `useDeleteSupplierIngredientTag`, `useTagsForSupplierIngredient`, `useAddTagToSupplierIngredient`, `useRemoveTagFromSupplierIngredient` hooks
+
+**Files Created:**
+- `backend/app/models/supplier_ingredient_tag.py`
+- `backend/app/domain/supplier_ingredient_tag_service.py`
+- `backend/app/api/supplier_ingredient_tags.py`
+- `backend/alembic/versions/a2b3c4d5e6f7_add_supplier_ingredient_tags.py`
+- `backend/tests/test_supplier_ingredient_tags.py`
+- `frontend/src/components/ingredients/TagsCell.tsx`
+- `frontend/src/components/ingredients/TagManagementModal.tsx`
+- `frontend/src/lib/hooks/useSupplierIngredientTags.ts`
+
+**Files Modified:**
+- `frontend/src/types/index.ts` — `SupplierIngredientTag`, `CreateSupplierIngredientTagRequest`
+- `frontend/src/lib/api.ts` — 6 tag API functions
+- `frontend/src/lib/hooks/index.ts` — export barrel updated
+- `frontend/src/components/ingredients/ProductsTab.tsx` — Tags column wired in
+- `backend/app/models/__init__.py`, `backend/app/main.py` — register new model and router
+
 ---
 
 ## [0.0.28] - 2026-03-25
