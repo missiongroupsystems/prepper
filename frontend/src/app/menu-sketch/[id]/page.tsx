@@ -235,6 +235,10 @@ function DishCard({
 
   const prevRef = useRef(dish.ingredients);
   useEffect(() => {
+    autoResize(ingredientsRef.current);
+  }, []);
+
+  useEffect(() => {
     if (prevRef.current !== dish.ingredients) {
       setIngredientsText(dish.ingredients.join(', '));
       prevRef.current = dish.ingredients;
@@ -410,6 +414,10 @@ function DishRow({
   useEffect(() => {
     if (autoFocus) nameRef.current?.focus();
   }, [autoFocus]);
+
+  useEffect(() => {
+    autoResize(ingredientsRef.current);
+  }, []);
 
   const prevRef = useRef(dish.ingredients);
   useEffect(() => {
