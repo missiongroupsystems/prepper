@@ -50,6 +50,20 @@ export function useUpdateMenuSketch() {
   });
 }
 
+export function useDeleteMenuSketch() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => api.deleteMenuSketch(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [SKETCHES_KEY] });
+      toast.success('Sketch deleted');
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to delete sketch');
+    },
+  });
+}
+
 export function useForkMenuSketch() {
   const queryClient = useQueryClient();
   const router = useRouter();

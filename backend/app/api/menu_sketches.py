@@ -57,6 +57,17 @@ def update_menu_sketch(
     return sketch
 
 
+@router.delete("/{sketch_id}", status_code=204)
+def delete_menu_sketch(
+    sketch_id: int,
+    session: Session = Depends(get_session),
+) -> None:
+    """Hard-delete a menu sketch."""
+    deleted = MenuSketchService(session).delete_sketch(sketch_id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Sketch not found")
+
+
 @router.post("/{sketch_id}/fork", response_model=MenuSketchRead, status_code=201)
 def fork_menu_sketch(
     sketch_id: int,

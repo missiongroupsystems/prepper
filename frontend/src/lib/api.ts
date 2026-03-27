@@ -1530,6 +1530,10 @@ export async function forkMenuSketch(id: number): Promise<MenuSketch> {
   });
 }
 
+export async function deleteMenuSketch(id: number): Promise<void> {
+  return fetchApi<void>(`/menu-sketches/${id}`, { method: 'DELETE' });
+}
+
 // ============ Supplier Ingredients (cross-supplier product view) ============
 
 export interface SupplierIngredientsPaginatedParams {

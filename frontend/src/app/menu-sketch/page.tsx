@@ -1,17 +1,20 @@
 'use client';
 
-import { useMenuSketches, useCreateMenuSketch } from '@/lib/hooks';
+import { useState } from 'react';
+import { useMenuSketches, useCreateMenuSketch, useDeleteMenuSketch } from '@/lib/hooks';
 import { formatDistanceToNow } from 'date-fns';
-import { Plus, FileText, GitFork } from 'lucide-react';
-import { PageHeader, Button } from '@/components/ui';
+import { Plus, FileText, Trash2 } from 'lucide-react';
+import { PageHeader, Button, ConfirmModal } from '@/components/ui';
 
 export default function MenuSketchListPage() {
   const { data: sketches, isLoading } = useMenuSketches();
   const createSketch = useCreateMenuSketch();
+  const deleteSketch = useDeleteMenuSketch();
+  const [deleteTarget, setDeleteTarget] = useState<{ id: number; name: string } | null>(null);
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="mx-auto max-w-5xl px-4 py-10">
+      <div className="p-6 max-w-7xl mx-auto">
         {/* Header */}
         <PageHeader
           title="Menu Sketches"
@@ -62,23 +65,40 @@ export default function MenuSketchListPage() {
               <a
                 key={sketch.id}
                 href={`/menu-sketch/${sketch.id}`}
-                className="group relative flex flex-col rounded-xl border border-border bg-card p-5 shadow-sm transition-all hover:shadow-md"
+                className="flex flex-col rounded-xl border border-border bg-card p-5 shadow-sm transition-all hover:shadow-md"
               >
                 <div className="flex flex-col gap-1">
                   <div className="flex items-center justify-between gap-2">
                     <h3 className="truncate text-base font-semibold text-foreground">
                       {sketch.name}
                     </h3>
-                    <span className="flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
-                      <GitFork className="h-3 w-3" />
-                      v{sketch.version}
-                    </span>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+                        v{sketch.version}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setDeleteTarget({ id: sketch.id, name: sketch.name });
+                        }}
+                        className="rounded p-1 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                        aria-label="Delete sketch"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
                   </div>
                   <p className="text-xs text-muted-foreground">
                     Updated{' '}
-                    {formatDistanceToNow(new Date(sketch.updated_at), {
-                      addSuffix: true,
-                    })}
+                    {formatDistanceToNow(
+                      new Date(
+                        sketch.updated_at.endsWith('Z') || sketch.updated_at.includes('+')
+                          ? sketch.updated_at
+                          : sketch.updated_at + 'Z'
+                      ),
+                      { addSuffix: true }
+                    )}
                   </p>
                 </div>
               </a>
@@ -86,6 +106,21 @@ export default function MenuSketchListPage() {
           </div>
         )}
       </div>
+
+      <ConfirmModal
+        isOpen={deleteTarget !== null}
+        title="Delete sketch"
+        message={`Are you sure you want to delete "${deleteTarget?.name}"? This action cannot be undone.`}
+        confirmLabel="Delete"
+        variant="destructive"
+        onConfirm={() => {
+          if (deleteTarget) {
+            deleteSketch.mutate(deleteTarget.id);
+            setDeleteTarget(null);
+          }
+        }}
+        onClose={() => setDeleteTarget(null)}
+      />
     </div>
   );
 }

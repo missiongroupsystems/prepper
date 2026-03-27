@@ -54,13 +54,22 @@ class MenuSketchService:
         update_data = data.model_dump(exclude_unset=True)
         for field, value in update_data.items():
             setattr(sketch, field, value)
-        if 'name' in update_data or 'sections' in update_data:
+        if update_data:
             sketch.updated_at = datetime.utcnow()
 
         self.session.add(sketch)
         self.session.commit()
         self.session.refresh(sketch)
         return sketch
+
+    def delete_sketch(self, sketch_id: int) -> bool:
+        """Hard-delete a sketch. Returns True if deleted, False if not found."""
+        sketch = self.session.get(MenuSketch, sketch_id)
+        if sketch is None:
+            return False
+        self.session.delete(sketch)
+        self.session.commit()
+        return True
 
     def fork_sketch(self, sketch_id: int) -> MenuSketch | None:
         """Fork a sketch — copy all fields and increment version."""

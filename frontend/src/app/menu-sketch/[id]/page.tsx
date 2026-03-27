@@ -83,7 +83,7 @@ function DishPreviewCell({
     dish?.id ? (comments?.[dish.id] ?? []).filter((c) => !c.resolved).length : 0;
   if (!dish) return <div className="px-4 py-3" />;
   return (
-    <div className="relative px-4 py-3 space-y-0.5">
+    <div className="relative px-4 py-3 space-y-2">
       {/* Prices row (right-aligned) */}
       <div className="flex items-center gap-2">
         <span className="flex-1" />
@@ -99,25 +99,37 @@ function DishPreviewCell({
       </div>
       {/* Dish name row with comment badge */}
       <div className="flex items-center justify-between gap-2">
-        <p className="flex-1 font-semibold text-foreground leading-snug">
+        <p className="flex-1 text-base font-semibold text-foreground leading-snug">
           {dish.name || '—'}
         </p>
-        {commentCount > 0 && (
-          <button
-            type="button"
-            onClick={onOpenComments}
-            className="shrink-0 flex items-center gap-0.5 rounded-full border border-border bg-muted px-1.5 text-[10px] text-muted-foreground hover:text-foreground"
-          >
-            <MessageSquare className="h-2.5 w-2.5" />
-            {commentCount}
-          </button>
-        )}
+        <button
+          type="button"
+          onClick={onOpenComments}
+          className={`shrink-0 flex items-center gap-0.5 rounded-full border px-1.5 text-[10px] transition-colors hover:opacity-80 ${
+            commentCount > 0
+              ? 'border-orange-400/50 bg-orange-500/15 text-orange-600 dark:text-orange-400'
+              : 'border-border bg-muted/60 text-muted-foreground'
+          }`}
+        >
+          <MessageSquare className="h-2.5 w-2.5" />
+          {commentCount}
+        </button>
       </div>
       {/* Ingredients */}
-      <p className="text-sm text-muted-foreground leading-relaxed">
+      <div className="text-sm text-muted-foreground leading-relaxed">
         <span className="font-semibold">Ingredients:</span>{' '}
-        {dish.ingredients.length > 0 ? dish.ingredients.join(', ') : '—'}
-      </p>
+        {dish.ingredients.length > 0
+          ? (
+            <span className="flex flex-wrap gap-1 mt-0.5">
+              {dish.ingredients.map((ing, i) => (
+                <span key={i} className="rounded border border-border bg-muted/60 px-1.5 py-0.5 text-xs">
+                  {ing}
+                </span>
+              ))}
+            </span>
+          )
+          : '—'}
+      </div>
       {dish.description?.trim() && (
         <p className="text-sm text-muted-foreground leading-relaxed">
           <span className="font-semibold">Description:</span>{' '}
@@ -219,6 +231,7 @@ function DishCard({
   const [ingredientsText, setIngredientsText] = useState(dish.ingredients.join(', '));
   const [descOpen, setDescOpen] = useState(!!dish.description?.trim());
   const ingredientsRef = useRef<HTMLTextAreaElement>(null);
+  const descRef = useRef<HTMLTextAreaElement>(null);
 
   const prevRef = useRef(dish.ingredients);
   useEffect(() => {
@@ -228,6 +241,14 @@ function DishCard({
       autoResize(ingredientsRef.current);
     }
   }, [dish.ingredients]);
+
+  useEffect(() => {
+    if (descOpen) autoResize(descRef.current);
+  }, [descOpen]);
+
+  const costPct = dish.sales_price > 0
+    ? ((dish.cost_price / dish.sales_price) * 100).toFixed(1) + '%'
+    : '—';
 
   return (
     <div
@@ -282,7 +303,7 @@ function DishCard({
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-3 gap-3">
           <div>
             <label className="mb-1 block text-xs font-medium text-muted-foreground">Sale price</label>
             <input
@@ -307,6 +328,12 @@ function DishCard({
               className="w-full rounded-md border border-border bg-muted px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
             />
           </div>
+          <div>
+            <label className="mb-1 block text-xs font-medium text-muted-foreground">Cost %</label>
+            <div className="w-full rounded-md border border-border bg-muted/50 px-3 py-1.5 text-sm tabular-nums text-muted-foreground">
+              {costPct}
+            </div>
+          </div>
         </div>
 
         <div>
@@ -320,12 +347,12 @@ function DishCard({
           </button>
           {descOpen && (
             <textarea
+              ref={descRef}
               rows={1}
               value={dish.description ?? ''}
               onChange={(e) => onChange({ description: e.target.value })}
               onInput={(e) => autoResize(e.currentTarget)}
               onFocus={(e) => autoResize(e.currentTarget)}
-              ref={(el) => autoResize(el)}
               placeholder="Optional dish description…"
               className="w-full rounded-md border border-border bg-muted px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring overflow-hidden"
             />
@@ -336,7 +363,7 @@ function DishCard({
           <button
             type="button"
             onClick={onOpenComments}
-            className="flex items-center gap-1 rounded px-1.5 py-0.5 text-xs text-muted-foreground hover:text-foreground"
+            className={`flex items-center gap-1 rounded px-1.5 py-0.5 text-xs transition-colors ${commentCount > 0 ? 'bg-orange-500/15 text-orange-600 dark:text-orange-400 hover:bg-orange-500/25' : 'text-muted-foreground hover:text-foreground'}`}
           >
             <MessageSquare className="h-3 w-3" />
             {commentCount > 0 ? `Comments (${commentCount})` : 'Comments'}
@@ -378,6 +405,7 @@ function DishRow({
   const [ingredientsText, setIngredientsText] = useState(dish.ingredients.join(', '));
   const [descOpen, setDescOpen] = useState(!!dish.description?.trim());
   const ingredientsRef = useRef<HTMLTextAreaElement>(null);
+  const descRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     if (autoFocus) nameRef.current?.focus();
@@ -391,6 +419,14 @@ function DishRow({
       autoResize(ingredientsRef.current);
     }
   }, [dish.ingredients]);
+
+  useEffect(() => {
+    if (descOpen) autoResize(descRef.current);
+  }, [descOpen]);
+
+  const costPct = dish.sales_price > 0
+    ? ((dish.cost_price / dish.sales_price) * 100).toFixed(1) + '%'
+    : '—';
 
   return (
     <div
@@ -407,7 +443,7 @@ function DishRow({
         >
           <GripVertical className="h-4 w-4" />
         </div>
-        <div className="grid grid-cols-[1fr_1fr_80px_80px] divide-x divide-border">
+        <div className="grid grid-cols-[1fr_1fr_80px_80px_56px] divide-x divide-border">
           <input
             ref={nameRef}
             type="text"
@@ -452,6 +488,9 @@ function DishRow({
             onChange={(e) => onChange({ cost_price: parseFloat(e.target.value) || 0 })}
             className="px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground bg-card focus:outline-none focus:ring-2 focus:ring-inset focus:ring-ring/10 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
           />
+          <div className="px-3 py-2 text-xs tabular-nums text-muted-foreground text-right">
+            {costPct}
+          </div>
         </div>
         <button
           onClick={onRemove}
@@ -474,11 +513,11 @@ function DishRow({
           <button
             type="button"
             onClick={onOpenComments}
-            className="flex items-center gap-1 border-l border-border px-3 py-1 text-xs text-muted-foreground hover:text-foreground"
+            className={`flex items-center gap-1 border-l border-border px-3 py-1 text-xs transition-colors ${commentCount > 0 ? 'text-orange-600 dark:text-orange-400 hover:text-orange-500' : 'text-muted-foreground hover:text-foreground'}`}
           >
             <MessageSquare className="h-3 w-3" />
             {commentCount > 0 && (
-              <span className="rounded-full border border-border bg-muted px-1 text-[10px]">
+              <span className="rounded-full border border-orange-400/50 bg-orange-500/15 px-1 text-[10px]">
                 {commentCount}
               </span>
             )}
@@ -486,13 +525,13 @@ function DishRow({
         </div>
         {descOpen && (
           <textarea
+            ref={descRef}
             rows={1}
             placeholder="Description (optional)"
             value={dish.description ?? ''}
             onChange={(e) => onChange({ description: e.target.value })}
             onInput={(e) => autoResize(e.currentTarget)}
             onFocus={(e) => autoResize(e.currentTarget)}
-            ref={(el) => autoResize(el)}
             className="w-full overflow-hidden border-t border-border px-3 py-1.5 text-xs text-muted-foreground placeholder:text-muted-foreground bg-card focus:outline-none focus:ring-2 focus:ring-inset focus:ring-ring/10"
           />
         )}
@@ -640,12 +679,13 @@ function SectionCard({
           {viewMode === 'list' ? (
             <div className="space-y-1.5">
               {section.dishes.length > 0 && (
-                <div className="grid grid-cols-[32px_1fr_1fr_80px_80px_32px] px-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                <div className="grid grid-cols-[32px_1fr_1fr_80px_80px_56px_32px] px-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
                   <span />
                   <span className="px-2">Dish</span>
                   <span className="px-2">Ingredients</span>
                   <span className="px-2">Sale</span>
                   <span className="px-2">Cost</span>
+                  <span className="px-2">%</span>
                   <span />
                 </div>
               )}
