@@ -196,3 +196,48 @@ def test_fork_multiple_times_increments_correctly(client: TestClient):
 
     v3 = client.post(f"{BASE}/{v2['id']}/fork").json()
     assert v3["version"] == 3
+
+
+# =============================================================================
+# Delete
+# =============================================================================
+
+
+def test_delete_sketch(client: TestClient):
+    """Deleting a sketch returns 204 and it no longer appears in the list."""
+    sketch_id = client.post(BASE, json={"name": "Delete Me"}).json()["id"]
+
+    response = client.delete(f"{BASE}/{sketch_id}")
+    assert response.status_code == 204
+    assert response.content == b""
+
+    # Confirm it is gone
+    assert client.get(f"{BASE}/{sketch_id}").status_code == 404
+
+
+def test_delete_sketch_removed_from_list(client: TestClient):
+    """Deleted sketch no longer appears in the list endpoint."""
+    id_a = client.post(BASE, json={"name": "Keep"}).json()["id"]
+    id_b = client.post(BASE, json={"name": "Remove"}).json()["id"]
+
+    client.delete(f"{BASE}/{id_b}")
+
+    ids = {s["id"] for s in client.get(BASE).json()}
+    assert id_a in ids
+    assert id_b not in ids
+
+
+def test_delete_sketch_not_found(client: TestClient):
+    """Deleting a non-existent sketch returns 404."""
+    response = client.delete(f"{BASE}/99999")
+    assert response.status_code == 404
+    assert "Sketch not found" in response.json()["detail"]
+
+
+def test_delete_sketch_idempotent_second_call(client: TestClient):
+    """Deleting the same sketch twice returns 404 on the second call."""
+    sketch_id = client.post(BASE, json={"name": "Once Only"}).json()["id"]
+
+    client.delete(f"{BASE}/{sketch_id}")
+    response = client.delete(f"{BASE}/{sketch_id}")
+    assert response.status_code == 404

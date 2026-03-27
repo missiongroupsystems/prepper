@@ -6,6 +6,7 @@ All notable changes to Prepper are documented here.
 
 ## Index
 
+- **[0.0.31](#0031---2026-03-27)** — Menu Sketch Round 1 Feedback: UI Refinements, Delete Support & UX Polish
 - **[0.0.30](#0030---2026-03-26)** — Menu Sketch UX Refinements: Design Tokens, Preview Fixes, Dish Comments Panel & Tiptap Notes Editor
 - **[0.0.29](#0029---2026-03-26)** — Nav Restructure, Products Tab, Menu Sketch Enhancements & Supplier Ingredient Tags
 - **[0.0.28](#0028---2026-03-25)** — Menu Sketch Canvas: Freeform JSON-section menu builder at `/menu-sketch` — `menus_sketch` table, CRUD + fork API, list & editor pages, TanStack Query hooks, TopNav updated from `/menu` → `/menu-sketch`
@@ -36,6 +37,53 @@ All notable changes to Prepper are documented here.
 - **[0.0.3](#003---2024-11-27)** — Database Migration: Alembic Initial Tables to Supabase + PostgreSQL JSON Compatibility Fix
 - **[0.0.2](#002---2024-11-27)** — Frontend Implementation: Next.js 15 Recipe Canvas with Drag-and-Drop, Autosave & TanStack Query
 - **[0.0.1](#001---2024-11-27)** — Backend Foundation: FastAPI + SQLModel with 17 API Endpoints, Domain Services & Unit Conversion
+---
+
+## [0.0.31] - 2026-03-27
+
+### Added
+
+#### Menu Sketch — Delete Support
+- `DELETE /menu-sketches/{id}` hard-delete endpoint (204 No Content)
+- `delete_sketch()` method in `MenuSketchService`
+- `useDeleteMenuSketch` TanStack Query mutation hook with success/error toasts
+- `deleteMenuSketch` API call in `lib/api.ts`
+- Confirm modal on the list page before deletion; sketch removed from list on success
+
+### Changed
+
+#### Menu Sketch — Preview Mode Refinements
+- Row spacing increased for better readability
+- Comment badge always visible (orange when unresolved, muted when all resolved)
+- Comment icon added alongside badge for clearer visual affordance
+- Ingredient chips render as styled pill badges instead of plain text
+- Font hierarchy tightened: dish name, description, and price use consistent weights
+
+#### Menu Sketch — Edit Mode Refinements
+- Cost `%` column added to both list-view rows and card-view items
+- Orange comment badge displayed in edit mode to mirror preview behaviour
+- Description textarea auto-expands to full content height on initial load
+
+#### Menu Sketch — List Page Polish
+- Max width capped at `max-w-7xl` for better wide-screen readability
+- Defensive `updated_at` timezone parse prevents crash on missing timezone info
+- Version badge rendered without decorative icon for cleaner appearance
+
+### Fixed
+
+- Toast notification shown on deletion of sections/dishes within a menu sketch
+- Toast notification shown on resolution of per-dish comments
+
+**Files modified:**
+- `backend/app/api/menu_sketches.py`
+- `backend/app/domain/menu_sketch_service.py`
+- `frontend/src/app/menu-sketch/[id]/page.tsx`
+- `frontend/src/app/menu-sketch/[id]/CommentsPanel.tsx`
+- `frontend/src/app/menu-sketch/[id]/DishCommentsModal.tsx`
+- `frontend/src/app/menu-sketch/page.tsx`
+- `frontend/src/lib/api.ts`
+- `frontend/src/lib/hooks/useMenuSketches.ts`
+
 ---
 
 ## [0.0.30] - 2026-03-26

@@ -74,6 +74,7 @@ app/
 │   ├── recipe_recipe_category.py # RecipeRecipeCategory (recipe-category many-to-many)
 │   ├── tasting.py               # TastingSession, TastingNote
 │   ├── recipe_tasting.py        # RecipeTasting (session-recipe many-to-many)
+│   ├── menu_sketch.py           # MenuSketch (freeform canvas menu builder with sections/items, comments, notes, fork)
 │   ├── supplier.py              # Supplier (name, address, phone, email, soft-delete support)
 │   ├── user.py                  # User (email, username, user_type [normal/admin], outlet_id, Supabase auth, hierarchical access)
 │   ├── auth.py                  # Auth DTOs: LoginRequest, RegisterRequest, LoginResponse
@@ -95,6 +96,7 @@ app/
 │   ├── category_service.py      # Category CRUD + soft-delete
 │   ├── recipe_category_service.py   # Recipe category CRUD
 │   ├── recipe_recipe_category_service.py # Recipe-category link CRUD
+│   ├── menu_sketch_service.py   # MenuSketch CRUD + fork + delete
 │   ├── user_service.py          # User CRUD and management
 │   └── supabase_auth_service.py # Supabase authentication integration
 ├── api/                 # FastAPI routers (one per resource)
@@ -116,6 +118,7 @@ app/
 │   ├── categories.py            # Category CRUD
 │   ├── recipe_categories.py     # Recipe category CRUD
 │   ├── recipe_recipe_categories.py # Recipe-category link CRUD
+│   ├── menu_sketches.py         # Menu sketch CRUD + fork + delete
 │   ├── auth.py                  # Login, register, token refresh endpoints
 │   └── deps.py                  # Dependency injection (get_session)
 ├── agents/              # AI-powered features
@@ -153,6 +156,9 @@ app/
 │   ├── new/page.tsx     # Create new tasting session
 │   ├── [id]/page.tsx    # Tasting session detail
 │   └── [id]/r/[recipeId]/page.tsx # Tasting notes for recipe in session
+├── menu-sketch/
+│   ├── page.tsx         # Menu sketch list with create/delete/fork actions
+│   └── [id]/page.tsx    # Menu sketch editor (edit + preview modes, comments panel, notes)
 ├── finance/page.tsx     # Finance/analytics dashboard
 ├── rnd/
 │   ├── page.tsx         # R&D workspace list
@@ -184,6 +190,7 @@ lib/
     ├── useCategories.ts         # useCategories, useCreateCategory, useUpdateCategory, useDeleteCategory, useCategoryIngredients
     ├── useRecipeCategories.ts   # useRecipeCategories, useRecipeCategory, useCreateRecipeCategory, useUpdateRecipeCategory, useDeleteRecipeCategory
     ├── useRecipeRecipeCategories.ts # useRecipeCategoryLinks, useCategoryRecipes, useAddRecipeToCategory, useRemoveRecipeFromCategory
+    ├── useMenuSketches.ts       # useMenuSketches, useMenuSketch, useCreateMenuSketch, useUpdateMenuSketch, useDeleteMenuSketch, useForkMenuSketch
     ├── useAgents.ts             # useCategorizeIngredient, useSummarizeFeedback
     ├── useAutoFlowLayout.ts     # Automatic layout arrangement using ReactFlow
     ├── useSendTastingInvitation.ts # Email invitation functionality
@@ -284,6 +291,11 @@ All endpoints under `/api/v1`:
 - `/recipe-recipe-categories/recipe/{recipe_id}` — get categories assigned to recipe
 - `/recipe-recipe-categories/category/{category_id}` — get recipes in category
 
+**Menu Sketches:**
+- `/menu-sketches` — CRUD for freeform canvas menu sketches
+- `/menu-sketches/{id}` — get/update/delete single sketch (DELETE is hard-delete)
+- `/menu-sketches/{id}/fork` — fork sketch (copy with incremented version)
+
 **Agents:**
 - `/agents/summarize-feedback/{recipe_id}` — AI-powered tasting feedback summary
 
@@ -359,6 +371,17 @@ All endpoints under `/api/v1`:
 - Backend tests: 26/26 passing with participant resolution, unregistered email skipping, and access control validation
 - Frontend `ParticipantPicker` component for user selection during session creation
 - Backward compatible: `attendees` field kept on request DTOs for wire compatibility
+
+**Menu Sketch Canvas** (Mar 2026)
+- Freeform canvas menu builder at `/menu-sketch` — `menus_sketch` table with CRUD, fork, and hard-delete
+- JSON `sections` column stores nested section → dish hierarchy with stable UUIDs per dish
+- `comments` JSON column for per-dish comment threads (add/edit/resolve/delete); unresolved count badge in preview
+- `notes` VARCHAR column for menu-wide rich-text HTML (Tiptap v3 editor with Bold/Italic/Underline/Strike/Link toolbar)
+- Edit mode: dual list/card views, cost `%` column, ingredient chips, description textarea auto-expand
+- Preview mode: ingredient chips, font hierarchy, always-visible orange comment badge, hidden empty rows
+- List page: create/fork/delete sketches with confirm modal; version badge per sketch
+- `useMenuSketches.ts` hooks: `useMenuSketches`, `useMenuSketch`, `useCreateMenuSketch`, `useUpdateMenuSketch`, `useDeleteMenuSketch`, `useForkMenuSketch`
+- Components: `CommentsPanel.tsx`, `DishCommentsModal.tsx`, `NotesEditor.tsx` (in `/menu-sketch/[id]/`)
 
 **Menu Management Enhancements** (Feb 26)
 - Drag-and-drop reordering for menu sections and items via `dnd-kit` library
