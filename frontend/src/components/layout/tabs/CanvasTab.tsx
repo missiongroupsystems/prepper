@@ -2600,11 +2600,6 @@ export function CanvasTab({ outlets }: CanvasTabProps) {
   }, [selectedRecipeId, recipes, metadata, stagedIngredients, stagedRecipes, createRecipe, addIngredient, addSubRecipe, userId, router]);
 
   const handleSubmitClick = useCallback(() => {
-    if (stagedIngredients.length === 0 && stagedRecipes.length === 0) {
-      toast.error('Add some ingredients or recipes first');
-      return;
-    }
-
     // Validate all ingredients have at least 1 supplier before publishing
     if (metadata.status === 'active') {
       const ingredientsWithoutSupplier = stagedIngredients.filter(

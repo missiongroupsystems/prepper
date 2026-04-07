@@ -6,6 +6,7 @@ All notable changes to Prepper are documented here.
 
 ## Index
 
+- **[0.0.32](#0032---2026-04-07)** — Ingredient-Free Recipes & Inline Recipe Creation in Tasting Sessions
 - **[0.0.31](#0031---2026-03-27)** — Menu Sketch Round 1 Feedback: UI Refinements, Delete Support & UX Polish
 - **[0.0.30](#0030---2026-03-26)** — Menu Sketch UX Refinements: Design Tokens, Preview Fixes, Dish Comments Panel & Tiptap Notes Editor
 - **[0.0.29](#0029---2026-03-26)** — Nav Restructure, Products Tab, Menu Sketch Enhancements & Supplier Ingredient Tags
@@ -37,6 +38,30 @@ All notable changes to Prepper are documented here.
 - **[0.0.3](#003---2024-11-27)** — Database Migration: Alembic Initial Tables to Supabase + PostgreSQL JSON Compatibility Fix
 - **[0.0.2](#002---2024-11-27)** — Frontend Implementation: Next.js 15 Recipe Canvas with Drag-and-Drop, Autosave & TanStack Query
 - **[0.0.1](#001---2024-11-27)** — Backend Foundation: FastAPI + SQLModel with 17 API Endpoints, Domain Services & Unit Conversion
+---
+
+## [0.0.32] - 2026-04-07
+
+### Added
+
+#### Recipe Builder — Ingredient-Free Recipes
+- Removed hard validation block that prevented saving a recipe with no ingredients or sub-recipes
+- Recipes can now be created with a name only — useful for ad-hoc tasting session dishes
+- Supplier validation for active-status recipes is unchanged
+
+#### Tasting Sessions — Inline Recipe Creation
+- "Create `"..."` as new recipe" button appears in the recipe search panel when a search query is typed but no match is selected
+- Creates the recipe immediately and adds it to the selection (same flow as picking an existing recipe)
+- Newly created recipe shows as pre-selected (blue checkmark) in the list; can be deselected before confirming
+
+### Changed
+
+#### Tasting Sessions — Add Recipes Panel Overhaul
+- Recipes already linked to the session now open pre-selected (checked) instead of disabled
+- Unchecking a linked recipe and clicking the action button removes it from the session (no per-item confirm)
+- Action button label: **Add** when only adding new recipes, **Save** when any linked recipe is being removed; disabled when nothing has changed
+- Batch removal handled without individual confirm dialogs for consistency with the panel's edit-then-apply model
+
 ---
 
 ## [0.0.31] - 2026-03-27

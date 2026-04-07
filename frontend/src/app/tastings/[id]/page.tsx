@@ -27,6 +27,7 @@ import {
   useRemoveRecipeFromSession,
   useInfiniteRecipes,
   useSessionNotes,
+  useCreateRecipe,
 } from '@/lib/hooks';
 import {
   Button,
@@ -69,10 +70,12 @@ interface SessionRecipesSectionProps {
   onSearchChange: (query: string) => void;
   reviewedRecipeIds: Set<number>;
   onRecipeClick: (recipeId: number) => void;
+  onCreateRecipe: (name: string) => Promise<number>;
+  onRemoveRecipes: (recipeIds: number[]) => void;
 }
 
 function SessionRecipesSection({
-  sessionId,
+  sessionId: _sessionId,
   sessionRecipes,
   availableRecipes,
   isLoading,
@@ -86,22 +89,37 @@ function SessionRecipesSection({
   onSearchChange,
   reviewedRecipeIds,
   onRecipeClick,
+  onCreateRecipe,
+  onRemoveRecipes,
 }: SessionRecipesSectionProps) {
   const [showAddRecipe, setShowAddRecipe] = useState(false);
   const [selectedRecipeIds, setSelectedRecipeIds] = useState<Set<number>>(new Set());
+  const [isCreatingRecipe, setIsCreatingRecipe] = useState(false);
 
   const linkedRecipeIds = new Set(sessionRecipes.map((sr) => sr.recipe_id));
 
+  // Pre-select already-linked recipes when the panel opens
+  useEffect(() => {
+    if (showAddRecipe) {
+      setSelectedRecipeIds(new Set(linkedRecipeIds));
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showAddRecipe]);
+
+  const toAdd = Array.from(selectedRecipeIds).filter((id) => !linkedRecipeIds.has(id));
+  const toRemove = Array.from(linkedRecipeIds).filter((id) => !selectedRecipeIds.has(id));
+  const hasChanges = toAdd.length > 0 || toRemove.length > 0;
+
   const handleAddRecipes = () => {
-    if (selectedRecipeIds.size === 0) return;
-    onAddRecipes(Array.from(selectedRecipeIds));
+    if (!hasChanges) return;
+    if (toAdd.length > 0) onAddRecipes(toAdd);
+    if (toRemove.length > 0) onRemoveRecipes(toRemove);
     setSelectedRecipeIds(new Set());
     onSearchChange('');
     setShowAddRecipe(false);
   };
 
   const handleToggleRecipe = (recipeId: number) => {
-    if (linkedRecipeIds.has(recipeId)) return;
     setSelectedRecipeIds((prev) => {
       const next = new Set(prev);
       if (next.has(recipeId)) {
@@ -111,6 +129,20 @@ function SessionRecipesSection({
       }
       return next;
     });
+  };
+
+  const handleCreateAndSelect = async () => {
+    const name = searchQuery.trim();
+    if (!name) return;
+    setIsCreatingRecipe(true);
+    try {
+      const newId = await onCreateRecipe(name);
+      setSelectedRecipeIds((prev) => new Set([...prev, newId]));
+    } catch {
+      // error toast handled by parent
+    } finally {
+      setIsCreatingRecipe(false);
+    }
   };
 
   return (
@@ -168,30 +200,22 @@ function SessionRecipesSection({
                         key={recipe.id}
                         type="button"
                         onClick={() => handleToggleRecipe(recipe.id)}
-                        disabled={isAlreadyAdded}
                         className={`w-full text-left px-3 py-2 text-sm border-b border-zinc-100 dark:border-zinc-800 last:border-b-0 flex items-center justify-between ${
-                          isAlreadyAdded
-                            ? 'opacity-50 cursor-not-allowed bg-zinc-50 dark:bg-zinc-800/30 text-zinc-400 dark:text-zinc-500'
-                            : isSelected
-                              ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-900 dark:text-purple-100'
-                              : 'text-zinc-900 dark:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800'
+                          isSelected
+                            ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-900 dark:text-purple-100'
+                            : 'text-zinc-900 dark:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800'
                         }`}
                       >
                         <span className="flex items-center gap-2">
                           <span className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${
-                            isAlreadyAdded
-                              ? 'border-zinc-300 dark:border-zinc-600'
-                              : isSelected
-                                ? 'bg-purple-600 border-purple-600 text-white'
-                                : 'border-zinc-300 dark:border-zinc-600'
-                          }`}>
+                            isSelected
+                              ? 'bg-purple-600 border-purple-600 text-white'
+                              : 'border-zinc-300 dark:border-zinc-600'
+                            }`}>
                             {isSelected && <span className="text-xs">&#10003;</span>}
                           </span>
                           {recipe.name}
                         </span>
-                        {isAlreadyAdded && (
-                          <Badge variant="secondary" className="text-xs ml-2 shrink-0">Added</Badge>
-                        )}
                       </button>
                     );
                   })
@@ -206,10 +230,21 @@ function SessionRecipesSection({
                     {isLoadingMoreRecipes ? 'Loading...' : 'Load more recipes'}
                   </button>
                 )}
+                {searchQuery.trim() && (
+                  <button
+                    type="button"
+                    onClick={handleCreateAndSelect}
+                    disabled={isCreatingRecipe}
+                    className="w-full px-3 py-2 text-sm text-left flex items-center gap-2 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 border-t border-zinc-100 dark:border-zinc-800 font-medium disabled:opacity-50"
+                  >
+                    <Plus className="h-4 w-4 shrink-0" />
+                    {isCreatingRecipe ? 'Creating...' : <>Create &ldquo;{searchQuery.trim()}&rdquo; as new recipe</>}
+                  </button>
+                )}
               </div>
               <div className="flex items-center gap-3 pt-2">
-                <Button onClick={handleAddRecipes} disabled={selectedRecipeIds.size === 0}>
-                  Add{selectedRecipeIds.size > 0 ? ` (${selectedRecipeIds.size})` : ''}
+                <Button onClick={handleAddRecipes} disabled={!hasChanges}>
+                  {toRemove.length > 0 ? 'Save' : 'Add'}
                 </Button>
                 <Button
                   variant="outline"
@@ -221,11 +256,6 @@ function SessionRecipesSection({
                 >
                   Cancel
                 </Button>
-                {selectedRecipeIds.size > 0 && (
-                  <span className="text-sm text-zinc-500 dark:text-zinc-400">
-                    {selectedRecipeIds.size} recipe{selectedRecipeIds.size !== 1 ? 's' : ''} selected
-                  </span>
-                )}
               </div>
             </div>
           </CardContent>
@@ -466,6 +496,7 @@ export default function TastingSessionDetailPage() {
   const updateSession = useUpdateTastingSession();
   const addRecipesToSession = useAddRecipesToSession();
   const removeRecipeFromSession = useRemoveRecipeFromSession();
+  const createRecipe = useCreateRecipe();
 
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [showCalendar, setShowCalendar] = useState(false);
@@ -568,6 +599,23 @@ export default function TastingSessionDetailPage() {
     }
   };
 
+  const handleBatchRemoveRecipes = (recipeIds: number[]) => {
+    if (!sessionId) return;
+    recipeIds.forEach((recipeId) => {
+      removeRecipeFromSession.mutate({ sessionId, recipeId });
+    });
+  };
+
+
+  const handleCreateRecipe = async (name: string): Promise<number> => {
+    try {
+      const newRecipe = await createRecipe.mutateAsync({ name });
+      return newRecipe.id;
+    } catch {
+      toast.error('Failed to create recipe');
+      throw new Error('Failed to create recipe');
+    }
+  };
 
   const handleDeleteSession = async () => {
     if (!sessionId) return;
@@ -851,6 +899,8 @@ export default function TastingSessionDetailPage() {
             onSearchChange={setRecipeSearch}
             reviewedRecipeIds={reviewedRecipeIds}
             onRecipeClick={setSelectedRecipeIdForModal}
+            onCreateRecipe={handleCreateRecipe}
+            onRemoveRecipes={handleBatchRemoveRecipes}
           />
         )}
 
