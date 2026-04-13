@@ -83,6 +83,7 @@ const ICON_DEFS: { key: string; label: string; emoji: string }[] = [
 interface DisplayOptions {
   description: boolean;
   ingredients: boolean;
+  cost: boolean;
   costMargins: boolean;
   comments: boolean;
 }
@@ -122,7 +123,9 @@ function DishPreviewCell({
         )}
         <div className="flex shrink-0 gap-3 text-right text-xs tabular-nums items-center">
           <span className="text-foreground w-14 text-right">${dish.sales_price.toFixed(2)}</span>
-          <span className="text-muted-foreground w-14 text-right">${dish.cost_price.toFixed(2)}</span>
+          {display.cost && (
+            <span className="text-muted-foreground w-14 text-right">${dish.cost_price.toFixed(2)}</span>
+          )}
           {display.costMargins && (
             <span className="text-muted-foreground/70 w-12 font-medium text-right">{costPct}</span>
           )}
@@ -205,7 +208,7 @@ function MenuSketchPreview({
                   <span className="flex-1" />
                   <div className="flex shrink-0 gap-3 text-right text-xs font-semibold text-muted-foreground tabular-nums">
                     <span className="w-14 text-right">Price</span>
-                    <span className="w-14 text-right">Cost</span>
+                    {display.cost && <span className="w-14 text-right">Cost</span>}
                     {display.costMargins && <span className="w-12 text-right">%</span>}
                   </div>
                   {/* Invisible spacer matching comment badge width */}
@@ -1047,6 +1050,7 @@ export default function MenuSketchEditorPage() {
   const [displayOptions, setDisplayOptions] = useState<DisplayOptions>({
     description: true,
     ingredients: true,
+    cost: true,
     costMargins: true,
     comments: true,
   });
@@ -1304,6 +1308,7 @@ export default function MenuSketchEditorPage() {
                   [
                     { key: 'description', label: 'Description' },
                     { key: 'ingredients', label: 'Key ingredients' },
+                    { key: 'cost', label: 'Cost' },
                     { key: 'costMargins', label: 'Cost margins' },
                     { key: 'comments', label: 'Comments' },
                   ] as const
