@@ -872,6 +872,8 @@ export interface SketchDish {
   sales_price: number;
   cost_price: number;
   description?: string;
+  is_highlight?: boolean;
+  icons?: string[];
 }
 
 export interface SketchSection {

@@ -68,6 +68,17 @@ function emptySection(name = ''): SketchSection {
   return { id: crypto.randomUUID(), name, dishes: [] };
 }
 
+// ─── Icon defs for dish tags ──────────────────────────────────────────────────
+const ICON_DEFS: { key: string; label: string; emoji: string }[] = [
+  { key: 'signature', label: 'Signature', emoji: '⭐' },
+  { key: 'spicy',     label: 'Spicy',     emoji: '🌶️' },
+  { key: 'vegetarian',label: 'Vegetarian',emoji: '🌿' },
+  { key: 'seafood',   label: 'Seafood',   emoji: '🐟' },
+  { key: 'beef',      label: 'Beef',      emoji: '🥩' },
+  { key: 'pork',      label: 'Pork',      emoji: '🐷' },
+  { key: 'nuts',      label: 'Nuts',      emoji: '🥜' },
+];
+
 // ─── Preview components ───────────────────────────────────────────────────────
 interface DisplayOptions {
   description: boolean;
@@ -95,12 +106,20 @@ function DishPreviewCell({
     dish?.id ? (comments?.[dish.id] ?? []).filter((c) => !c.resolved).length : 0;
   if (!dish) return <div className="px-4 py-3" />;
   return (
-    <div className="relative px-4 py-3 space-y-2">
-      {/* Dish name + prices + comment badge on one row */}
+    <div className={`relative px-4 py-3 space-y-2${dish.is_highlight ? ' bg-amber-500/10 dark:bg-amber-500/25' : ''}`}>
+      {/* Dish name + icons + prices + comment badge on one row */}
       <div className="flex items-center gap-2">
         <p className="flex-1 text-base font-semibold text-foreground leading-snug">
           {dish.name || '—'}
         </p>
+        {dish.icons && dish.icons.length > 0 && (
+          <div className="flex shrink-0 gap-0.5">
+            {dish.icons.map((key) => {
+              const def = ICON_DEFS.find((d) => d.key === key);
+              return def ? <span key={key} title={def.label} className="text-sm leading-none">{def.emoji}</span> : null;
+            })}
+          </div>
+        )}
         <div className="flex shrink-0 gap-3 text-right text-xs tabular-nums items-center">
           <span className="text-foreground w-14 text-right">${dish.sales_price.toFixed(2)}</span>
           <span className="text-muted-foreground w-14 text-right">${dish.cost_price.toFixed(2)}</span>
@@ -250,6 +269,7 @@ function DishCard({
 
   const [ingredientsText, setIngredientsText] = useState(dish.ingredients.join(', '));
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [showTags, setShowTags] = useState(false);
   const ingredientsRef = useRef<HTMLTextAreaElement>(null);
   const descRef = useRef<HTMLTextAreaElement>(null);
   const nameWrapRef = useRef<HTMLDivElement>(null);
@@ -414,6 +434,49 @@ function DishCard({
           />
         </div>
 
+        {/* Highlight + Tags (D1, D2) */}
+        <div className="space-y-2 pt-1">
+          <label className="flex cursor-pointer select-none items-center gap-2">
+            <input
+              type="checkbox"
+              checked={dish.is_highlight ?? false}
+              onChange={(e) => onChange({ is_highlight: e.target.checked })}
+              className="h-3.5 w-3.5 rounded border-border accent-amber-500"
+            />
+            <span className="text-xs text-muted-foreground">⭐ Highlight dish</span>
+          </label>
+          <div>
+            <button
+              type="button"
+              onClick={() => setShowTags((v) => !v)}
+              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+            >
+              {showTags ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+              Tags{dish.icons && dish.icons.length > 0 ? ` (${dish.icons.length})` : ''}
+            </button>
+            {showTags && (
+              <div className="mt-1.5 grid grid-cols-2 gap-1">
+                {ICON_DEFS.map(({ key, label, emoji }) => (
+                  <label key={key} className="flex cursor-pointer select-none items-center gap-1.5">
+                    <input
+                      type="checkbox"
+                      checked={(dish.icons ?? []).includes(key)}
+                      onChange={(e) => {
+                        const icons = dish.icons ?? [];
+                        onChange({
+                          icons: e.target.checked ? [...icons, key] : icons.filter((k) => k !== key),
+                        });
+                      }}
+                      className="h-3.5 w-3.5 rounded border-border"
+                    />
+                    <span className="text-xs text-muted-foreground">{emoji} {label}</span>
+                  </label>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
         <div className="flex justify-end pt-1">
           <button
             type="button"
@@ -462,6 +525,7 @@ function DishRow({
   const nameWrapRef = useRef<HTMLDivElement>(null);
   const [ingredientsText, setIngredientsText] = useState(dish.ingredients.join(', '));
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [showTags, setShowTags] = useState(false);
   const ingredientsRef = useRef<HTMLTextAreaElement>(null);
   const descRef = useRef<HTMLTextAreaElement>(null);
 
@@ -628,6 +692,48 @@ function DishRow({
           onFocus={(e) => autoResize(e.currentTarget)}
           className="w-full overflow-hidden border-t border-border px-3 py-1.5 text-xs text-muted-foreground placeholder:text-muted-foreground bg-card focus:outline-none focus:ring-2 focus:ring-inset focus:ring-ring/10"
         />
+        {/* Highlight + Tags (D1, D2) */}
+        <div className="border-t border-border px-3 py-2 space-y-2">
+          <label className="flex cursor-pointer select-none items-center gap-2">
+            <input
+              type="checkbox"
+              checked={dish.is_highlight ?? false}
+              onChange={(e) => onChange({ is_highlight: e.target.checked })}
+              className="h-3.5 w-3.5 rounded border-border accent-amber-500"
+            />
+            <span className="text-xs text-muted-foreground">⭐ Highlight dish</span>
+          </label>
+          <div>
+            <button
+              type="button"
+              onClick={() => setShowTags((v) => !v)}
+              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+            >
+              {showTags ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+              Tags{dish.icons && dish.icons.length > 0 ? ` (${dish.icons.length})` : ''}
+            </button>
+            {showTags && (
+              <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1">
+                {ICON_DEFS.map(({ key, label, emoji }) => (
+                  <label key={key} className="flex cursor-pointer select-none items-center gap-1">
+                    <input
+                      type="checkbox"
+                      checked={(dish.icons ?? []).includes(key)}
+                      onChange={(e) => {
+                        const icons = dish.icons ?? [];
+                        onChange({
+                          icons: e.target.checked ? [...icons, key] : icons.filter((k) => k !== key),
+                        });
+                      }}
+                      className="h-3.5 w-3.5 rounded border-border"
+                    />
+                    <span className="text-xs text-muted-foreground">{emoji} {label}</span>
+                  </label>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
