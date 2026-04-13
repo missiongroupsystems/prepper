@@ -6,6 +6,7 @@ All notable changes to Prepper are documented here.
 
 ## Index
 
+- **[0.0.33](#0033---2026-04-13)** — Menu Nav Restructure, Sketch Editor Overhaul & Dish Highlights / Icon Tags
 - **[0.0.32](#0032---2026-04-07)** — Ingredient-Free Recipes & Inline Recipe Creation in Tasting Sessions
 - **[0.0.31](#0031---2026-03-27)** — Menu Sketch Round 1 Feedback: UI Refinements, Delete Support & UX Polish
 - **[0.0.30](#0030---2026-03-26)** — Menu Sketch UX Refinements: Design Tokens, Preview Fixes, Dish Comments Panel & Tiptap Notes Editor
@@ -38,6 +39,69 @@ All notable changes to Prepper are documented here.
 - **[0.0.3](#003---2024-11-27)** — Database Migration: Alembic Initial Tables to Supabase + PostgreSQL JSON Compatibility Fix
 - **[0.0.2](#002---2024-11-27)** — Frontend Implementation: Next.js 15 Recipe Canvas with Drag-and-Drop, Autosave & TanStack Query
 - **[0.0.1](#001---2024-11-27)** — Backend Foundation: FastAPI + SQLModel with 17 API Endpoints, Domain Services & Unit Conversion
+---
+
+## [0.0.33] - 2026-04-13
+
+### Added
+
+#### Menu — Dish Highlight Flag
+- `is_highlight` boolean on `SketchDish` marks a dish as highlighted
+- Highlighted rows show an amber background in preview; brighter in dark mode (`dark:bg-amber-500/25`)
+
+#### Menu — Dish Icon Tags
+- 7 predefined tags: Signature ⭐, Spicy 🌶️, Vegetarian 🌿, Seafood 🐟, Beef 🥩, Pork 🐷, Nuts 🥜
+- Collapsible tag picker in both card and list edit views; active count shown on toggle button
+- Selected icons displayed as emoji beside the dish name in preview
+
+#### Menu Sketch — Preview Display Toggles
+- "Display" dropdown in preview mode toggles visibility of: Description, Key ingredients, Cost margins, Comments
+- Fields are hidden, not deleted — data persists when toggled off
+
+#### Menu Sketch — Recipe Search on Dish Entry
+- Typing in the dish name input shows a live recipe suggestion dropdown (up to 5 matches)
+- Selecting a recipe pre-fills description, cost price, and sales price
+- Section quick-add input also supports recipe search, with an "Add new dish" option for free-form entries
+
+#### Menu Sketch — Unsaved Changes Indicator
+- Amber "Unsaved changes" badge appears in the top bar whenever local edits have not yet been saved
+
+### Changed
+
+#### Navigation — Menu Restructure
+- "Menu" in TopNav now links to `/menu` (was `/menu-sketch`)
+- `/menu` page hosts "Draft Menus" and "Recipe Menus" sub-tabs; active tab persisted in `localStorage`
+- Back navigation from `/menu-sketch/[id]` and `/menu` sub-pages now returns to `/menu`
+- `/recipes` simplified to recipe management only (Menus tab removed)
+
+#### Menu Sketch — Edit Mode as Default
+- Editor opens in Edit mode by default instead of Preview mode
+
+#### Menu Sketch — Description Always Visible
+- Description textarea is permanently visible in edit mode (was toggle-revealed)
+
+#### Menu Sketch — Preview Layout
+- Dish name, price, and cost are now on a single row in preview
+- Column headers mirror dish row structure for pixel-accurate alignment
+- Cost margins toggle only shows/hides the `%` column — price and cost remain always visible
+- Description moved directly below dish name
+
+#### Menu Sketch — "Ingredients" renamed to "Key ingredients"
+- Label updated in edit card, list column header, and preview
+
+#### Menu Sketch — Stable Drag IDs
+- Sections carry stable UUIDs instead of index-based `section-N` strings; drag-and-drop reorder now ID-based
+
+### Fixed
+
+#### Tasting Sessions — Access Scoping
+- Non-admin `GET /tasting-sessions` now returns only sessions the user created or participates in (admin users see all)
+- Fixed `useEffect` race condition when pre-selecting recipes in the add-recipe panel
+- Batch recipe removal now runs in parallel via `Promise.all + mutateAsync`
+
+#### Menu Sketch — Auto-Adaptive Textareas
+- Description and ingredients textareas now auto-resize based on content height
+
 ---
 
 ## [0.0.32] - 2026-04-07
