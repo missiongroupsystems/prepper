@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import { FlaskConical, DollarSign, Package, BookOpen, NotebookPen, Settings, LogOut, LucideIcon, Menu, X } from 'lucide-react';
+import { FlaskConical, DollarSign, Package, BookOpen, UtensilsCrossed, Settings, LogOut, LucideIcon, Menu, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAppState } from '@/lib/store';
 import { logoutUser } from '@/lib/api';
@@ -18,7 +18,7 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { href: '/menu-sketch', label: 'Drafts',      icon: NotebookPen },
+  { href: '/menu',        label: 'Menu',        icon: UtensilsCrossed },
   { href: '/recipes',     label: 'Recipes',     icon: BookOpen },
   { href: '/ingredients', label: 'Ingredients', icon: Package },
   { href: '/rnd',         label: 'R&D',         icon: FlaskConical },
@@ -142,7 +142,7 @@ export function TopNav() {
                 if (item.adminOnly && userType !== 'admin') return false;
                 return true;
               }).map(({ href, label, icon: Icon }) => {
-                const isActive = href === '/' ? pathname === '/' : pathname.startsWith(href);
+                const isActive = href === '/' ? pathname === '/' : pathname === href || pathname.startsWith(href + '/');
                 return (
                   <div key={href} className="group relative">
                     <Link
@@ -201,7 +201,7 @@ export function TopNav() {
                 if (item.adminOnly && userType !== 'admin') return false;
                 return true;
               }).map(({ href, label, icon: Icon }) => {
-                const isActive = href === '/' ? pathname === '/' : pathname.startsWith(href);
+                const isActive = href === '/' ? pathname === '/' : pathname === href || pathname.startsWith(href + '/');
                 return (
                   <Link
                     key={href}

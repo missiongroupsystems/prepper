@@ -832,7 +832,7 @@ export function MenuBuilder({ mode, menu }: MenuBuilderProps) {
           outlet_ids: selectedOutletIds,
           sections: createSectionData,
         });
-        router.push('/recipes');
+        router.push('/menu');
       } else if (menu) {
         const updateSectionData = sections.map((s) => ({
           id: s.id,
@@ -858,7 +858,7 @@ export function MenuBuilder({ mode, menu }: MenuBuilderProps) {
             sections: updateSectionData,
           },
         });
-        router.push('/recipes');
+        router.push('/menu');
       }
     } catch (error) {
       console.error('Error saving menu:', error);

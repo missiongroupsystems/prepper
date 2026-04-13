@@ -18,7 +18,7 @@ export default function MenuSketchListPage() {
       <div className="p-6 max-w-7xl mx-auto">
         {/* Header */}
         <PageHeader
-          title="Menu Sketches"
+          title="Menu Drafts"
           description="Freeform canvas for brainstorming menu layouts"
         >
           <Button

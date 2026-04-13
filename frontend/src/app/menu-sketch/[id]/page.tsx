@@ -3,7 +3,8 @@
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import { useMenuSketch, useUpdateMenuSketch, useForkMenuSketch } from '@/lib/hooks';
+import { useMenuSketch, useUpdateMenuSketch, useForkMenuSketch, useRecipes } from '@/lib/hooks';
+import type { Recipe } from '@/types';
 import type { SketchSection, SketchDish, SketchComment, SketchComments } from '@/types';
 import {
   GitFork,
@@ -19,6 +20,8 @@ import {
   Pencil,
   SendHorizonal,
   MessageSquare,
+  SlidersHorizontal,
+  Check,
 } from 'lucide-react';
 import { CommentsPanel } from './CommentsPanel';
 import { DishCommentsModal } from './DishCommentsModal';
@@ -66,14 +69,23 @@ function emptySection(name = ''): SketchSection {
 }
 
 // ─── Preview components ───────────────────────────────────────────────────────
+interface DisplayOptions {
+  description: boolean;
+  ingredients: boolean;
+  costMargins: boolean;
+  comments: boolean;
+}
+
 function DishPreviewCell({
   dish,
   comments,
   onOpenComments,
+  display,
 }: {
   dish: SketchDish | undefined;
   comments?: SketchComments;
   onOpenComments?: () => void;
+  display: DisplayOptions;
 }) {
   const costPct =
     dish && dish.sales_price > 0
@@ -84,57 +96,55 @@ function DishPreviewCell({
   if (!dish) return <div className="px-4 py-3" />;
   return (
     <div className="relative px-4 py-3 space-y-2">
-      {/* Prices row (right-aligned) */}
+      {/* Dish name + prices + comment badge on one row */}
       <div className="flex items-center gap-2">
-        <span className="flex-1" />
-        <div className="flex shrink-0 gap-4 text-right text-xs tabular-nums">
-          <span className="text-foreground w-14">
-            ${dish.sales_price.toFixed(2)}
-          </span>
-          <span className="text-muted-foreground w-14">
-            ${dish.cost_price.toFixed(2)}
-          </span>
-          <span className="text-muted-foreground/70 w-12 font-medium">{costPct}</span>
-        </div>
-      </div>
-      {/* Dish name row with comment badge */}
-      <div className="flex items-center justify-between gap-2">
         <p className="flex-1 text-base font-semibold text-foreground leading-snug">
           {dish.name || '—'}
         </p>
-        <button
-          type="button"
-          onClick={onOpenComments}
-          className={`shrink-0 flex items-center gap-0.5 rounded-full border px-1.5 text-[10px] transition-colors hover:opacity-80 ${
-            commentCount > 0
-              ? 'border-orange-400/50 bg-orange-500/15 text-orange-600 dark:text-orange-400'
-              : 'border-border bg-muted/60 text-muted-foreground'
-          }`}
-        >
-          <MessageSquare className="h-2.5 w-2.5" />
-          {commentCount}
-        </button>
+        <div className="flex shrink-0 gap-3 text-right text-xs tabular-nums items-center">
+          <span className="text-foreground w-14 text-right">${dish.sales_price.toFixed(2)}</span>
+          <span className="text-muted-foreground w-14 text-right">${dish.cost_price.toFixed(2)}</span>
+          {display.costMargins && (
+            <span className="text-muted-foreground/70 w-12 font-medium text-right">{costPct}</span>
+          )}
+        </div>
+        {display.comments && (
+          <button
+            type="button"
+            onClick={onOpenComments}
+            className={`shrink-0 flex items-center gap-0.5 rounded-full border px-1.5 text-[10px] transition-colors hover:opacity-80 ${
+              commentCount > 0
+                ? 'border-orange-400/50 bg-orange-500/15 text-orange-600 dark:text-orange-400'
+                : 'border-border bg-muted/60 text-muted-foreground'
+            }`}
+          >
+            <MessageSquare className="h-2.5 w-2.5" />
+            {commentCount}
+          </button>
+        )}
       </div>
-      {/* Ingredients */}
-      <div className="text-sm text-muted-foreground leading-relaxed">
-        <span className="font-semibold">Ingredients:</span>{' '}
-        {dish.ingredients.length > 0
-          ? (
-            <span className="flex flex-wrap gap-1 mt-0.5">
-              {dish.ingredients.map((ing, i) => (
-                <span key={i} className="rounded border border-border bg-muted/60 px-1.5 py-0.5 text-xs">
-                  {ing}
-                </span>
-              ))}
-            </span>
-          )
-          : '—'}
-      </div>
-      {dish.description?.trim() && (
+      {/* Description — directly below dish name */}
+      {display.description && dish.description?.trim() && (
         <p className="text-sm text-muted-foreground leading-relaxed">
-          <span className="font-semibold">Description:</span>{' '}
           {dish.description}
         </p>
+      )}
+      {/* Key ingredients */}
+      {display.ingredients && (
+        <div className="text-sm text-muted-foreground leading-relaxed">
+          <span className="font-semibold">Key ingredients:</span>{' '}
+          {dish.ingredients.length > 0
+            ? (
+              <span className="flex flex-wrap gap-1 mt-0.5">
+                {dish.ingredients.map((ing, i) => (
+                  <span key={i} className="rounded border border-border bg-muted/60 px-1.5 py-0.5 text-xs">
+                    {ing}
+                  </span>
+                ))}
+              </span>
+            )
+            : '—'}
+        </div>
       )}
     </div>
   );
@@ -145,11 +155,13 @@ function MenuSketchPreview({
   sections,
   comments,
   onOpenComments,
+  display,
 }: {
   name: string;
   sections: SketchSection[];
   comments?: SketchComments;
   onOpenComments?: (dishId: string) => void;
+  display: DisplayOptions;
 }) {
   return (
     <div className="mx-auto max-w-5xl px-6 py-8 space-y-8 text-sm">
@@ -167,16 +179,22 @@ function MenuSketchPreview({
               {section.name || 'Unnamed Section'}
             </div>
 
-            {/* Column headers */}
+            {/* Column headers — mirrors DishPreviewCell row structure */}
             <div className="grid grid-cols-2 divide-x divide-border border-t border-border bg-muted/30">
               {[0, 1].map((col) => (
                 <div key={col} className="flex items-center gap-2 px-4 py-1.5">
                   <span className="flex-1" />
-                  <div className="flex shrink-0 gap-4 text-right text-xs font-semibold text-muted-foreground tabular-nums">
-                    <span className="w-14">Price</span>
-                    <span className="w-14">Cost</span>
-                    <span className="w-12 font-semibold">%</span>
+                  <div className="flex shrink-0 gap-3 text-right text-xs font-semibold text-muted-foreground tabular-nums">
+                    <span className="w-14 text-right">Price</span>
+                    <span className="w-14 text-right">Cost</span>
+                    {display.costMargins && <span className="w-12 text-right">%</span>}
                   </div>
+                  {/* Invisible spacer matching comment badge width */}
+                  {display.comments && (
+                    <span aria-hidden className="invisible shrink-0 flex items-center gap-0.5 rounded-full border px-1.5 text-[10px]">
+                      <MessageSquare className="h-2.5 w-2.5" />0
+                    </span>
+                  )}
                 </div>
               ))}
             </div>
@@ -194,8 +212,8 @@ function MenuSketchPreview({
                 key={pi}
                 className={`grid grid-cols-2 divide-x divide-border ${pi > 0 ? 'border-t border-border' : ''}`}
               >
-                <DishPreviewCell dish={d1} comments={comments} onOpenComments={d1?.id ? () => onOpenComments?.(d1.id!) : undefined} />
-                <DishPreviewCell dish={d2} comments={comments} onOpenComments={d2?.id ? () => onOpenComments?.(d2.id!) : undefined} />
+                <DishPreviewCell dish={d1} comments={comments} onOpenComments={d1?.id ? () => onOpenComments?.(d1.id!) : undefined} display={display} />
+                <DishPreviewCell dish={d2} comments={comments} onOpenComments={d2?.id ? () => onOpenComments?.(d2.id!) : undefined} display={display} />
               </div>
             ))}
           </div>
@@ -213,6 +231,7 @@ function DishCard({
   onRemove,
   commentCount,
   onOpenComments,
+  recipes = [],
 }: {
   id: string;
   dish: SketchDish;
@@ -220,6 +239,7 @@ function DishCard({
   onRemove: () => void;
   commentCount: number;
   onOpenComments: () => void;
+  recipes?: Recipe[];
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
   const style = {
@@ -229,9 +249,10 @@ function DishCard({
   };
 
   const [ingredientsText, setIngredientsText] = useState(dish.ingredients.join(', '));
-  const [descOpen, setDescOpen] = useState(!!dish.description?.trim());
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const ingredientsRef = useRef<HTMLTextAreaElement>(null);
   const descRef = useRef<HTMLTextAreaElement>(null);
+  const nameWrapRef = useRef<HTMLDivElement>(null);
 
   const prevRef = useRef(dish.ingredients);
   useEffect(() => {
@@ -247,8 +268,23 @@ function DishCard({
   }, [dish.ingredients]);
 
   useEffect(() => {
-    if (descOpen) autoResize(descRef.current);
-  }, [descOpen]);
+    autoResize(descRef.current);
+  }, [dish.description]);
+
+  useEffect(() => {
+    if (!showSuggestions) return;
+    const handler = (e: MouseEvent) => {
+      if (nameWrapRef.current && !nameWrapRef.current.contains(e.target as Node)) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [showSuggestions]);
+
+  const recipeSuggestions = dish.name.trim().length > 0
+    ? recipes.filter((r) => r.name.toLowerCase().includes(dish.name.toLowerCase())).slice(0, 5)
+    : [];
 
   const costPct = dish.sales_price > 0
     ? ((dish.cost_price / dish.sales_price) * 100).toFixed(1) + '%'
@@ -275,19 +311,43 @@ function DishCard({
       </button>
 
       <div className="space-y-3 pl-5 pr-6">
-        <div>
+        <div ref={nameWrapRef} className="relative">
           <label className="mb-1 block text-xs font-medium text-muted-foreground">Dish</label>
           <input
             type="text"
             value={dish.name}
-            onChange={(e) => onChange({ name: e.target.value })}
-            placeholder="Dish name"
+            onChange={(e) => { onChange({ name: e.target.value }); setShowSuggestions(true); }}
+            onFocus={() => setShowSuggestions(true)}
+            placeholder="Dish name or search recipes…"
             className="w-full rounded-md border border-border bg-muted px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
           />
+          {showSuggestions && recipeSuggestions.length > 0 && (
+            <div className="absolute left-0 right-0 top-full z-50 mt-1 rounded-md border border-border bg-card shadow-lg py-1 max-h-48 overflow-auto">
+              {recipeSuggestions.map((r) => (
+                <button
+                  key={r.id}
+                  type="button"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => {
+                    onChange({
+                      name: r.name,
+                      description: r.description ?? '',
+                      cost_price: r.cost_price ?? 0,
+                      sales_price: r.selling_price_est ?? 0,
+                    });
+                    setShowSuggestions(false);
+                  }}
+                  className="flex w-full items-center px-3 py-1.5 text-left text-sm text-foreground hover:bg-muted"
+                >
+                  {r.name}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         <div>
-          <label className="mb-1 block text-xs font-medium text-muted-foreground">Ingredients</label>
+          <label className="mb-1 block text-xs font-medium text-muted-foreground">Key ingredients</label>
           <textarea
             ref={ingredientsRef}
             rows={1}
@@ -341,26 +401,17 @@ function DishCard({
         </div>
 
         <div>
-          <button
-            type="button"
-            onClick={() => setDescOpen((v) => !v)}
-            className="mb-1 flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground"
-          >
-            {descOpen ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
-            Description
-          </button>
-          {descOpen && (
-            <textarea
-              ref={descRef}
-              rows={1}
-              value={dish.description ?? ''}
-              onChange={(e) => onChange({ description: e.target.value })}
-              onInput={(e) => autoResize(e.currentTarget)}
-              onFocus={(e) => autoResize(e.currentTarget)}
-              placeholder="Optional dish description…"
-              className="w-full rounded-md border border-border bg-muted px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring overflow-hidden"
-            />
-          )}
+          <label className="mb-1 block text-xs font-medium text-muted-foreground">Description</label>
+          <textarea
+            ref={descRef}
+            rows={1}
+            value={dish.description ?? ''}
+            onChange={(e) => onChange({ description: e.target.value })}
+            onInput={(e) => autoResize(e.currentTarget)}
+            onFocus={(e) => autoResize(e.currentTarget)}
+            placeholder="Optional dish description…"
+            className="w-full rounded-md border border-border bg-muted px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring overflow-hidden"
+          />
         </div>
 
         <div className="flex justify-end pt-1">
@@ -388,6 +439,7 @@ function DishRow({
   autoFocus,
   commentCount,
   onOpenComments,
+  recipes = [],
 }: {
   id: string;
   dish: SketchDish;
@@ -397,6 +449,7 @@ function DishRow({
   autoFocus?: boolean;
   commentCount: number;
   onOpenComments: () => void;
+  recipes?: Recipe[];
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
   const style = {
@@ -406,8 +459,9 @@ function DishRow({
   };
 
   const nameRef = useRef<HTMLInputElement>(null);
+  const nameWrapRef = useRef<HTMLDivElement>(null);
   const [ingredientsText, setIngredientsText] = useState(dish.ingredients.join(', '));
-  const [descOpen, setDescOpen] = useState(!!dish.description?.trim());
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const ingredientsRef = useRef<HTMLTextAreaElement>(null);
   const descRef = useRef<HTMLTextAreaElement>(null);
 
@@ -429,8 +483,23 @@ function DishRow({
   }, [dish.ingredients]);
 
   useEffect(() => {
-    if (descOpen) autoResize(descRef.current);
-  }, [descOpen]);
+    autoResize(descRef.current);
+  }, [dish.description]);
+
+  useEffect(() => {
+    if (!showSuggestions) return;
+    const handler = (e: MouseEvent) => {
+      if (nameWrapRef.current && !nameWrapRef.current.contains(e.target as Node)) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [showSuggestions]);
+
+  const recipeSuggestions = dish.name.trim().length > 0
+    ? recipes.filter((r) => r.name.toLowerCase().includes(dish.name.toLowerCase())).slice(0, 5)
+    : [];
 
   const costPct = dish.sales_price > 0
     ? ((dish.cost_price / dish.sales_price) * 100).toFixed(1) + '%'
@@ -452,15 +521,41 @@ function DishRow({
           <GripVertical className="h-4 w-4" />
         </div>
         <div className="grid grid-cols-[1fr_1fr_80px_80px_56px] divide-x divide-border">
-          <input
-            ref={nameRef}
-            type="text"
-            placeholder="Dish name"
-            value={dish.name}
-            onChange={(e) => onChange({ name: e.target.value })}
-            onKeyDown={(e) => e.key === 'Enter' && onEnter()}
-            className="px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground bg-card focus:outline-none focus:ring-2 focus:ring-inset focus:ring-ring/10"
-          />
+          <div ref={nameWrapRef} className="relative">
+            <input
+              ref={nameRef}
+              type="text"
+              placeholder="Dish name or search recipes…"
+              value={dish.name}
+              onChange={(e) => { onChange({ name: e.target.value }); setShowSuggestions(true); }}
+              onFocus={() => setShowSuggestions(true)}
+              onKeyDown={(e) => e.key === 'Enter' && onEnter()}
+              className="w-full px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground bg-card focus:outline-none focus:ring-2 focus:ring-inset focus:ring-ring/10"
+            />
+            {showSuggestions && recipeSuggestions.length > 0 && (
+              <div className="absolute left-0 top-full z-50 mt-0.5 w-56 rounded-md border border-border bg-card shadow-lg py-1 max-h-48 overflow-auto">
+                {recipeSuggestions.map((r) => (
+                  <button
+                    key={r.id}
+                    type="button"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => {
+                      onChange({
+                        name: r.name,
+                        description: r.description ?? '',
+                        cost_price: r.cost_price ?? 0,
+                        sales_price: r.selling_price_est ?? 0,
+                      });
+                      setShowSuggestions(false);
+                    }}
+                    className="flex w-full items-center px-3 py-1.5 text-left text-sm text-foreground hover:bg-muted"
+                  >
+                    {r.name}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
           <textarea
             ref={ingredientsRef}
             rows={1}
@@ -507,21 +602,13 @@ function DishRow({
           <X className="h-3.5 w-3.5" />
         </button>
       </div>
-      {/* Description toggle + Comments button + sub-row */}
+      {/* Description + Comments */}
       <div className="border-t border-border">
-        <div className="flex items-center">
-          <button
-            type="button"
-            onClick={() => setDescOpen((v) => !v)}
-            className="flex flex-1 items-center gap-1 px-3 py-1 text-left text-xs text-muted-foreground hover:text-foreground"
-          >
-            {descOpen ? <ChevronUp className="h-3 w-3 shrink-0" /> : <ChevronDown className="h-3 w-3 shrink-0" />}
-            <span>Description</span>
-          </button>
+        <div className="flex items-center justify-end px-3 py-1">
           <button
             type="button"
             onClick={onOpenComments}
-            className={`flex items-center gap-1 border-l border-border px-3 py-1 text-xs transition-colors ${commentCount > 0 ? 'text-orange-600 dark:text-orange-400 hover:text-orange-500' : 'text-muted-foreground hover:text-foreground'}`}
+            className={`flex items-center gap-1 text-xs transition-colors ${commentCount > 0 ? 'text-orange-600 dark:text-orange-400 hover:text-orange-500' : 'text-muted-foreground hover:text-foreground'}`}
           >
             <MessageSquare className="h-3 w-3" />
             {commentCount > 0 && (
@@ -531,18 +618,16 @@ function DishRow({
             )}
           </button>
         </div>
-        {descOpen && (
-          <textarea
-            ref={descRef}
-            rows={1}
-            placeholder="Description (optional)"
-            value={dish.description ?? ''}
-            onChange={(e) => onChange({ description: e.target.value })}
-            onInput={(e) => autoResize(e.currentTarget)}
-            onFocus={(e) => autoResize(e.currentTarget)}
-            className="w-full overflow-hidden border-t border-border px-3 py-1.5 text-xs text-muted-foreground placeholder:text-muted-foreground bg-card focus:outline-none focus:ring-2 focus:ring-inset focus:ring-ring/10"
-          />
-        )}
+        <textarea
+          ref={descRef}
+          rows={1}
+          placeholder="Description (optional)"
+          value={dish.description ?? ''}
+          onChange={(e) => onChange({ description: e.target.value })}
+          onInput={(e) => autoResize(e.currentTarget)}
+          onFocus={(e) => autoResize(e.currentTarget)}
+          className="w-full overflow-hidden border-t border-border px-3 py-1.5 text-xs text-muted-foreground placeholder:text-muted-foreground bg-card focus:outline-none focus:ring-2 focus:ring-inset focus:ring-ring/10"
+        />
       </div>
     </div>
   );
@@ -551,7 +636,6 @@ function DishRow({
 // ─── Section card ──────────────────────────────────────────────────────────────
 function SectionCard({
   id,
-  sectionIndex,
   section,
   viewMode,
   onChange,
@@ -561,9 +645,9 @@ function SectionCard({
   autoFocusName,
   comments,
   onOpenComments,
+  recipes = [],
 }: {
   id: string;
-  sectionIndex: number;
   section: SketchSection;
   viewMode: 'list' | 'card';
   onChange: (patch: Partial<SketchSection>) => void;
@@ -573,6 +657,7 @@ function SectionCard({
   autoFocusName?: boolean;
   comments: SketchComments;
   onOpenComments: (dishId: string) => void;
+  recipes?: Recipe[];
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
   const style = {
@@ -584,12 +669,28 @@ function SectionCard({
   const nameRef = useRef<HTMLInputElement>(null);
   const [collapsed, setCollapsed] = useState(false);
   const [newDishName, setNewDishName] = useState('');
+  const [showNewSuggestions, setShowNewSuggestions] = useState(false);
+  const newDishWrapRef = useRef<HTMLDivElement>(null);
+  const newDishSuggestions = newDishName.trim().length > 0
+    ? recipes.filter((r) => r.name.toLowerCase().includes(newDishName.toLowerCase())).slice(0, 5)
+    : [];
   const [confirmRemoveSection, setConfirmRemoveSection] = useState(false);
   const [confirmRemoveDishIdx, setConfirmRemoveDishIdx] = useState<number | null>(null);
 
   useEffect(() => {
     if (autoFocusName) nameRef.current?.focus();
   }, [autoFocusName]);
+
+  useEffect(() => {
+    if (!showNewSuggestions) return;
+    const handler = (e: MouseEvent) => {
+      if (newDishWrapRef.current && !newDishWrapRef.current.contains(e.target as Node)) {
+        setShowNewSuggestions(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [showNewSuggestions]);
 
   const updateDish = (i: number, patch: Partial<SketchDish>) => {
     const dishes = section.dishes.map((d, idx) => (idx === i ? { ...d, ...patch } : d));
@@ -600,6 +701,24 @@ function SectionCard({
     onChange({ dishes: [...section.dishes, emptyDish(name)] });
   };
 
+  const addDishFromRecipe = (recipe: Recipe) => {
+    onChange({
+      dishes: [
+        ...section.dishes,
+        {
+          id: crypto.randomUUID(),
+          name: recipe.name,
+          ingredients: [],
+          sales_price: recipe.selling_price_est ?? 0,
+          cost_price: recipe.cost_price ?? 0,
+          description: recipe.description ?? '',
+        },
+      ],
+    });
+    setNewDishName('');
+    setShowNewSuggestions(false);
+  };
+
   const removeDish = (i: number) => {
     onChange({ dishes: section.dishes.filter((_, idx) => idx !== i) });
   };
@@ -608,6 +727,7 @@ function SectionCard({
     if (e.key === 'Enter' && newDishName.trim()) {
       addDish(newDishName.trim());
       setNewDishName('');
+      setShowNewSuggestions(false);
     }
   };
 
@@ -690,7 +810,7 @@ function SectionCard({
                 <div className="grid grid-cols-[32px_1fr_1fr_80px_80px_56px_32px] px-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
                   <span />
                   <span className="px-2">Dish</span>
-                  <span className="px-2">Ingredients</span>
+                  <span className="px-2">Key ingredients</span>
                   <span className="px-2">Sale</span>
                   <span className="px-2">Cost</span>
                   <span className="px-2">%</span>
@@ -709,6 +829,7 @@ function SectionCard({
                     autoFocus={false}
                     commentCount={dish.id ? (comments[dish.id] ?? []).filter((c) => !c.resolved).length : 0}
                     onOpenComments={() => dish.id && onOpenComments(dish.id)}
+                    recipes={recipes}
                   />
                 ))}
               </SortableContext>
@@ -725,6 +846,7 @@ function SectionCard({
                     onRemove={() => setConfirmRemoveDishIdx(i)}
                     commentCount={dish.id ? (comments[dish.id] ?? []).filter((c) => !c.resolved).length : 0}
                     onOpenComments={() => dish.id && onOpenComments(dish.id)}
+                    recipes={recipes}
                   />
                 ))}
               </div>
@@ -732,21 +854,52 @@ function SectionCard({
           )}
 
           {/* Quick-add dish input */}
-          <div className="relative">
+          <div ref={newDishWrapRef} className="relative">
             <input
               type="text"
-              placeholder="Type a dish name and press Enter to add…"
+              placeholder="Type a dish name or search recipes…"
               value={newDishName}
-              onChange={(e) => setNewDishName(e.target.value)}
+              onChange={(e) => { setNewDishName(e.target.value); setShowNewSuggestions(true); }}
+              onFocus={() => setShowNewSuggestions(true)}
               onKeyDown={handleNewDishKeyDown}
               className="w-full rounded-lg border border-dashed border-border bg-card px-3 py-2 pr-9 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-0"
             />
+            {showNewSuggestions && (newDishSuggestions.length > 0 || newDishName.trim().length > 0) && (
+              <div className="absolute left-0 right-0 top-full z-50 mt-0.5 rounded-md border border-border bg-card shadow-lg py-1 max-h-48 overflow-auto">
+                {newDishSuggestions.map((r) => (
+                  <button
+                    key={r.id}
+                    type="button"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => addDishFromRecipe(r)}
+                    className="flex w-full items-center px-3 py-1.5 text-left text-sm text-foreground hover:bg-muted"
+                  >
+                    {r.name}
+                  </button>
+                ))}
+                {newDishName.trim().length > 0 && (
+                  <>
+                    {newDishSuggestions.length > 0 && <div className="my-1 border-t border-border" />}
+                    <button
+                      type="button"
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => { addDish(newDishName.trim()); setNewDishName(''); setShowNewSuggestions(false); }}
+                      className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
+                    >
+                      <span className="text-base leading-none">+</span>
+                      Add &ldquo;{newDishName.trim()}&rdquo; as new dish
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
             <button
               type="button"
               onClick={() => {
                 if (newDishName.trim()) {
                   addDish(newDishName.trim());
                   setNewDishName('');
+                  setShowNewSuggestions(false);
                 }
               }}
               className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-muted-foreground hover:text-foreground"
@@ -769,6 +922,8 @@ export default function MenuSketchEditorPage() {
   const { data: sketch, isLoading } = useMenuSketch(sketchId);
   const updateMutation = useUpdateMenuSketch();
   const forkMutation = useForkMenuSketch();
+  const { data: recipesData } = useRecipes();
+  const allRecipes: Recipe[] = recipesData?.items ?? [];
 
   const [name, setName] = useState('');
   const [sections, setSections] = useState<SketchSection[]>([]);
@@ -776,12 +931,32 @@ export default function MenuSketchEditorPage() {
   const [newSectionName, setNewSectionName] = useState('');
   const [newSectionIndex, setNewSectionIndex] = useState<number | null>(null);
   const [viewMode, setViewMode] = useState<'list' | 'card'>('list');
-  const [previewMode, setPreviewMode] = useState(true);
+  const [previewMode, setPreviewMode] = useState(false);
   const [showComments, setShowComments] = useState(true);
   const [comments, setComments] = useState<SketchComments>({});
   const [activeDishId, setActiveDishId] = useState<string | null>(null);
   const [notes, setNotes] = useState<string | null>(null);
   const [notesOpen, setNotesOpen] = useState(true);
+  const [isDirty, setIsDirty] = useState(false);
+  const [displayOptions, setDisplayOptions] = useState<DisplayOptions>({
+    description: true,
+    ingredients: true,
+    costMargins: true,
+    comments: true,
+  });
+  const [showDisplayMenu, setShowDisplayMenu] = useState(false);
+  const displayMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!showDisplayMenu) return;
+    const handler = (e: MouseEvent) => {
+      if (displayMenuRef.current && !displayMenuRef.current.contains(e.target as Node)) {
+        setShowDisplayMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [showDisplayMenu]);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -817,7 +992,7 @@ export default function MenuSketchEditorPage() {
   const handleSave = () => {
     updateMutation.mutate(
       { id: sketchId, data: { name, sections } },
-      { onSuccess: () => toast.success('Menu saved') },
+      { onSuccess: () => { toast.success('Menu saved'); setIsDirty(false); } },
     );
   };
 
@@ -886,11 +1061,13 @@ export default function MenuSketchEditorPage() {
         return next;
       });
       setNewSectionName('');
+      setIsDirty(true);
     }
   };
 
   const updateSection = (i: number, patch: Partial<SketchSection>) => {
     setSections((prev) => prev.map((s, idx) => (idx === i ? { ...s, ...patch } : s)));
+    setIsDirty(true);
   };
 
   const removeSection = (i: number) => {
@@ -940,7 +1117,7 @@ export default function MenuSketchEditorPage() {
       <div className="flex shrink-0 items-center gap-3 border-b border-border bg-card px-6 py-3">
         {/* Back */}
         <button
-          onClick={() => router.push('/menu-sketch')}
+          onClick={() => router.push('/menu')}
           className="flex items-center gap-1 rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
         >
           <ArrowLeft className="h-4 w-4" />
@@ -954,7 +1131,7 @@ export default function MenuSketchEditorPage() {
             autoFocus
             className="rounded border border-border bg-card px-2 py-1 text-sm font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={(e) => { setName(e.target.value); setIsDirty(true); }}
             onBlur={() => setEditingName(false)}
             onKeyDown={(e) => e.key === 'Enter' && setEditingName(false)}
           />
@@ -970,6 +1147,12 @@ export default function MenuSketchEditorPage() {
         <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
           v{sketch.version}
         </span>
+
+        {isDirty && (
+          <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+            Unsaved changes
+          </span>
+        )}
 
         <div className="flex-1" />
 
@@ -996,6 +1179,43 @@ export default function MenuSketchEditorPage() {
             >
               <LayoutGrid className="h-3.5 w-3.5" />
             </button>
+          </div>
+        )}
+
+        {/* Display options — only in preview mode */}
+        {previewMode && (
+          <div className="relative" ref={displayMenuRef}>
+            <button
+              onClick={() => setShowDisplayMenu((v) => !v)}
+              className={`flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-xs font-medium transition-colors hover:bg-muted ${showDisplayMenu ? 'bg-muted text-foreground' : 'text-muted-foreground'}`}
+            >
+              <SlidersHorizontal className="h-3.5 w-3.5" />
+              Display
+            </button>
+            {showDisplayMenu && (
+              <div className="absolute right-0 top-full z-50 mt-1 w-44 rounded-lg border border-border bg-card shadow-lg py-1">
+                {(
+                  [
+                    { key: 'description', label: 'Description' },
+                    { key: 'ingredients', label: 'Key ingredients' },
+                    { key: 'costMargins', label: 'Cost margins' },
+                    { key: 'comments', label: 'Comments' },
+                  ] as const
+                ).map(({ key, label }) => (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setDisplayOptions((prev) => ({ ...prev, [key]: !prev[key] }))}
+                    className="flex w-full items-center gap-2 px-3 py-1.5 text-xs text-foreground hover:bg-muted"
+                  >
+                    <span className={`flex h-3.5 w-3.5 items-center justify-center rounded border ${displayOptions[key] ? 'border-primary bg-primary text-primary-foreground' : 'border-border'}`}>
+                      {displayOptions[key] && <Check className="h-2.5 w-2.5" />}
+                    </span>
+                    {label}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
@@ -1046,7 +1266,7 @@ export default function MenuSketchEditorPage() {
       <div className="flex flex-1 overflow-hidden">
         <div className="flex-1 overflow-auto min-w-0">
         {previewMode ? (
-          <MenuSketchPreview name={name} sections={sections} comments={comments} onOpenComments={setActiveDishId} />
+          <MenuSketchPreview name={name} sections={sections} comments={comments} onOpenComments={setActiveDishId} display={displayOptions} />
         ) : (
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             <div className="mx-auto max-w-4xl px-6 py-8 space-y-4">
@@ -1059,7 +1279,6 @@ export default function MenuSketchEditorPage() {
                   <SectionCard
                     key={section.id!}
                     id={section.id!}
-                    sectionIndex={i}
                     section={section}
                     viewMode={viewMode}
                     onChange={(patch) => updateSection(i, patch)}
@@ -1074,6 +1293,7 @@ export default function MenuSketchEditorPage() {
                     autoFocusName={newSectionIndex === i}
                     comments={comments}
                     onOpenComments={setActiveDishId}
+                    recipes={allRecipes}
                   />
                 ))}
               </SortableContext>

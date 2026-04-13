@@ -3,7 +3,6 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   async redirects() {
     return [
-      { source: '/menu',         destination: '/recipes',     permanent: false },
       { source: '/suppliers',    destination: '/ingredients', permanent: false },
       { source: '/tastings',     destination: '/rnd',         permanent: false },
       { source: '/design-system',destination: '/settings',    permanent: false },
