@@ -875,6 +875,7 @@ export interface SketchDish {
 }
 
 export interface SketchSection {
+  id?: string;          // stable UUID — assigned on creation
   name: string;
   dishes: SketchDish[];
 }

@@ -5,6 +5,7 @@ from sqlmodel import Session
 
 from app.api.deps import get_session, get_current_user
 from app.models import (
+    TastingSession,
     TastingSessionRead,
     TastingSessionCreate,
     TastingSessionUpdate,
@@ -42,7 +43,7 @@ def _check_session_access(
 
 
 def _check_session_access_raw(
-    tasting_session, current_user: User, service: TastingSessionService
+    tasting_session: TastingSession, current_user: User, service: TastingSessionService
 ) -> None:
     """Lightweight access check using raw TastingSession (no full participant load)."""
     if current_user.user_type == UserType.ADMIN:
@@ -97,7 +98,8 @@ def list_tasting_sessions(
     from app.models.pagination import PaginatedResponse
     service = TastingSessionService(session)
     offset = (page_number - 1) * page_size
-    items, total = service.list_paginated_with_count(offset=offset, limit=page_size, search=search)
+    user_id = None if current_user.user_type == UserType.ADMIN else current_user.id
+    items, total = service.list_paginated_with_count(offset=offset, limit=page_size, search=search, user_id=user_id)
     return PaginatedResponse.create(items=items, total_count=total, page_number=page_number, page_size=page_size)
 
 

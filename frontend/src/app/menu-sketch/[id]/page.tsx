@@ -62,7 +62,7 @@ function emptyDish(name = ''): SketchDish {
 }
 
 function emptySection(name = ''): SketchSection {
-  return { name, dishes: [] };
+  return { id: crypto.randomUUID(), name, dishes: [] };
 }
 
 // ─── Preview components ───────────────────────────────────────────────────────
@@ -611,7 +611,7 @@ function SectionCard({
     }
   };
 
-  const dishIds = section.dishes.map((_, di) => `dish-${sectionIndex}-${di}`);
+  const dishIds = section.dishes.map((d) => d.id!);
 
   return (
     <div
@@ -700,8 +700,8 @@ function SectionCard({
               <SortableContext items={dishIds} strategy={verticalListSortingStrategy}>
                 {section.dishes.map((dish, i) => (
                   <DishRow
-                    key={i}
-                    id={`dish-${sectionIndex}-${i}`}
+                    key={dish.id!}
+                    id={dish.id!}
                     dish={dish}
                     onChange={(patch) => updateDish(i, patch)}
                     onRemove={() => setConfirmRemoveDishIdx(i)}
@@ -718,8 +718,8 @@ function SectionCard({
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 {section.dishes.map((dish, i) => (
                   <DishCard
-                    key={i}
-                    id={`dish-${sectionIndex}-${i}`}
+                    key={dish.id!}
+                    id={dish.id!}
                     dish={dish}
                     onChange={(patch) => updateDish(i, patch)}
                     onRemove={() => setConfirmRemoveDishIdx(i)}
@@ -796,12 +796,13 @@ export default function MenuSketchEditorPage() {
       setComments(sketch.comments ?? {});
       setNotes(sketch.notes ?? null);
 
-      // Lazily assign stable UUIDs to any dishes that lack one
+      // Lazily assign stable UUIDs to any sections or dishes that lack one
       const hadMissingIds = (sketch.sections ?? []).some((s) =>
-        s.dishes.some((d) => !d.id),
+        !s.id || s.dishes.some((d) => !d.id),
       );
       const sectionsWithIds = (sketch.sections ?? []).map((s) => ({
         ...s,
+        id: s.id ?? crypto.randomUUID(),
         dishes: s.dishes.map((d) => ({ ...d, id: d.id ?? crypto.randomUUID() })),
       }));
       setSections(sectionsWithIds);
@@ -849,19 +850,27 @@ export default function MenuSketchEditorPage() {
     const activeId = String(active.id);
     const overId = String(over.id);
 
-    if (activeId.startsWith('section-') && overId.startsWith('section-')) {
-      const fromIdx = parseInt(activeId.split('-')[1]);
-      const toIdx = parseInt(overId.split('-')[1]);
-      setSections((prev) => arrayMove(prev, fromIdx, toIdx));
-    } else if (activeId.startsWith('dish-') && overId.startsWith('dish-')) {
-      const [, activeSec, activeDish] = activeId.split('-').map(Number);
-      const [, overSec, overDish] = overId.split('-').map(Number);
-      if (activeSec === overSec) {
+    const fromSectionIdx = sections.findIndex((s) => s.id === activeId);
+    const toSectionIdx = sections.findIndex((s) => s.id === overId);
+
+    if (fromSectionIdx >= 0 && toSectionIdx >= 0) {
+      // Section drag
+      setSections((prev) => arrayMove(prev, fromSectionIdx, toSectionIdx));
+    } else {
+      // Dish drag — look up by dish UUID across all sections
+      let activeSec = -1, activeDishIdx = -1, overSec = -1, overDishIdx = -1;
+      for (let si = 0; si < sections.length; si++) {
+        for (let di = 0; di < sections[si].dishes.length; di++) {
+          if (sections[si].dishes[di].id === activeId) { activeSec = si; activeDishIdx = di; }
+          if (sections[si].dishes[di].id === overId) { overSec = si; overDishIdx = di; }
+        }
+      }
+      if (activeSec >= 0 && activeSec === overSec) {
         setSections((prev) => {
           const next = [...prev];
           next[activeSec] = {
             ...next[activeSec],
-            dishes: arrayMove(next[activeSec].dishes, activeDish, overDish),
+            dishes: arrayMove(next[activeSec].dishes, activeDishIdx, overDishIdx),
           };
           return next;
         });
@@ -904,6 +913,10 @@ export default function MenuSketchEditorPage() {
       return next;
     });
   };
+
+  const activeDish = activeDishId
+    ? sections.flatMap((s) => s.dishes).find((d) => d.id === activeDishId)
+    : undefined;
 
   if (isLoading) {
     return (
@@ -1039,13 +1052,13 @@ export default function MenuSketchEditorPage() {
             <div className="mx-auto max-w-4xl px-6 py-8 space-y-4">
               {/* Sections */}
               <SortableContext
-                items={sections.map((_, i) => `section-${i}`)}
+                items={sections.map((s) => s.id!)}
                 strategy={verticalListSortingStrategy}
               >
                 {sections.map((section, i) => (
                   <SectionCard
-                    key={i}
-                    id={`section-${i}`}
+                    key={section.id!}
+                    id={section.id!}
                     sectionIndex={i}
                     section={section}
                     viewMode={viewMode}
@@ -1127,18 +1140,14 @@ export default function MenuSketchEditorPage() {
       </div>
 
       {/* Dish comments modal — rendered outside scroll container */}
-      {activeDishId && (() => {
-        const activeDish = sections.flatMap((s) => s.dishes).find((d) => d.id === activeDishId);
-        if (!activeDish) return null;
-        return (
-          <DishCommentsModal
-            dishName={activeDish.name}
-            dishComments={comments[activeDishId] ?? []}
-            onClose={() => setActiveDishId(null)}
-            onChange={(updated) => handleDishCommentChange(activeDishId, updated)}
-          />
-        );
-      })()}
+      {activeDishId && activeDish && (
+        <DishCommentsModal
+          dishName={activeDish.name}
+          dishComments={comments[activeDishId] ?? []}
+          onClose={() => setActiveDishId(null)}
+          onChange={(updated) => handleDishCommentChange(activeDishId, updated)}
+        />
+      )}
     </div>
   );
 }

@@ -1185,3 +1185,32 @@ def test_admin_nonparticipant_cannot_add_recipe_note(
     )
     assert response.status_code == 403
     assert "participants" in response.json()["detail"].lower()
+
+
+def test_nonadmin_list_only_sees_own_and_invited_sessions(
+    session: Session, normal_user_client: TestClient
+):
+    """Non-admin GET /tasting-sessions only returns sessions they created or are a participant of."""
+    from app.models import TastingSession, TastingUser
+
+    own = TastingSession(name="Mine", date=datetime(2025, 1, 1), creator_id="test-normal-user")
+    as_participant = TastingSession(name="Invited", date=datetime(2025, 1, 2), creator_id="other-user")
+    unrelated = TastingSession(name="Not Mine", date=datetime(2025, 1, 3), creator_id="other-user")
+
+    session.add_all([own, as_participant, unrelated])
+    session.commit()
+    for obj in [own, as_participant, unrelated]:
+        session.refresh(obj)
+
+    tu = TastingUser(tasting_session_id=as_participant.id, user_id="test-normal-user")
+    session.add(tu)
+    session.commit()
+
+    response = normal_user_client.get("/api/v1/tasting-sessions")
+    assert response.status_code == 200
+    data = response.json()
+    names = [s["name"] for s in data["items"]]
+    assert "Mine" in names
+    assert "Invited" in names
+    assert "Not Mine" not in names
+    assert data["total_count"] == 2

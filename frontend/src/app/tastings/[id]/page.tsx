@@ -98,13 +98,10 @@ function SessionRecipesSection({
 
   const linkedRecipeIds = new Set(sessionRecipes.map((sr) => sr.recipe_id));
 
-  // Pre-select already-linked recipes when the panel opens
-  useEffect(() => {
-    if (showAddRecipe) {
-      setSelectedRecipeIds(new Set(linkedRecipeIds));
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showAddRecipe]);
+  const handleOpenAddRecipe = () => {
+    setSelectedRecipeIds(new Set(linkedRecipeIds));
+    setShowAddRecipe(true);
+  };
 
   const toAdd = Array.from(selectedRecipeIds).filter((id) => !linkedRecipeIds.has(id));
   const toRemove = Array.from(linkedRecipeIds).filter((id) => !selectedRecipeIds.has(id));
@@ -161,7 +158,7 @@ function SessionRecipesSection({
           <Button
             size="sm"
             className="shrink-0"
-            onClick={() => setShowAddRecipe(true)}
+            onClick={handleOpenAddRecipe}
           >
             <Plus className="h-4 w-4 mr-1" />
             <span className="hidden sm:inline">Add Recipes</span>
@@ -599,11 +596,17 @@ export default function TastingSessionDetailPage() {
     }
   };
 
-  const handleBatchRemoveRecipes = (recipeIds: number[]) => {
+  const handleBatchRemoveRecipes = async (recipeIds: number[]) => {
     if (!sessionId) return;
-    recipeIds.forEach((recipeId) => {
-      removeRecipeFromSession.mutate({ sessionId, recipeId });
-    });
+    try {
+      await Promise.all(
+        recipeIds.map((recipeId) =>
+          removeRecipeFromSession.mutateAsync({ sessionId, recipeId }),
+        ),
+      );
+    } catch (error) {
+      console.error('Failed to remove recipes from session:', error);
+    }
   };
 
 

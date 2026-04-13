@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
+from sqlalchemy import or_
 from sqlmodel import Session, select
 
 from app.models import (
@@ -140,14 +141,24 @@ class TastingSessionService:
             for s in sessions
         ]
 
-    def _build_list_query(self, search=None):
+    def _build_list_query(self, search=None, user_id: str | None = None):
         statement = select(TastingSession)
         if search:
             statement = statement.where(TastingSession.name.ilike(f"%{search}%"))
+        if user_id is not None:
+            participant_subquery = select(TastingUser.tasting_session_id).where(
+                TastingUser.user_id == user_id
+            )
+            statement = statement.where(
+                or_(
+                    TastingSession.creator_id == user_id,
+                    TastingSession.id.in_(participant_subquery),
+                )
+            )
         return statement
 
-    def list_paginated(self, offset: int, limit: int, search=None) -> list[TastingSessionRead]:
-        statement = self._build_list_query(search=search)
+    def list_paginated(self, offset: int, limit: int, search=None, user_id: str | None = None) -> list[TastingSessionRead]:
+        statement = self._build_list_query(search=search, user_id=user_id)
         statement = statement.order_by(TastingSession.date.desc(), TastingSession.id.desc())
         statement = statement.offset(offset).limit(limit)
         sessions = list(self.session.exec(statement).all())
@@ -155,16 +166,16 @@ class TastingSessionService:
         participants_map = self._load_participants_batch(session_ids)
         return [self._build_read_with_participants(s, participants_map.get(s.id, [])) for s in sessions]
 
-    def count(self, search=None) -> int:
+    def count(self, search=None, user_id: str | None = None) -> int:
         from sqlalchemy import func
-        statement = self._build_list_query(search=search)
+        statement = self._build_list_query(search=search, user_id=user_id)
         count_stmt = select(func.count()).select_from(statement.subquery())
         return self.session.exec(count_stmt).one()
 
-    def list_paginated_with_count(self, offset: int, limit: int, search=None) -> tuple[list[TastingSessionRead], int]:
+    def list_paginated_with_count(self, offset: int, limit: int, search=None, user_id: str | None = None) -> tuple[list[TastingSessionRead], int]:
         """Return paginated items and total count, reusing the same base filter."""
         from sqlalchemy import func
-        base = self._build_list_query(search=search)
+        base = self._build_list_query(search=search, user_id=user_id)
         total = self.session.exec(select(func.count()).select_from(base.subquery())).one()
         stmt = base.order_by(TastingSession.date.desc(), TastingSession.id.desc()).offset(offset).limit(limit)
         sessions = list(self.session.exec(stmt).all())
@@ -204,7 +215,7 @@ class TastingSessionService:
         for key, value in update_data.items():
             setattr(tasting_session, key, value)
 
-        tasting_session.updated_at = datetime.utcnow()
+        tasting_session.updated_at = datetime.now(timezone.utc)
         self.session.add(tasting_session)
 
         # Replace participants if explicitly provided in the payload

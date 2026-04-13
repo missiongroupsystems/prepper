@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { useMenuSketches, useCreateMenuSketch, useDeleteMenuSketch } from '@/lib/hooks';
 import { formatDistanceToNow } from 'date-fns';
 import { Plus, FileText, Trash2 } from 'lucide-react';
@@ -62,7 +63,7 @@ export default function MenuSketchListPage() {
         ) : (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {sketches.map((sketch) => (
-              <a
+              <Link
                 key={sketch.id}
                 href={`/menu-sketch/${sketch.id}`}
                 className="flex flex-col rounded-xl border border-border bg-card p-5 shadow-sm transition-all hover:shadow-md"
@@ -101,7 +102,7 @@ export default function MenuSketchListPage() {
                     )}
                   </p>
                 </div>
-              </a>
+              </Link>
             ))}
           </div>
         )}
