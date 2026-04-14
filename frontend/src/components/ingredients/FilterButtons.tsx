@@ -25,6 +25,7 @@ interface FilterButtonsProps {
   allergens: Allergen[] | undefined;
   selectedAllergens: number[];
   onAllergenChange: (allergenIds: number[]) => void;
+  hasSearch?: boolean;
 }
 
 export function FilterButtons({
@@ -41,6 +42,7 @@ export function FilterButtons({
   allergens,
   selectedAllergens,
   onAllergenChange,
+  hasSearch = false,
 }: FilterButtonsProps) {
   const toggleCategory = (categoryId: number) => {
     if (selectedCategories.includes(categoryId)) {
@@ -83,7 +85,7 @@ export function FilterButtons({
       {activeCategories.length > 0 && (
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mr-1">
-            Category:
+            {hasSearch ? 'Matching tags:' : 'Category:'}
           </span>
           {activeCategories.map((category) => (
             <button

@@ -147,18 +147,16 @@ function IngredientsListTab() {
   const ingredients = data?.items ?? [];
   const { data: categories } = useCategories();
   const { data: allergens } = useAllergens();
-  const { data: searchCatData } = useCategoriesPaginated(
-    debouncedSearch ? { search: debouncedSearch, page_size: 10, active_only: true } : undefined
-  );
-  const matchingCategories = debouncedSearch ? (searchCatData?.items ?? []) : [];
 
   // Paginated categories for filter buttons (load more / append)
   const [filterCatPage, setFilterCatPage] = useState(1);
   const [filterCategories, setFilterCategories] = useState<Category[]>([]);
+  useEffect(() => setFilterCatPage(1), [debouncedSearch]);
   const { data: filterCatData, isFetching: filterCatFetching } = useCategoriesPaginated({
     page_size: 10,
     page_number: filterCatPage,
     active_only: true,
+    search: debouncedSearch || undefined,
   });
   useEffect(() => {
     if (filterCatData?.items && !filterCatFetching) {
@@ -297,37 +295,9 @@ function IngredientsListTab() {
             allergens={allergens}
             selectedAllergens={selectedAllergens}
             onAllergenChange={setSelectedAllergens}
+            hasSearch={!!debouncedSearch}
           />
         </div>
-
-        {/* Matching Tags */}
-        {matchingCategories.length > 0 && (
-          <div className="mb-6 flex flex-wrap items-center gap-2">
-            <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mr-1">
-              Matching tags:
-            </span>
-            {matchingCategories.map((cat) => (
-              <button
-                key={cat.id}
-                onClick={() =>
-                  setSelectedCategories(
-                    selectedCategories.includes(cat.id)
-                      ? selectedCategories.filter((id) => id !== cat.id)
-                      : [...selectedCategories, cat.id]
-                  )
-                }
-                className={cn(
-                  'px-3 py-1 text-xs font-medium rounded-full transition-colors',
-                  selectedCategories.includes(cat.id)
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
-                )}
-              >
-                {cat.name}
-              </button>
-            ))}
-          </div>
-        )}
 
         {/* Loading State */}
         {isLoading && (
