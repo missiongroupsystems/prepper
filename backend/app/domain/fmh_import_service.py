@@ -37,7 +37,9 @@ class FMHImportResult(SQLModel):
     outlets_created: int = 0
     categories_created: int = 0
     ingredients_created: int = 0
+    ingredients_updated: int = 0
     supplier_ingredients_created: int = 0
+    supplier_ingredients_updated: int = 0
     outlet_supplier_ingredients_created: int = 0
     warnings: list[str] = []
 
@@ -319,7 +321,31 @@ def import_ingredients(
         result.categories_created = len(new_cats)
 
     # 7. Upsert ingredients — bulk pre-load, then add_all + single flush
-    # Deduplicate by name: multiple product_codes can share one ingredient name.
+    # Resolution priority: SKU (via existing SupplierIngredient) > name > create new.
+    # SKU-first handles FMH renames: if a product_code already has a SupplierIngredient
+    # we follow it to the linked Ingredient and update its name instead of creating a duplicate.
+
+    # Pre-load existing SupplierIngredients (needed for SKU-first resolution in Step 7
+    # and reused in Step 8 to skip redundant DB reads).
+    si_by_sku: dict[str, SupplierIngredient] = {}
+    ing_by_sku: dict[str, Ingredient] = {}  # ingredient currently linked to each existing SI
+    if si_shapes:
+        existing_sis = session.exec(
+            select(SupplierIngredient).where(col(SupplierIngredient.sku).in_(list(si_shapes.keys())))
+        ).all()
+        si_by_sku = {si.sku: si for si in existing_sis}
+        si_ing_ids = [si.ingredient_id for si in existing_sis if si.ingredient_id is not None]
+        if si_ing_ids:
+            ings_for_sis = session.exec(
+                select(Ingredient).where(col(Ingredient.id).in_(si_ing_ids))
+            ).all()
+            ing_by_id = {i.id: i for i in ings_for_sis}
+            ing_by_sku = {
+                si.sku: ing_by_id[si.ingredient_id]
+                for si in existing_sis
+                if si.ingredient_id in ing_by_id
+            }
+
     ingredient_by_product_code: dict[str, Ingredient] = {}
     existing_ing_by_name: dict[str, Ingredient] = {}
     if ingredient_shapes:
@@ -329,13 +355,32 @@ def import_ingredients(
         ).all()
         existing_ing_by_name = {i.name: i for i in existing_ings}
 
+    def _update_ing_fields(ing: Ingredient, shape: dict, category_id: int | None) -> None:
+        ing.name = shape["name"]
+        ing.base_unit = shape["base_unit"]
+        if shape["cost_per_base_unit"] is not None:
+            ing.cost_per_base_unit = shape["cost_per_base_unit"]
+        if category_id is not None:
+            ing.category_id = category_id
+        session.add(ing)
+
     new_ings_by_name: dict[str, Ingredient] = {}
     for product_code, shape in ingredient_shapes.items():
         name = shape["name"]
-        if name in existing_ing_by_name:
-            ingredient_by_product_code[product_code] = existing_ing_by_name[name]
+        category_id = category_by_tag[shape["tag"]].id if shape["tag"] in category_by_tag else None
+        if product_code in ing_by_sku:
+            # SKU-first: existing SI → existing Ingredient (handles renames)
+            ing = ing_by_sku[product_code]
+            _update_ing_fields(ing, shape, category_id)
+            result.ingredients_updated += 1
+            ingredient_by_product_code[product_code] = ing
+        elif name in existing_ing_by_name:
+            # Name fallback: new SKU pointing to an already-known ingredient
+            ing = existing_ing_by_name[name]
+            _update_ing_fields(ing, shape, category_id)
+            result.ingredients_updated += 1
+            ingredient_by_product_code[product_code] = ing
         elif name not in new_ings_by_name:
-            category_id = category_by_tag[shape["tag"]].id if shape["tag"] in category_by_tag else None
             new_ings_by_name[name] = Ingredient(
                 name=name,
                 base_unit=shape["base_unit"],
@@ -353,17 +398,17 @@ def import_ingredients(
         if shape["name"] in new_ings_by_name:
             ingredient_by_product_code[product_code] = new_ings_by_name[shape["name"]]
 
-    # 8. Upsert SupplierIngredients — bulk pre-load, then add_all + single flush
-    si_by_sku: dict[str, SupplierIngredient] = {}
-    if si_shapes:
-        existing_sis = session.exec(
-            select(SupplierIngredient).where(col(SupplierIngredient.sku).in_(list(si_shapes.keys())))
-        ).all()
-        si_by_sku = {si.sku: si for si in existing_sis}
+    # 8. Upsert SupplierIngredients — si_by_sku already pre-loaded above
 
     new_sis: list[tuple[str, SupplierIngredient]] = []
     for product_code, shape in si_shapes.items():
         if product_code in si_by_sku:
+            si = si_by_sku[product_code]
+            si.pack_size = shape["pack_size"]
+            si.pack_unit = shape["pack_unit"]
+            si.price_per_pack = shape["price_per_pack"]
+            session.add(si)
+            result.supplier_ingredients_updated += 1
             continue
         supplier = supplier_by_code.get(shape["supplier_code_prefix"])
         ingredient = ingredient_by_product_code.get(product_code)

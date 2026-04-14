@@ -8,7 +8,9 @@ export interface FMHImportResult {
   outlets_created: number;
   categories_created: number;
   ingredients_created: number;
+  ingredients_updated: number;
   supplier_ingredients_created: number;
+  supplier_ingredients_updated: number;
   outlet_supplier_ingredients_created: number;
   warnings: string[];
 }

@@ -87,7 +87,29 @@ class IngredientService:
         if master_only:
             statement = statement.where(Ingredient.master_ingredient_id == None)
         if search:
-            statement = statement.where(Ingredient.name.ilike(f"%{search}%"))
+            from sqlalchemy import or_
+            from app.models.category import Category
+            from app.models.supplier_ingredient import SupplierIngredient as SI
+            from app.models.supplier import Supplier
+
+            term = f"%{search}%"
+            cat_subq = (
+                select(Ingredient.id)
+                .join(Category, Ingredient.category_id == Category.id)
+                .where(Category.name.ilike(term))
+            ).scalar_subquery()
+            sup_subq = (
+                select(SI.ingredient_id)
+                .join(Supplier, SI.supplier_id == Supplier.id)
+                .where(Supplier.name.ilike(term))
+            ).scalar_subquery()
+            statement = statement.where(
+                or_(
+                    Ingredient.name.ilike(term),
+                    Ingredient.id.in_(cat_subq),
+                    Ingredient.id.in_(sup_subq),
+                )
+            )
         if category_ids:
             statement = statement.where(Ingredient.category_id.in_(category_ids))
         if units:
@@ -106,7 +128,7 @@ class IngredientService:
                         category_ids=None, units=None, allergen_ids=None, is_halal=None) -> list[IngredientListRead]:
         statement = self._build_list_query(active_only=active_only, category=category, source=source, master_only=master_only, search=search,
                                            category_ids=category_ids, units=units, allergen_ids=allergen_ids, is_halal=is_halal)
-        statement = statement.order_by(Ingredient.id.desc()).offset(offset).limit(limit)
+        statement = statement.order_by(Ingredient.name.asc()).offset(offset).limit(limit)
         rows = self.session.exec(statement).all()
         return [IngredientListRead.model_validate(r) for r in rows]
 
@@ -125,7 +147,7 @@ class IngredientService:
         base = self._build_list_query(active_only=active_only, category=category, source=source, master_only=master_only, search=search,
                                        category_ids=category_ids, units=units, allergen_ids=allergen_ids, is_halal=is_halal)
         total = self.session.exec(select(func.count()).select_from(base.subquery())).one()
-        rows = list(self.session.exec(base.order_by(Ingredient.id.desc()).offset(offset).limit(limit)).all())
+        rows = list(self.session.exec(base.order_by(Ingredient.name.asc()).offset(offset).limit(limit)).all())
         return [IngredientListRead.model_validate(r) for r in rows], total
 
     def get_ingredient(self, ingredient_id: int) -> Ingredient | None:
