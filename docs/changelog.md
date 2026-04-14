@@ -42,6 +42,31 @@ All notable changes to Prepper are documented here.
 - **[0.0.1](#001---2024-11-27)** — Backend Foundation: FastAPI + SQLModel with 17 API Endpoints, Domain Services & Unit Conversion
 ---
 
+## [0.0.34] - 2026-04-14
+
+### Added
+
+#### Ingredients — Cross-Table Search
+- Ingredient search now matches against **category name** and **supplier name** in addition to ingredient name
+- Implemented via scalar subqueries + `or_()` in the backend to avoid row multiplication from JOINs
+- Results sorted alphabetically by name (was previously sorted by ID descending)
+
+#### Ingredients — Category Filter Pills Respond to Search
+- Category filter pills (the "Category:" row) now live-filter as you type in the search box
+- When a search is active, the label switches from **"Category:"** to **"Matching tags:"**
+- "See more" pagination continues to work scoped to the current search term
+- Removed the separate "Matching tags" section below the filter bar (consolidated into the filter pills)
+
+### Changed
+
+#### FMH Import — SKU-First Upsert Resolution
+- Re-importing an FMH product list now resolves existing ingredients by **SKU first**, then falls back to name, then creates new
+- Prevents duplicate ingredients when a product is renamed between imports
+- Existing `SupplierIngredient` pricing fields (`pack_size`, `pack_unit`, `price_per_pack`) are updated on re-import instead of being skipped
+- Import result now reports `ingredients_updated` and `supplier_ingredients_updated` counts alongside `_created` counts; shown in the post-import toast
+
+---
+
 ## [0.0.33] - 2026-04-13
 
 ### Added

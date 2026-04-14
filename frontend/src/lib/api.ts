@@ -108,6 +108,7 @@ export interface IngredientListParams extends ListParams {
   units?: string;
   allergen_ids?: string;
   is_halal?: string;
+  sort_by?: string;
 }
 
 export interface SupplierListParams extends ListParams {
@@ -487,6 +488,7 @@ export async function getIngredients(params?: IngredientListParams): Promise<Pag
   if (params?.units) searchParams.set('units', params.units);
   if (params?.allergen_ids) searchParams.set('allergen_ids', params.allergen_ids);
   if (params?.is_halal) searchParams.set('is_halal', params.is_halal);
+  if (params?.sort_by) searchParams.set('sort_by', params.sort_by);
   const query = searchParams.toString();
   return fetchApi<PaginatedResponse<Ingredient>>(`/ingredients${query ? `?${query}` : ''}`);
 }

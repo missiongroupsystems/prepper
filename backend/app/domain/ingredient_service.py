@@ -124,16 +124,27 @@ class IngredientService:
             statement = statement.where(Ingredient.id.in_(allergen_subquery))
         return statement
 
+    def _apply_sort(self, statement, sort_by: str | None):
+        """Apply ORDER BY to a statement based on sort_by value."""
+        if sort_by == "name_desc":
+            return statement.order_by(Ingredient.name.desc())
+        if sort_by == "price_asc":
+            return statement.order_by(Ingredient.cost_per_base_unit.asc().nulls_last())
+        if sort_by == "price_desc":
+            return statement.order_by(Ingredient.cost_per_base_unit.desc().nulls_last())
+        # default: name_asc
+        return statement.order_by(Ingredient.name.asc())
+
     def list_paginated(self, offset: int, limit: int, active_only=True, category=None, source=None, master_only=False, search=None,
-                        category_ids=None, units=None, allergen_ids=None, is_halal=None) -> list[IngredientListRead]:
+                        category_ids=None, units=None, allergen_ids=None, is_halal=None, sort_by=None) -> list[IngredientListRead]:
         statement = self._build_list_query(active_only=active_only, category=category, source=source, master_only=master_only, search=search,
                                            category_ids=category_ids, units=units, allergen_ids=allergen_ids, is_halal=is_halal)
-        statement = statement.order_by(Ingredient.name.asc()).offset(offset).limit(limit)
+        statement = self._apply_sort(statement, sort_by).offset(offset).limit(limit)
         rows = self.session.exec(statement).all()
         return [IngredientListRead.model_validate(r) for r in rows]
 
     def count(self, active_only=True, category=None, source=None, master_only=False, search=None,
-              category_ids=None, units=None, allergen_ids=None, is_halal=None) -> int:
+              category_ids=None, units=None, allergen_ids=None, is_halal=None, sort_by=None) -> int:
         from sqlalchemy import func
         statement = self._build_list_query(active_only=active_only, category=category, source=source, master_only=master_only, search=search,
                                            category_ids=category_ids, units=units, allergen_ids=allergen_ids, is_halal=is_halal)
@@ -141,13 +152,13 @@ class IngredientService:
         return self.session.exec(count_stmt).one()
 
     def list_paginated_with_count(self, offset: int, limit: int, active_only=True, category=None, source=None, master_only=False, search=None,
-                                   category_ids=None, units=None, allergen_ids=None, is_halal=None) -> tuple[list[IngredientListRead], int]:
+                                   category_ids=None, units=None, allergen_ids=None, is_halal=None, sort_by=None) -> tuple[list[IngredientListRead], int]:
         """Return paginated items and total count, reusing the same base filter."""
         from sqlalchemy import func
         base = self._build_list_query(active_only=active_only, category=category, source=source, master_only=master_only, search=search,
                                        category_ids=category_ids, units=units, allergen_ids=allergen_ids, is_halal=is_halal)
         total = self.session.exec(select(func.count()).select_from(base.subquery())).one()
-        rows = list(self.session.exec(base.order_by(Ingredient.name.asc()).offset(offset).limit(limit)).all())
+        rows = list(self.session.exec(self._apply_sort(base, sort_by).offset(offset).limit(limit)).all())
         return [IngredientListRead.model_validate(r) for r in rows], total
 
     def get_ingredient(self, ingredient_id: int) -> Ingredient | None:

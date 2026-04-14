@@ -53,6 +53,7 @@ def list_ingredients(
     units: str | None = Query(default=None),
     allergen_ids: str | None = Query(default=None),
     is_halal: str | None = Query(default=None),
+    sort_by: str | None = Query(default=None),
     session: Session = Depends(get_session),
 ):
     """List all ingredients with optional filters."""
@@ -66,7 +67,8 @@ def list_ingredients(
     service = IngredientService(session)
     offset = (page_number - 1) * page_size
     filter_kwargs = dict(active_only=active_only, category=category, source=source, master_only=master_only, search=search,
-                         category_ids=parsed_category_ids, units=parsed_units, allergen_ids=parsed_allergen_ids, is_halal=parsed_is_halal)
+                         category_ids=parsed_category_ids, units=parsed_units, allergen_ids=parsed_allergen_ids, is_halal=parsed_is_halal,
+                         sort_by=sort_by)
     items, total = service.list_paginated_with_count(offset=offset, limit=page_size, **filter_kwargs)
     return PaginatedResponse.create(items=items, total_count=total, page_number=page_number, page_size=page_size)
 

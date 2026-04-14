@@ -15,7 +15,7 @@ import { downloadFMHSampleItems } from '@/lib/api';
 
 type GroupByOption = 'none' | 'unit' | 'status' | 'category';
 type ViewType = 'grid' | 'list';
-type SortByOption = 'price_asc' | 'price_desc';
+type SortByOption = 'name_asc' | 'name_desc' | 'price_asc' | 'price_desc';
 
 const GROUP_BY_OPTIONS = [
   { value: 'none', label: 'No grouping' },
@@ -25,6 +25,8 @@ const GROUP_BY_OPTIONS = [
 ];
 
 const SORT_BY_OPTIONS = [
+  { value: 'name_asc', label: 'A to Z' },
+  { value: 'name_desc', label: 'Z to A' },
   { value: 'price_asc', label: 'Price: Low to High' },
   { value: 'price_desc', label: 'Price: High to Low' },
 ];
@@ -37,26 +39,6 @@ const INGREDIENT_TABS: { id: IngredientTab; label: string }[] = [
   { id: 'allergens', label: 'Allergens' },
 ];
 
-function sortIngredients(ingredients: Ingredient[], sortBy: SortByOption): Ingredient[] {
-  const withCost: Ingredient[] = [];
-  const noCost: Ingredient[] = [];
-
-  ingredients.forEach((ing) => {
-    if (ing.cost_per_base_unit !== null && ing.cost_per_base_unit !== undefined) {
-      withCost.push(ing);
-    } else {
-      noCost.push(ing);
-    }
-  });
-
-  if (sortBy === 'price_asc') {
-    withCost.sort((a, b) => (a.cost_per_base_unit ?? 0) - (b.cost_per_base_unit ?? 0));
-  } else if (sortBy === 'price_desc') {
-    withCost.sort((a, b) => (b.cost_per_base_unit ?? 0) - (a.cost_per_base_unit ?? 0));
-  }
-
-  return [...withCost, ...noCost];
-}
 
 function groupIngredients(
   ingredients: Ingredient[],
@@ -130,9 +112,9 @@ function IngredientsListTab() {
   const [selectedHalal, setSelectedHalal] = useState<boolean[]>([]);
   const [selectedAllergens, setSelectedAllergens] = useState<number[]>([]);
   const [view, setView] = useState<ViewType>('grid');
-  const [sortBy, setSortBy] = useState<SortByOption>('price_asc');
+  const [sortBy, setSortBy] = useState<SortByOption>('name_asc');
   // Reset page when filters change
-  useEffect(() => setPageNumber(1), [selectedCategories, selectedUnits, selectedHalal, selectedAllergens, showArchived]);
+  useEffect(() => setPageNumber(1), [selectedCategories, selectedUnits, selectedHalal, selectedAllergens, showArchived, sortBy]);
 
   const { data, isLoading, error } = useIngredients({
     active_only: !showArchived,
@@ -143,6 +125,7 @@ function IngredientsListTab() {
     units: selectedUnits.length > 0 ? selectedUnits.join(',') : undefined,
     allergen_ids: selectedAllergens.length > 0 ? selectedAllergens.join(',') : undefined,
     is_halal: selectedHalal.length > 0 ? selectedHalal.map(String).join(',') : undefined,
+    sort_by: sortBy,
   });
   const ingredients = data?.items ?? [];
   const { data: categories } = useCategories();
@@ -171,10 +154,7 @@ function IngredientsListTab() {
     ? filterCategories.length < filterCatData.total_count
     : false;
 
-  const filteredIngredients = useMemo(() => {
-    if (!ingredients) return [];
-    return sortIngredients(ingredients, sortBy);
-  }, [ingredients, sortBy]);
+  const filteredIngredients = ingredients ?? [];
 
   const categoryMap = useMemo(() => {
     if (!categories) return new Map<number, string>();
