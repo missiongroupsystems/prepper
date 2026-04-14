@@ -6,6 +6,7 @@ All notable changes to Prepper are documented here.
 
 ## Index
 
+- **[0.0.34](#0034---2026-04-14)** — Ingredient Search & Filter Enhancements: Cross-Table Search, SKU-First FMH Upsert & Category Filter Pills
 - **[0.0.33](#0033---2026-04-13)** — Menu Nav Restructure, Sketch Editor Overhaul & Dish Highlights / Icon Tags
 - **[0.0.32](#0032---2026-04-07)** — Ingredient-Free Recipes & Inline Recipe Creation in Tasting Sessions
 - **[0.0.31](#0031---2026-03-27)** — Menu Sketch Round 1 Feedback: UI Refinements, Delete Support & UX Polish
