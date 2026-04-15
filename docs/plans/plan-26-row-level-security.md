@@ -1,6 +1,6 @@
 # Plan 26: Row-Level Security (RLS)
 
-**Status**: Complete
+**Status**: ✅ Complete
 **Priority**: High
 **Dependencies**: User authentication, `is_manager` field, `tasting_users` join table, Supabase Postgres
 **Owner**: Engineering

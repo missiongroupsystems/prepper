@@ -6,6 +6,7 @@ All notable changes to Prepper are documented here.
 
 ## Index
 
+- **[0.0.35](#0035---2026-04-15)** — PostgreSQL Row-Level Security: Database-Layer Access Policies, RLS Helper Functions & Integration Tests
 - **[0.0.34](#0034---2026-04-14)** — Ingredient Search, Filter & Sort Enhancements: Cross-Table Search, SKU-First FMH Upsert, Category Filter Pills & Server-Side Sorting
 - **[0.0.33](#0033---2026-04-13)** — Menu Nav Restructure, Sketch Editor Overhaul & Dish Highlights / Icon Tags
 - **[0.0.32](#0032---2026-04-07)** — Ingredient-Free Recipes & Inline Recipe Creation in Tasting Sessions
@@ -40,6 +41,43 @@ All notable changes to Prepper are documented here.
 - **[0.0.3](#003---2024-11-27)** — Database Migration: Alembic Initial Tables to Supabase + PostgreSQL JSON Compatibility Fix
 - **[0.0.2](#002---2024-11-27)** — Frontend Implementation: Next.js 15 Recipe Canvas with Drag-and-Drop, Autosave & TanStack Query
 - **[0.0.1](#001---2024-11-27)** — Backend Foundation: FastAPI + SQLModel with 17 API Endpoints, Domain Services & Unit Conversion
+---
+
+## [0.0.35] - 2026-04-15
+
+### Added
+
+#### PostgreSQL Row-Level Security (RLS)
+- Alembic migration `h1i2j3k4l5m6` enables RLS on all 29 tables and creates policies that mirror the existing permission model (admin / manager / normal user)
+- RLS applies to direct Supabase client connections (`authenticated` role); the FastAPI service role retains `BYPASSRLS` so backend behaviour is unchanged
+- Policies enforce silent filtering on SELECT and error-on-write for unauthorised rows
+
+#### RLS Helper Functions
+- Eight reusable PostgreSQL functions in the `public` schema:
+  - `current_user_id()` — reads `auth.uid()` from the Supabase JWT
+  - `is_admin()` — true when `user_type = 'admin'`
+  - `is_manager_or_admin()` — true for admins and users with `is_manager = true`
+  - `can_access_recipe(int)` — owner OR public OR admin (SELECT gate)
+  - `owns_recipe(int)` — owner OR admin (write gate)
+  - `can_access_tasting_session(int)` — creator OR participant OR admin (SELECT gate)
+  - `owns_tasting_session(int)` — creator OR admin (write gate)
+  - `can_access_menu(int)` — creator OR manager/admin (SELECT + write gate)
+- Helper scripts in `backend/scripts/helpers/` allow re-applying individual functions without re-running the full migration (`python -m scripts.helpers.apply_all`)
+
+#### RLS Integration Tests
+- `backend/tests/test_rls_integration.py` — 21 tests that bypass FastAPI and query PostgreSQL directly, simulating the `authenticated` role via `SET LOCAL ROLE` and `set_config('request.jwt.claim.sub', …)`
+- Tests cover: recipe SELECT/UPDATE visibility per owner / non-owner / admin, silent list filtering, ingredient INSERT permission by role, ingredient DELETE silent blocking, tasting session SELECT / UPDATE access per creator / participant / outsider / admin
+- Tests auto-skip when `DATABASE_URL` points to SQLite; run automatically against Supabase in CI
+
+#### Application-Level Auth Tests
+- `backend/tests/test_rls_auth.py` — 19 tests for FastAPI route guards (app-level, SQLite-compatible)
+- Covers: recipe ownership GET/list, outlet admin-only CRUD, menu role-based write guards, tasting session creator-only updates/deletes
+
+### Changed
+
+#### Config — Reliable `.env` Resolution
+- `backend/app/config.py`: `env_file` changed from relative `".env"` to `Path(__file__).parent.parent / ".env"` so settings load correctly regardless of the current working directory
+
 ---
 
 ## [0.0.34] - 2026-04-14
