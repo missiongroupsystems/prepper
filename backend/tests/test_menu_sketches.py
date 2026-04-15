@@ -5,20 +5,6 @@ from fastapi.testclient import TestClient
 
 BASE = "/api/v1/menu-sketches"
 
-SAMPLE_SECTIONS = [
-    {
-        "name": "Starters",
-        "dishes": [
-            {
-                "name": "Soup of the Day",
-                "ingredients": ["chicken stock", "cream"],
-                "sales_price": 12.0,
-                "cost_price": 3.5,
-            }
-        ],
-    }
-]
-
 
 # =============================================================================
 # Create
@@ -32,7 +18,7 @@ def test_create_sketch_defaults(client: TestClient):
     data = response.json()
     assert data["name"] == "Untitled Menu"
     assert data["version"] == 1
-    assert data["sections"] == []
+    assert data["status"] == "draft"
     assert "id" in data
     assert "created_at" in data
     assert "updated_at" in data
@@ -93,44 +79,21 @@ def test_list_sketches_returns_all(client: TestClient):
 
 
 def test_update_sketch_name(client: TestClient):
-    """Patching the name updates it and leaves sections intact."""
+    """Patching the name updates it."""
     sketch_id = client.post(BASE, json={"name": "Old Name"}).json()["id"]
 
     response = client.patch(f"{BASE}/{sketch_id}", json={"name": "New Name"})
     assert response.status_code == 200
     assert response.json()["name"] == "New Name"
-    assert response.json()["sections"] == []
 
 
-def test_update_sketch_sections(client: TestClient):
-    """Patching sections persists the full nested structure."""
+def test_update_sketch_notes(client: TestClient):
+    """Patching notes persists the value."""
     sketch_id = client.post(BASE, json={}).json()["id"]
 
-    response = client.patch(
-        f"{BASE}/{sketch_id}", json={"sections": SAMPLE_SECTIONS}
-    )
+    response = client.patch(f"{BASE}/{sketch_id}", json={"notes": "<p>Some notes</p>"})
     assert response.status_code == 200
-    sections = response.json()["sections"]
-    assert len(sections) == 1
-    assert sections[0]["name"] == "Starters"
-    assert len(sections[0]["dishes"]) == 1
-    assert sections[0]["dishes"][0]["name"] == "Soup of the Day"
-    assert sections[0]["dishes"][0]["sales_price"] == 12.0
-    assert sections[0]["dishes"][0]["cost_price"] == 3.5
-    assert sections[0]["dishes"][0]["ingredients"] == ["chicken stock", "cream"]
-
-
-def test_update_sketch_partial(client: TestClient):
-    """Patching with only some fields leaves unspecified fields unchanged."""
-    sketch_id = client.post(BASE, json={"name": "Keep Me"}).json()["id"]
-    # First set sections via a PATCH
-    client.patch(f"{BASE}/{sketch_id}", json={"sections": SAMPLE_SECTIONS})
-    # Then patch only the name — sections must stay intact
-    response = client.patch(f"{BASE}/{sketch_id}", json={"name": "Renamed"})
-    assert response.status_code == 200
-    data = response.json()
-    assert data["name"] == "Renamed"
-    assert len(data["sections"]) == 1
+    assert response.json()["notes"] == "<p>Some notes</p>"
 
 
 def test_update_sketch_not_found(client: TestClient):
@@ -157,17 +120,20 @@ def test_fork_sketch_increments_version(client: TestClient):
     assert forked["id"] != original["id"]
 
 
-def test_fork_sketch_copies_name_and_sections(client: TestClient):
-    """Fork preserves name and sections from the source sketch."""
-    sketch_id = client.post(
-        BASE, json={"name": "Tasty Menu"}
-    ).json()["id"]
-    client.patch(f"{BASE}/{sketch_id}", json={"sections": SAMPLE_SECTIONS})
+def test_fork_sketch_sets_root(client: TestClient):
+    """Forked sketch has root pointing to the original sketch id."""
+    original = client.post(BASE, json={"name": "Original"}).json()
+
+    forked = client.post(f"{BASE}/{original['id']}/fork").json()
+    assert forked["root"] == original["id"]
+
+
+def test_fork_sketch_copies_name(client: TestClient):
+    """Fork preserves the name from the source sketch."""
+    sketch_id = client.post(BASE, json={"name": "Tasty Menu"}).json()["id"]
 
     forked = client.post(f"{BASE}/{sketch_id}/fork").json()
     assert forked["name"] == "Tasty Menu"
-    assert len(forked["sections"]) == 1
-    assert forked["sections"][0]["name"] == "Starters"
 
 
 def test_fork_sketch_is_independent(client: TestClient):
@@ -199,20 +165,21 @@ def test_fork_multiple_times_increments_correctly(client: TestClient):
 
 
 # =============================================================================
-# Delete
+# Delete (soft-delete — sets status to archived)
 # =============================================================================
 
 
 def test_delete_sketch(client: TestClient):
-    """Deleting a sketch returns 204 and it no longer appears in the list."""
+    """Deleting a sketch returns 200 ok and removes it from the list."""
     sketch_id = client.post(BASE, json={"name": "Delete Me"}).json()["id"]
 
     response = client.delete(f"{BASE}/{sketch_id}")
-    assert response.status_code == 204
-    assert response.content == b""
+    assert response.status_code == 200
+    assert response.json() == {"ok": True}
 
-    # Confirm it is gone
-    assert client.get(f"{BASE}/{sketch_id}").status_code == 404
+    # Archived sketch is excluded from the list
+    ids = {s["id"] for s in client.get(BASE).json()}
+    assert sketch_id not in ids
 
 
 def test_delete_sketch_removed_from_list(client: TestClient):
@@ -235,9 +202,9 @@ def test_delete_sketch_not_found(client: TestClient):
 
 
 def test_delete_sketch_idempotent_second_call(client: TestClient):
-    """Deleting the same sketch twice returns 404 on the second call."""
+    """Soft-deleting the same sketch twice both succeed (idempotent)."""
     sketch_id = client.post(BASE, json={"name": "Once Only"}).json()["id"]
 
-    client.delete(f"{BASE}/{sketch_id}")
-    response = client.delete(f"{BASE}/{sketch_id}")
-    assert response.status_code == 404
+    assert client.delete(f"{BASE}/{sketch_id}").status_code == 200
+    # Second call: sketch is already archived but still exists → 200 ok
+    assert client.delete(f"{BASE}/{sketch_id}").status_code == 200

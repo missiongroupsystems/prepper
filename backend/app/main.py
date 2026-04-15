@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import get_settings
 from app.database import create_db_and_tables
-from app.api import auth, ingredients, recipes, recipe_ingredients, instructions, costing, sub_recipes, outlets, tastings, suppliers, recipe_tastings, tasting_history, categories, category_agent, feedback_summary_agent, recipe_images, tasting_note_images, recipe_categories, recipe_recipe_categories, users, ingredient_tastings, ingredient_tasting_notes, allergens, ingredient_allergens, recipe_allergens, menus, menu_sketches, supplier_ingredients, supplier_ingredient_tags
+from app.api import auth, ingredients, recipes, recipe_ingredients, instructions, costing, sub_recipes, outlets, tastings, suppliers, recipe_tastings, tasting_history, categories, category_agent, feedback_summary_agent, recipe_images, tasting_note_images, recipe_categories, recipe_recipe_categories, users, ingredient_tastings, ingredient_tasting_notes, allergens, ingredient_allergens, recipe_allergens, menus, menu_sketches, menu_sketch_sections, menu_sketch_section_items, menu_sketch_section_item_comments, supplier_ingredients, supplier_ingredient_tags
 
 settings = get_settings()
 
@@ -195,6 +195,21 @@ def create_app() -> FastAPI:
         menu_sketches.router,
         prefix=f"{settings.api_v1_prefix}/menu-sketches",
         tags=["menu-sketches"],
+    )
+    app.include_router(
+        menu_sketch_sections.router,
+        prefix=f"{settings.api_v1_prefix}/menu-sketch-sections",
+        tags=["menu-sketch-sections"],
+    )
+    app.include_router(
+        menu_sketch_section_items.router,
+        prefix=f"{settings.api_v1_prefix}/menu-sketch-section-items",
+        tags=["menu-sketch-section-items"],
+    )
+    app.include_router(
+        menu_sketch_section_item_comments.router,
+        prefix=f"{settings.api_v1_prefix}/menu-sketch-section-item-comments",
+        tags=["menu-sketch-section-item-comments"],
     )
     app.include_router(
         supplier_ingredients.router,
