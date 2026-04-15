@@ -18,10 +18,12 @@ class MenuSketchService:
         self.session = session
 
     def list_sketches(self) -> list[MenuSketch]:
-        """Return all menu sketches ordered by most recently updated."""
+        """Return all non-archived menu sketches ordered by most recently updated."""
         return list(
             self.session.exec(
-                select(MenuSketch).order_by(MenuSketch.updated_at.desc())  # type: ignore[arg-type]
+                select(MenuSketch)
+                .where(MenuSketch.status != "archived")
+                .order_by(MenuSketch.updated_at.desc())  # type: ignore[arg-type]
             ).all()
         )
 
@@ -30,12 +32,11 @@ class MenuSketchService:
         return self.session.get(MenuSketch, sketch_id)
 
     def create_sketch(self, data: MenuSketchCreate) -> MenuSketch:
-        """Create a new sketch with empty sections."""
+        """Create a new sketch."""
         sketch = MenuSketch(
             name=data.name,
             version=1,
-            sections=[],
-            comments={},
+            status="draft",
             notes=None,
         )
         self.session.add(sketch)
@@ -63,16 +64,21 @@ class MenuSketchService:
         return sketch
 
     def delete_sketch(self, sketch_id: int) -> bool:
-        """Hard-delete a sketch. Returns True if deleted, False if not found."""
+        """Soft-delete a sketch by setting status to 'archived'.
+
+        Returns True if the sketch was found and archived, False otherwise.
+        """
         sketch = self.session.get(MenuSketch, sketch_id)
         if sketch is None:
             return False
-        self.session.delete(sketch)
+        sketch.status = "archived"
+        sketch.updated_at = datetime.utcnow()
+        self.session.add(sketch)
         self.session.commit()
         return True
 
     def fork_sketch(self, sketch_id: int) -> MenuSketch | None:
-        """Fork a sketch — copy all fields and increment version."""
+        """Fork a sketch — copy fields, increment version, set root to original ID."""
         original = self.session.get(MenuSketch, sketch_id)
         if original is None:
             return None
@@ -80,8 +86,8 @@ class MenuSketchService:
         forked = MenuSketch(
             name=original.name,
             version=original.version + 1,
-            sections=list(original.sections),
-            comments={},
+            status="draft",
+            root=original.id,
             notes=None,
         )
         self.session.add(forked)
