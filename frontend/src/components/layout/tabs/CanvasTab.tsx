@@ -79,7 +79,7 @@ interface RecipeMetadata {
 }
 
 const DEFAULT_METADATA: RecipeMetadata = {
-  name: 'Untitled Recipe',
+  name: 'Untitled Dish',
   yield_quantity: 10,
   yield_unit: 'portion',
   status: 'draft',
@@ -1410,7 +1410,7 @@ function CanvasContent({
           <Input
             value={metadata.name}
             onChange={(e) => onMetadataChange({ name: e.target.value })}
-            placeholder="Recipe name"
+            placeholder="Dish name"
             className="text-base font-semibold flex-1 min-w-0 border-transparent bg-transparent hover:border-zinc-300 dark:hover:border-zinc-700 focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors h-9"
           />
 
@@ -2996,7 +2996,7 @@ export function CanvasTab({ outlets }: CanvasTabProps) {
         isOpen={showSubmitModal}
         onClose={() => setShowSubmitModal(false)}
         onConfirm={handleSubmitConfirm}
-        title={selectedRecipeId ? 'Update Recipe' : 'Create Recipe'}
+        title={selectedRecipeId ? 'Update Dish' : 'Create Dish'}
         message={
           selectedRecipeId
             ? `Are you sure you want to update "${metadata.name}" with ${stagedIngredients.length} ingredient(s) and ${stagedRecipes.length} sub-recipe(s)?`
@@ -3010,8 +3010,8 @@ export function CanvasTab({ outlets }: CanvasTabProps) {
         isOpen={showForkModal}
         onClose={() => setShowForkModal(false)}
         onConfirm={handleForkConfirm}
-        title="Fork Recipe"
-        message={`Are you sure you want to fork "${metadata.name}"? This will create a new version (v${(recipes?.find((r) => r.id === selectedRecipeId)?.version ?? 0) + 1}) based on the current recipe.`}
+        title="Fork Dish"
+        message={`Are you sure you want to fork "${metadata.name}"? This will create a new version (v${(recipes?.find((r) => r.id === selectedRecipeId)?.version ?? 0) + 1}) based on the current dish.`}
         confirmLabel="Fork"
         cancelLabel="Cancel"
       />

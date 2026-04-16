@@ -652,14 +652,14 @@ function PipelinesTab() {
       <div className="p-6 max-w-7xl mx-auto">
         <PageHeader
           title="R&D Workspace"
-          description="Track and iterate on recipes with tasting feedback"
+          description="Track and iterate on dishes with tasting feedback"
         />
 
         {/* Toolbar */}
         <div className="flex flex-col gap-4 mb-6 sm:flex-row sm:items-center">
           <div className="flex-1 max-w-md">
             <SearchInput
-              placeholder="Search recipes..."
+              placeholder="Search dishes..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               onClear={() => setSearch('')}
@@ -697,7 +697,7 @@ function PipelinesTab() {
                 {filteredTodoRecipes.length === 0 ? (
                   <div className="flex flex-col items-center justify-center h-full py-12 text-center">
                     <FlaskConical className="h-10 w-10 text-zinc-300 dark:text-zinc-700 mb-3" />
-                    <p className="text-sm text-muted-foreground">No recipes to work on</p>
+                    <p className="text-sm text-muted-foreground">No dishes to work on</p>
                   </div>
                 ) : (
                   filteredTodoRecipes.map((recipe) => (
@@ -728,7 +728,7 @@ function PipelinesTab() {
                   <div className="flex flex-col items-center justify-center h-full py-12 text-center">
                     <FlaskConical className="h-10 w-10 text-zinc-300 dark:text-zinc-700 mb-3" />
                     <p className="text-sm text-muted-foreground">No work in progress</p>
-                    <p className="text-xs text-muted-foreground mt-1">Fork a recipe from To Do to start</p>
+                    <p className="text-xs text-muted-foreground mt-1">Fork a dish from To Do to start</p>
                   </div>
                 ) : (
                   wipGroups.map((group) => (
@@ -763,7 +763,7 @@ function PipelinesTab() {
                   <div className="flex flex-col items-center justify-center h-full py-12 text-center">
                     <FlaskConical className="h-10 w-10 text-zinc-300 dark:text-zinc-700 mb-3" />
                     <p className="text-sm text-muted-foreground">No tasting sessions</p>
-                    <p className="text-xs text-muted-foreground mt-1">Create a session from a &apos;In Progress&apos; recipe</p>
+                    <p className="text-xs text-muted-foreground mt-1">Create a session from a &apos;In Progress&apos; dish</p>
                   </div>
                 ) : (
                   filteredSessions.map((session) => (

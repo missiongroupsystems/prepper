@@ -652,7 +652,7 @@ export function RightPanel({ outlets }: RightPanelProps) {
                 )}
                 {filteredRecipes.length === 0 ? (
                   <p className="text-xs text-zinc-500 px-1">
-                    {search ? 'No matches' : 'No recipes yet'}
+                    {search ? 'No matches' : 'No dishes yet'}
                   </p>
                 ) : (
                   <div className="space-y-1">

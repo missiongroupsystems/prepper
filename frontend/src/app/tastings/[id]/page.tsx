@@ -147,7 +147,7 @@ function SessionRecipesSection({
       <div className="flex items-center justify-between gap-2 mb-4">
         <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2 min-w-0">
           <ChefHat className="h-5 w-5 text-purple-500 shrink-0" />
-          <span className="truncate">Session Recipes</span>
+          <span className="truncate">Session Dishes</span>
           {sessionRecipes.length > 0 && (
             <Badge variant="secondary" className="text-xs shrink-0">
               {sessionRecipes.filter((sr) => reviewedRecipeIds.has(sr.recipe_id)).length}/{sessionRecipes.length} reviewed
@@ -161,7 +161,7 @@ function SessionRecipesSection({
             onClick={handleOpenAddRecipe}
           >
             <Plus className="h-4 w-4 mr-1" />
-            <span className="hidden sm:inline">Add Recipes</span>
+            <span className="hidden sm:inline">Add Dishes</span>
             <span className="sm:hidden">Add</span>
           </Button>
         )}
@@ -173,20 +173,20 @@ function SessionRecipesSection({
             <div className="space-y-3">
               <div>
                 <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
-                  Search Recipes
+                  Search Dishes
                 </label>
                 <SearchInput
                   value={searchQuery}
                   onChange={(e) => onSearchChange(e.target.value)}
                   onClear={() => onSearchChange('')}
-                  placeholder="Type to search recipes..."
+                  placeholder="Type to search dishes..."
                   className="w-full"
                 />
               </div>
               <div className="max-h-48 overflow-y-auto border border-zinc-200 dark:border-zinc-700 rounded-md">
                 {availableRecipes.length === 0 ? (
                   <div className="p-3 text-sm text-zinc-500 dark:text-zinc-400 text-center">
-                    {searchQuery ? 'No recipes match your search' : 'No recipes available'}
+                    {searchQuery ? 'No dishes match your search' : 'No dishes available'}
                   </div>
                 ) : (
                   availableRecipes.map((recipe) => {
@@ -224,7 +224,7 @@ function SessionRecipesSection({
                     disabled={isLoadingMoreRecipes}
                     className="w-full px-3 py-2 text-sm text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 font-medium disabled:opacity-50"
                   >
-                    {isLoadingMoreRecipes ? 'Loading...' : 'Load more recipes'}
+                    {isLoadingMoreRecipes ? 'Loading...' : 'Load more dishes'}
                   </button>
                 )}
                 {searchQuery.trim() && (
@@ -235,7 +235,7 @@ function SessionRecipesSection({
                     className="w-full px-3 py-2 text-sm text-left flex items-center gap-2 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 border-t border-zinc-100 dark:border-zinc-800 font-medium disabled:opacity-50"
                   >
                     <Plus className="h-4 w-4 shrink-0" />
-                    {isCreatingRecipe ? 'Creating...' : <>Create &ldquo;{searchQuery.trim()}&rdquo; as new recipe</>}
+                    {isCreatingRecipe ? 'Creating...' : <>Create &ldquo;{searchQuery.trim()}&rdquo; as new dish</>}
                   </button>
                 )}
               </div>
@@ -269,9 +269,9 @@ function SessionRecipesSection({
       {!isLoading && sessionRecipes.length === 0 && !showAddRecipe && (
         <div className="text-center py-8 border border-dashed border-zinc-200 dark:border-zinc-700 rounded-lg">
           <ChefHat className="h-8 w-8 mx-auto text-zinc-300 dark:text-zinc-600 mb-2" />
-          <p className="text-zinc-500 dark:text-zinc-400">No recipes added to this session</p>
+          <p className="text-zinc-500 dark:text-zinc-400">No dishes added to this session</p>
           <p className="text-sm text-zinc-400 dark:text-zinc-500 mt-1">
-            Add recipes to track what will be tasted
+            Add dishes to track what will be tasted
           </p>
         </div>
       )}
@@ -294,7 +294,7 @@ function SessionRecipesSection({
                   ) : (
                     <div className="h-4 w-4 rounded-full border-2 border-zinc-300 dark:border-zinc-600 shrink-0" />
                   )}
-                  {sr.recipe_name || `Recipe #${sr.recipe_id}`}
+                  {sr.recipe_name || `Dish #${sr.recipe_id}`}
                 </button>
                 {isCreator && (
                   <button
@@ -359,7 +359,7 @@ function SessionIngredientsSection({
           <span className="text-2xl mx-auto mb-2 block">🥘</span>
           <p className="text-zinc-500 dark:text-zinc-400">No ingredients yet</p>
           <p className="text-sm text-zinc-400 dark:text-zinc-500 mt-1">
-            Add recipes to see their ingredients here
+            Add dishes to see their ingredients here
           </p>
         </div>
       )}
@@ -588,7 +588,7 @@ export default function TastingSessionDetailPage() {
 
   const handleRemoveRecipeFromSession = async (recipeId: number) => {
     if (!sessionId) return;
-    if (!confirm('Remove this recipe from the session?')) return;
+    if (!confirm('Remove this dish from the session?')) return;
     try {
       await removeRecipeFromSession.mutateAsync({ sessionId, recipeId });
     } catch (error) {

@@ -16,7 +16,7 @@ function EmptyState() {
   const handleCreate = () => {
     createRecipe.mutate(
       {
-        name: 'Untitled Recipe',
+        name: 'Untitled Dish',
         yield_quantity: 10,
         yield_unit: 'portion',
         status: 'draft',

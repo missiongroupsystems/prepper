@@ -63,7 +63,7 @@ function groupRecipes(
   categoryNameMap: Map<number, string>
 ): Record<string, Recipe[]> {
   if (groupBy === 'none') {
-    return { 'All Recipes': recipes };
+    return { 'All Dishes': recipes };
   }
 
   if (groupBy === 'status') {
@@ -113,7 +113,7 @@ function groupRecipes(
     return grouped;
   }
 
-  return { 'All Recipes': recipes };
+  return { 'All Dishes': recipes };
 }
 
 export function RecipeManagementTab() {
@@ -236,12 +236,12 @@ export function RecipeManagementTab() {
     <div className="h-full w-full overflow-auto">
       <div className="p-6 max-w-7xl mx-auto">
         <PageHeader
-          title="Recipes"
-          description="Browse and manage your recipe collection"
+          title="Dishes"
+          description="Browse and manage your dish collection"
         >
           <Button onClick={handleCreate}>
             <Plus className="h-4 w-4" />
-            <span className="hidden sm:inline">New Recipe</span>
+            <span className="hidden sm:inline">New Dish</span>
           </Button>
         </PageHeader>
 
@@ -251,7 +251,7 @@ export function RecipeManagementTab() {
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
             <div className="flex-1 max-w-md">
               <SearchInput
-                placeholder="Search recipes..."
+                placeholder="Search dishes..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 onClear={() => setSearch('')}
@@ -313,10 +313,10 @@ export function RecipeManagementTab() {
         {!isLoading && filteredRecipes.length === 0 && (
           <div className="text-center py-12">
             <p className="text-zinc-500 dark:text-zinc-400">
-              {search ? 'No recipes match your search' : 'No recipes yet'}
+              {search ? 'No dishes match your search' : 'No dishes yet'}
             </p>
             <p className="text-sm text-zinc-400 dark:text-zinc-500 mt-2">
-              Create your first recipe in the Canvas
+              Create your first dish in the Canvas
             </p>
           </div>
         )}

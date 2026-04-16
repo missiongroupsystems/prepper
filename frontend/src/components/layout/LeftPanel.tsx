@@ -148,7 +148,7 @@ export function LeftPanel() {
   const handleCreate = () => {
     createRecipe.mutate(
       {
-        name: 'Untitled Recipe',
+        name: 'Untitled Dish',
         yield_quantity: 10,
         yield_unit: 'portion',
         status: 'draft',
@@ -182,7 +182,7 @@ export function LeftPanel() {
     <aside className="flex h-full w-72 flex-col border-r border-border bg-secondary">
       {/* Header */}
       <div className="flex items-center justify-between border-b border-border px-4 py-3">
-        <h2 className="font-semibold text-foreground">Recipes</h2>
+        <h2 className="font-semibold text-foreground">Dishes</h2>
         <Button size="sm" onClick={handleCreate} disabled={createRecipe.isPending}>
           <Plus className="h-4 w-4" />
           New
@@ -196,7 +196,7 @@ export function LeftPanel() {
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search recipes..."
+            placeholder="Search dishes..."
             className="pl-9"
           />
         </div>
@@ -213,7 +213,7 @@ export function LeftPanel() {
         ) : filteredRecipes.length === 0 ? (
           <div className="py-8 text-center">
             <p className="text-sm text-muted-foreground">
-              {search ? 'No recipes found' : 'No recipes yet'}
+              {search ? 'No dishes found' : 'No dishes yet'}
             </p>
             {!search && (
               <Button
@@ -223,7 +223,7 @@ export function LeftPanel() {
                 onClick={handleCreate}
               >
                 <Plus className="h-4 w-4" />
-                Create your first recipe
+                Create your first dish
               </Button>
             )}
           </div>
