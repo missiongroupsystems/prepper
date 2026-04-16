@@ -57,7 +57,7 @@ class CommentRead(SQLModel):
 
 class DishCommentsRead(SQLModel):
     menu_sketch_section_item_id: int
-    name: str
+    name: str | None  # resolved from the linked recipe
     comments: list[CommentRead]
 
 

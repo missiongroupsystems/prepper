@@ -100,9 +100,6 @@ export default function MenuPage() {
           ) : sketches && sketches.length > 0 ? (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {sketches.map((sketch) => {
-                const unresolved = Object.values(sketch.comments ?? {})
-                  .flatMap((c) => c)
-                  .filter((c) => !c.resolved).length;
                 return (
                   <Card
                     key={sketch.id}
@@ -115,19 +112,7 @@ export default function MenuPage() {
                         <Badge variant="secondary" className="shrink-0">
                           v{sketch.version}
                         </Badge>
-                        {unresolved > 0 && (
-                          <Badge
-                            variant="secondary"
-                            className="shrink-0 bg-orange-500/15 text-orange-600 border-orange-400/50"
-                          >
-                            {unresolved} comment{unresolved !== 1 ? 's' : ''}
-                          </Badge>
-                        )}
                       </div>
-                      <p className="mt-1 text-xs text-zinc-500">
-                        {sketch.sections?.length ?? 0} section
-                        {(sketch.sections?.length ?? 0) !== 1 ? 's' : ''}
-                      </p>
                     </div>
                     <div className="mt-4 flex gap-2" onClick={(e) => e.stopPropagation()}>
                       <Button

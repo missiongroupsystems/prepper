@@ -81,6 +81,16 @@ import type {
   MenuSketch,
   CreateMenuSketchRequest,
   UpdateMenuSketchRequest,
+  MenuSketchSection,
+  CreateMenuSketchSectionRequest,
+  UpdateMenuSketchSectionRequest,
+  MenuSketchSectionItem,
+  CreateMenuSketchSectionItemRequest,
+  UpdateMenuSketchSectionItemRequest,
+  MenuSketchSectionItemComment,
+  CreateMenuSketchSectionItemCommentRequest,
+  UpdateMenuSketchSectionItemCommentRequest,
+  MenuSketchCommentsResponse,
   PaginatedResponse,
   SupplierIngredientItem,
   SupplierIngredientTag,
@@ -1532,8 +1542,114 @@ export async function forkMenuSketch(id: number): Promise<MenuSketch> {
   });
 }
 
-export async function deleteMenuSketch(id: number): Promise<void> {
-  return fetchApi<void>(`/menu-sketches/${id}`, { method: 'DELETE' });
+export async function deleteMenuSketch(id: number): Promise<{ ok: boolean }> {
+  return fetchApi<{ ok: boolean }>(`/menu-sketches/${id}`, { method: 'DELETE' });
+}
+
+// ============ Menu Sketch Sections ============
+
+export async function getMenuSketchSections(menuSketchId: number): Promise<MenuSketchSection[]> {
+  return fetchApi<MenuSketchSection[]>(`/menu-sketch-sections?menu_sketch_id=${menuSketchId}`);
+}
+
+export async function createMenuSketchSection(
+  data: CreateMenuSketchSectionRequest
+): Promise<MenuSketchSection> {
+  return fetchApi<MenuSketchSection>('/menu-sketch-sections', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function updateMenuSketchSection(
+  id: number,
+  data: UpdateMenuSketchSectionRequest
+): Promise<MenuSketchSection> {
+  return fetchApi<MenuSketchSection>(`/menu-sketch-sections/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function deleteMenuSketchSection(id: number): Promise<{ ok: boolean }> {
+  return fetchApi<{ ok: boolean }>(`/menu-sketch-sections/${id}`, { method: 'DELETE' });
+}
+
+// ============ Menu Sketch Section Items ============
+
+export async function getMenuSketchSectionItems(
+  sectionId: number
+): Promise<MenuSketchSectionItem[]> {
+  return fetchApi<MenuSketchSectionItem[]>(
+    `/menu-sketch-section-items?section_id=${sectionId}`
+  );
+}
+
+export async function createMenuSketchSectionItem(
+  data: CreateMenuSketchSectionItemRequest
+): Promise<MenuSketchSectionItem> {
+  return fetchApi<MenuSketchSectionItem>('/menu-sketch-section-items', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function updateMenuSketchSectionItem(
+  id: number,
+  data: UpdateMenuSketchSectionItemRequest
+): Promise<MenuSketchSectionItem> {
+  return fetchApi<MenuSketchSectionItem>(`/menu-sketch-section-items/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function deleteMenuSketchSectionItem(id: number): Promise<{ ok: boolean }> {
+  return fetchApi<{ ok: boolean }>(`/menu-sketch-section-items/${id}`, { method: 'DELETE' });
+}
+
+// ============ Menu Sketch Section Item Comments ============
+
+export async function getMenuSketchComments(
+  menuSketchId: number
+): Promise<MenuSketchCommentsResponse> {
+  return fetchApi<MenuSketchCommentsResponse>(
+    `/menu-sketch-section-item-comments/menu-sketch/${menuSketchId}`
+  );
+}
+
+export async function createMenuSketchComment(
+  data: CreateMenuSketchSectionItemCommentRequest
+): Promise<MenuSketchSectionItemComment> {
+  return fetchApi<MenuSketchSectionItemComment>('/menu-sketch-section-item-comments', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function updateMenuSketchComment(
+  id: number,
+  data: UpdateMenuSketchSectionItemCommentRequest
+): Promise<MenuSketchSectionItemComment> {
+  return fetchApi<MenuSketchSectionItemComment>(
+    `/menu-sketch-section-item-comments/${id}`,
+    { method: 'PATCH', body: JSON.stringify(data) }
+  );
+}
+
+export async function resolveMenuSketchComment(
+  id: number
+): Promise<MenuSketchSectionItemComment> {
+  return fetchApi<MenuSketchSectionItemComment>(
+    `/menu-sketch-section-item-comments/resolve/${id}`,
+    { method: 'PATCH' }
+  );
+}
+
+export async function deleteMenuSketchComment(id: number): Promise<{ ok: boolean }> {
+  return fetchApi<{ ok: boolean }>(`/menu-sketch-section-item-comments/${id}`, {
+    method: 'DELETE',
+  });
 }
 
 // ============ Supplier Ingredients (cross-supplier product view) ============

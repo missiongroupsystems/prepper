@@ -49,6 +49,7 @@ export function useCreateIngredient() {
     mutationFn: (data: CreateIngredientRequest) => api.createIngredient(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ingredients'] });
+      queryClient.invalidateQueries({ queryKey: ['ingredients-search'] });
       queryClient.invalidateQueries({ queryKey: ['categories'] });
     },
   });

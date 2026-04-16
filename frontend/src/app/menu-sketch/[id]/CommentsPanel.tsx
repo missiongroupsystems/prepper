@@ -4,12 +4,18 @@ import { useState } from 'react';
 import { Pencil, Check, Trash2, SendHorizonal } from 'lucide-react';
 import { toast } from 'sonner';
 import { ConfirmModal } from '@/components/ui';
-import type { SketchSection, SketchComment, SketchComments } from '@/types';
+import {
+  useCreateMenuSketchComment,
+  useUpdateMenuSketchComment,
+  useResolveMenuSketchComment,
+  useDeleteMenuSketchComment,
+} from '@/lib/hooks';
+import type { MenuSketchSection, MenuSketchSectionItem, MenuSketchSectionItemComment } from '@/types';
 
 interface CommentsPanelProps {
-  sections: SketchSection[];
-  comments: SketchComments;
-  onChange: (comments: SketchComments) => void;
+  sections: MenuSketchSection[];
+  itemsBySection: Record<number, MenuSketchSectionItem[]>;
+  commentsByItemId: Record<number, MenuSketchSectionItemComment[]>;
 }
 
 function formatTimestamp(iso: string): string {
@@ -21,75 +27,43 @@ function formatTimestamp(iso: string): string {
   );
 }
 
-export function CommentsPanel({ sections, comments, onChange }: CommentsPanelProps) {
+export function CommentsPanel({ sections, itemsBySection, commentsByItemId }: CommentsPanelProps) {
   const [showResolved, setShowResolved] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<number | null>(null);
   const [editText, setEditText] = useState('');
-  const [deletingComment, setDeletingComment] = useState<{
-    dishId: string;
-    commentId: string;
-  } | null>(null);
-  const [newCommentText, setNewCommentText] = useState<Record<string, string>>({});
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [newCommentText, setNewCommentText] = useState<Record<number, string>>({});
 
-  const addComment = (dishId: string) => {
-    const text = (newCommentText[dishId] ?? '').trim();
+  const createComment = useCreateMenuSketchComment();
+  const updateComment = useUpdateMenuSketchComment();
+  const resolveComment = useResolveMenuSketchComment();
+  const deleteComment = useDeleteMenuSketchComment();
+
+  const addComment = (itemId: number) => {
+    const text = (newCommentText[itemId] ?? '').trim();
     if (!text) return;
-    const comment: SketchComment = {
-      id: crypto.randomUUID(),
-      text,
-      resolved: false,
-      created_at: new Date().toISOString(),
-    };
-    const prev = comments[dishId] ?? [];
-    onChange({ ...comments, [dishId]: [...prev, comment] });
-    setNewCommentText((m) => ({ ...m, [dishId]: '' }));
-  };
-
-  const resolveComment = (dishId: string, commentId: string) => {
-    const updated = (comments[dishId] ?? []).map((c) =>
-      c.id === commentId ? { ...c, resolved: true } : c,
+    createComment.mutate(
+      { menu_sketch_section_item_id: itemId, text },
+      { onSuccess: () => setNewCommentText((m) => ({ ...m, [itemId]: '' })) }
     );
-    onChange({ ...comments, [dishId]: updated });
-    toast.success('Comment resolved');
   };
 
-  const startEdit = (comment: SketchComment) => {
-    setEditingId(comment.id);
-    setEditText(comment.text);
-  };
-
-  const saveEdit = (dishId: string, commentId: string) => {
+  const saveEdit = (commentId: number) => {
     const text = editText.trim();
     if (!text) return;
-    const updated = (comments[dishId] ?? []).map((c) =>
-      c.id === commentId ? { ...c, text } : c,
+    updateComment.mutate(
+      { id: commentId, data: { text } },
+      { onSuccess: () => { setEditingId(null); toast.success('Comment updated'); } }
     );
-    onChange({ ...comments, [dishId]: updated });
-    setEditingId(null);
   };
 
-  const deleteComment = (dishId: string, commentId: string) => {
-    const updated = (comments[dishId] ?? []).filter((c) => c.id !== commentId);
-    const next = { ...comments };
-    if (updated.length === 0) {
-      delete next[dishId];
-    } else {
-      next[dishId] = updated;
-    }
-    onChange(next);
-    setDeletingComment(null);
-    toast.success('Comment deleted');
-  };
-
-  const allDishes = sections.flatMap((s) =>
-    s.dishes
-      .filter((d) => d.id)
-      .map((d) => ({ sectionName: s.name, dish: d })),
+  const allItems = sections.flatMap((s) =>
+    (itemsBySection[s.id] ?? []).map((item) => ({ sectionName: s.name, item }))
   );
 
   return (
     <div className="flex h-full flex-col border-l border-border bg-card">
-      {/* Header + Show resolved */}
+      {/* Header */}
       <div className="shrink-0 border-b border-border px-4 py-3 space-y-2">
         <h3 className="text-sm font-semibold text-foreground">Comments</h3>
         <label className="flex cursor-pointer items-center gap-2">
@@ -105,27 +79,22 @@ export function CommentsPanel({ sections, comments, onChange }: CommentsPanelPro
 
       {/* Scrollable content */}
       <div className="flex-1 overflow-y-auto px-3 py-3 space-y-5">
-        {allDishes.length === 0 && (
-          <p className="pt-6 text-center text-xs text-muted-foreground">
-            No dishes yet.
-          </p>
+        {allItems.length === 0 && (
+          <p className="pt-6 text-center text-xs text-muted-foreground">No dishes yet.</p>
         )}
 
-        {allDishes.map(({ dish }) => {
-          const dishId = dish.id!;
-          const allDishComments = comments[dishId] ?? [];
+        {allItems.map(({ item }) => {
+          const allItemComments = commentsByItemId[item.id] ?? [];
           const visible = showResolved
-            ? allDishComments
-            : allDishComments.filter((c) => !c.resolved);
+            ? allItemComments
+            : allItemComments.filter((c) => !c.resolved);
 
           return (
-            <div key={dishId} className="space-y-1.5">
-              {/* Dish heading */}
+            <div key={item.id} className="space-y-1.5">
               <p className="truncate text-xs font-semibold text-foreground">
-                {dish.name || 'Unnamed dish'}
+                {item.recipe_name || 'Unnamed dish'}
               </p>
 
-              {/* Comment list */}
               {visible.map((comment) => (
                 <div
                   key={comment.id}
@@ -138,13 +107,13 @@ export function CommentsPanel({ sections, comments, onChange }: CommentsPanelPro
                       <textarea
                         autoFocus
                         rows={2}
-                        className="w-full resize-none rounded border border-border bg-muted px-2 py-1 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                        className="w-full resize-none rounded border border-border bg-muted px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
                         value={editText}
                         onChange={(e) => setEditText(e.target.value)}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter' && !e.shiftKey) {
                             e.preventDefault();
-                            saveEdit(dishId, comment.id);
+                            saveEdit(comment.id);
                           }
                           if (e.key === 'Escape') setEditingId(null);
                         }}
@@ -157,7 +126,7 @@ export function CommentsPanel({ sections, comments, onChange }: CommentsPanelPro
                           Cancel
                         </button>
                         <button
-                          onClick={() => saveEdit(dishId, comment.id)}
+                          onClick={() => saveEdit(comment.id)}
                           className="rounded bg-primary px-2 py-0.5 text-xs text-primary-foreground"
                         >
                           Save
@@ -166,38 +135,32 @@ export function CommentsPanel({ sections, comments, onChange }: CommentsPanelPro
                     </div>
                   ) : (
                     <>
-                      <p className="text-xs leading-relaxed text-foreground">
-                        {comment.text}
-                      </p>
+                      <p className="text-xs leading-relaxed text-foreground">{comment.text}</p>
                       <div className="flex items-center justify-between">
                         <span className="text-[10px] text-muted-foreground">
                           {formatTimestamp(comment.created_at)}
                         </span>
                         {comment.resolved ? (
-                          <span className="text-[10px] italic text-muted-foreground">
-                            resolved
-                          </span>
+                          <span className="text-[10px] italic text-muted-foreground">resolved</span>
                         ) : (
                           <div className="flex items-center gap-0.5">
                             <button
                               title="Edit"
-                              onClick={() => startEdit(comment)}
+                              onClick={() => { setEditingId(comment.id); setEditText(comment.text); }}
                               className="rounded p-0.5 text-muted-foreground hover:text-foreground"
                             >
                               <Pencil className="h-3 w-3" />
                             </button>
                             <button
                               title="Resolve"
-                              onClick={() => resolveComment(dishId, comment.id)}
+                              onClick={() => resolveComment.mutate(comment.id)}
                               className="rounded p-0.5 text-muted-foreground hover:text-foreground"
                             >
                               <Check className="h-3 w-3" />
                             </button>
                             <button
                               title="Delete"
-                              onClick={() =>
-                                setDeletingComment({ dishId, commentId: comment.id })
-                              }
+                              onClick={() => setDeletingId(comment.id)}
                               className="rounded p-0.5 text-muted-foreground hover:text-destructive"
                             >
                               <Trash2 className="h-3 w-3" />
@@ -215,14 +178,14 @@ export function CommentsPanel({ sections, comments, onChange }: CommentsPanelPro
                 <textarea
                   rows={1}
                   placeholder="Add a comment…"
-                  value={newCommentText[dishId] ?? ''}
+                  value={newCommentText[item.id] ?? ''}
                   onChange={(e) =>
-                    setNewCommentText((m) => ({ ...m, [dishId]: e.target.value }))
+                    setNewCommentText((m) => ({ ...m, [item.id]: e.target.value }))
                   }
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && !e.shiftKey) {
                       e.preventDefault();
-                      addComment(dishId);
+                      addComment(item.id);
                     }
                   }}
                   className="w-full resize-none rounded-md border border-border bg-muted px-2 py-1.5 pr-8 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
@@ -230,7 +193,7 @@ export function CommentsPanel({ sections, comments, onChange }: CommentsPanelPro
                 <button
                   type="button"
                   title="Send"
-                  onClick={() => addComment(dishId)}
+                  onClick={() => addComment(item.id)}
                   className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded p-0.5 text-muted-foreground hover:text-foreground"
                 >
                   <SendHorizonal className="h-3 w-3" />
@@ -241,14 +204,12 @@ export function CommentsPanel({ sections, comments, onChange }: CommentsPanelPro
         })}
       </div>
 
-      {/* Delete confirmation modal */}
       <ConfirmModal
-        isOpen={deletingComment !== null}
-        onClose={() => setDeletingComment(null)}
+        isOpen={deletingId !== null}
+        onClose={() => setDeletingId(null)}
         onConfirm={() => {
-          if (deletingComment) {
-            deleteComment(deletingComment.dishId, deletingComment.commentId);
-          }
+          if (deletingId != null) deleteComment.mutate(deletingId);
+          setDeletingId(null);
         }}
         title="Delete comment"
         message="Are you sure you want to delete this comment? This cannot be undone."

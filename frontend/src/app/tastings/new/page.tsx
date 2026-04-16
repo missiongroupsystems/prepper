@@ -1,13 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { ArrowLeft, Calendar, Clock } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { ArrowLeft, Calendar, Clock, FlaskConical } from 'lucide-react';
 import Link from 'next/link';
 import { DayPicker } from 'react-day-picker';
 import { format } from 'date-fns';
 import 'react-day-picker/style.css';
-import { useCreateTastingSession } from '@/lib/hooks/useTastings';
+import { useCreateTastingSession, useAddRecipesToSession } from '@/lib/hooks/useTastings';
 import { useSendTastingInvitation } from '@/lib/hooks/useSendTastingInvitation';
 import { PageHeader, Button, Input, Textarea } from '@/components/ui';
 import { ParticipantPicker } from '@/components/tasting/ParticipantPicker';
@@ -15,7 +15,13 @@ import type { User } from '@/types';
 
 export default function NewTastingSessionPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const preselectedRecipeIds = (searchParams.get('recipe_ids') ?? '')
+    .split(',')
+    .map(Number)
+    .filter((n) => n > 0);
   const createSession = useCreateTastingSession();
+  const addRecipesToSession = useAddRecipesToSession();
   const sendInvitation = useSendTastingInvitation();
 
   const [name, setName] = useState('');
@@ -86,6 +92,14 @@ export default function NewTastingSessionPage() {
         notes: notes.trim() || null,
       });
 
+      // Add pre-selected recipes from menu sketch
+      if (preselectedRecipeIds.length > 0) {
+        await addRecipesToSession.mutateAsync({
+          sessionId: session.id,
+          data: { recipe_ids: preselectedRecipeIds },
+        });
+      }
+
       // Send email/SMS invitations if there are participants
       if (selectedParticipants.length > 0) {
         sendInvitation.mutate({
@@ -125,6 +139,16 @@ export default function NewTastingSessionPage() {
           title="New Tasting Session"
           description="Create a new session to track recipe tastings and feedback"
         />
+
+        {preselectedRecipeIds.length > 0 && (
+          <div className="mt-4 flex items-center gap-2 rounded-lg border border-border bg-muted/50 px-3 py-2 text-sm text-foreground">
+            <FlaskConical className="h-4 w-4 shrink-0 text-primary" />
+            <span>
+              <span className="font-medium">{preselectedRecipeIds.length} dish{preselectedRecipeIds.length !== 1 ? 'es' : ''}</span>
+              {' '}from your menu draft will be added to this session.
+            </span>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-6 mt-6">
           <div>

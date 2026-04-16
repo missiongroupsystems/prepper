@@ -855,41 +855,15 @@ export interface UpdateMenuRequest {
 }
 
 // ============================================================================
-// Menu Sketch Types (freeform input-driven menu builder)
+// Menu Sketch Types (relational menu builder)
 // ============================================================================
-
-export interface SketchComment {
-  id: string;
-  text: string;
-  resolved: boolean;
-  created_at: string;
-}
-
-export type SketchComments = Record<string, SketchComment[]>; // keyed by dish id
-
-export interface SketchDish {
-  id?: string;          // stable UUID — assigned on creation
-  name: string;
-  ingredients: string[];
-  sales_price: number;
-  cost_price: number;
-  description?: string;
-  is_highlight?: boolean;
-  icons?: string[];
-}
-
-export interface SketchSection {
-  id?: string;          // stable UUID — assigned on creation
-  name: string;
-  dishes: SketchDish[];
-}
 
 export interface MenuSketch {
   id: number;
   version: number;
   name: string;
-  sections: SketchSection[];
-  comments: SketchComments;
+  status: 'draft' | 'archived';
+  root: number | null;
   notes?: string | null;
   created_at: string;
   updated_at: string;
@@ -901,9 +875,107 @@ export interface CreateMenuSketchRequest {
 
 export interface UpdateMenuSketchRequest {
   name?: string;
-  sections?: SketchSection[];
-  comments?: SketchComments;
   notes?: string | null;
+}
+
+export interface MenuSketchSection {
+  id: number;
+  name: string;
+  menu_sketch_id: number;
+  order_no: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateMenuSketchSectionRequest {
+  menu_sketch_id: number;
+  name: string;
+  order_no?: number;
+}
+
+export interface UpdateMenuSketchSectionRequest {
+  name?: string;
+  order_no?: number;
+}
+
+export interface MenuSketchTastingNote {
+  id: number;
+  feedback: string | null;
+  taster_name: string | null;
+  decision: string | null;
+  overall_rating: number | null;
+  session_name: string | null;
+  session_date: string | null;
+  created_at: string;
+}
+
+export interface MenuSketchSectionItem {
+  id: number;
+  menu_sketch_section_id: number;
+  recipe_id: number | null;
+  /** Display name resolved from the linked recipe. */
+  recipe_name: string | null;
+  sales_price: number | null;
+  cost_price: number | null;
+  margin: number | null;
+  description: string | null;
+  is_highlight: boolean;
+  icons: string[];
+  order_no: number;
+  tasting_notes: MenuSketchTastingNote[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateMenuSketchSectionItemRequest {
+  menu_sketch_section_id: number;
+  name: string;
+  recipe_id?: number | null;
+  sales_price?: number | null;
+  cost_price?: number | null;
+  description?: string | null;
+  is_highlight?: boolean;
+  icons?: string[];
+  order_no?: number;
+}
+
+export interface UpdateMenuSketchSectionItemRequest {
+  name?: string;
+  recipe_id?: number | null;
+  sales_price?: number | null;
+  cost_price?: number | null;
+  description?: string | null;
+  is_highlight?: boolean;
+  icons?: string[];
+  order_no?: number;
+}
+
+export interface MenuSketchSectionItemComment {
+  id: number;
+  menu_sketch_section_item_id: number;
+  text: string;
+  resolved: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateMenuSketchSectionItemCommentRequest {
+  menu_sketch_section_item_id: number;
+  text: string;
+}
+
+export interface UpdateMenuSketchSectionItemCommentRequest {
+  text: string;
+}
+
+export interface DishCommentsRead {
+  menu_sketch_section_item_id: number;
+  name: string | null; // resolved from the linked recipe
+  comments: MenuSketchSectionItemComment[];
+}
+
+export interface MenuSketchCommentsResponse {
+  data: DishCommentsRead[];
 }
 
 // ============ Supplier Ingredient Tag Types ============

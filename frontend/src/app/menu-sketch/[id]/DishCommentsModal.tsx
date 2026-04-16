@@ -4,7 +4,13 @@ import { useState } from 'react';
 import { Pencil, Check, Trash2, SendHorizonal, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { ConfirmModal } from '@/components/ui';
-import type { SketchComment } from '@/types';
+import {
+  useCreateMenuSketchComment,
+  useUpdateMenuSketchComment,
+  useResolveMenuSketchComment,
+  useDeleteMenuSketchComment,
+} from '@/lib/hooks';
+import type { MenuSketchSectionItemComment } from '@/types';
 
 function formatTimestamp(iso: string): string {
   const d = new Date(iso);
@@ -16,77 +22,50 @@ function formatTimestamp(iso: string): string {
 }
 
 interface DishCommentsModalProps {
+  itemId: number;
   dishName: string;
-  dishComments: SketchComment[];
+  comments: MenuSketchSectionItemComment[];
   onClose: () => void;
-  onChange: (comments: SketchComment[]) => void;
 }
 
-export function DishCommentsModal({
-  dishName,
-  dishComments,
-  onClose,
-  onChange,
-}: DishCommentsModalProps) {
+export function DishCommentsModal({ itemId, dishName, comments, onClose }: DishCommentsModalProps) {
   const [showResolved, setShowResolved] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<number | null>(null);
   const [editText, setEditText] = useState('');
-  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
   const [newText, setNewText] = useState('');
 
-  const visible = showResolved
-    ? dishComments
-    : dishComments.filter((c) => !c.resolved);
+  const createComment = useCreateMenuSketchComment();
+  const updateComment = useUpdateMenuSketchComment();
+  const resolveComment = useResolveMenuSketchComment();
+  const deleteComment = useDeleteMenuSketchComment();
+
+  const visible = showResolved ? comments : comments.filter((c) => !c.resolved);
+  const resolvedCount = comments.filter((c) => c.resolved).length;
 
   const addComment = () => {
     const text = newText.trim();
     if (!text) return;
-    const comment: SketchComment = {
-      id: crypto.randomUUID(),
-      text,
-      resolved: false,
-      created_at: new Date().toISOString(),
-    };
-    onChange([...dishComments, comment]);
-    setNewText('');
-  };
-
-  const resolveComment = (commentId: string) => {
-    onChange(
-      dishComments.map((c) => (c.id === commentId ? { ...c, resolved: true } : c)),
+    createComment.mutate(
+      { menu_sketch_section_item_id: itemId, text },
+      { onSuccess: () => setNewText('') }
     );
-    toast.success('Comment resolved');
   };
 
-  const startEdit = (comment: SketchComment) => {
-    setEditingId(comment.id);
-    setEditText(comment.text);
-  };
-
-  const saveEdit = (commentId: string) => {
+  const saveEdit = (commentId: number) => {
     const text = editText.trim();
     if (!text) return;
-    onChange(
-      dishComments.map((c) => (c.id === commentId ? { ...c, text } : c)),
+    updateComment.mutate(
+      { id: commentId, data: { text } },
+      { onSuccess: () => { setEditingId(null); toast.success('Comment updated'); } }
     );
-    setEditingId(null);
   };
-
-  const deleteComment = (commentId: string) => {
-    onChange(dishComments.filter((c) => c.id !== commentId));
-    setDeletingId(null);
-    toast.success('Comment deleted');
-  };
-
-  const resolvedCount = dishComments.filter((c) => c.resolved).length;
 
   return (
     <>
       <div className="fixed inset-0 z-50 flex items-center justify-center">
-        {/* Backdrop */}
         <div className="absolute inset-0 bg-black/50" onClick={onClose} />
 
-        {/* Modal */}
         <div className="relative z-10 flex max-h-[80vh] w-full max-w-md flex-col rounded-lg border border-border bg-card shadow-xl">
           {/* Header */}
           <div className="shrink-0 border-b border-border px-4 py-3 space-y-2">
@@ -117,9 +96,7 @@ export function DishCommentsModal({
           {/* Comment list */}
           <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2">
             {visible.length === 0 && (
-              <p className="py-4 text-center text-xs text-muted-foreground">
-                No comments yet.
-              </p>
+              <p className="py-4 text-center text-xs text-muted-foreground">No comments yet.</p>
             )}
             {visible.map((comment) => (
               <div
@@ -133,14 +110,11 @@ export function DishCommentsModal({
                     <textarea
                       autoFocus
                       rows={2}
-                      className="w-full resize-none rounded border border-border bg-muted px-2 py-1 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                      className="w-full resize-none rounded border border-border bg-muted px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
                       value={editText}
                       onChange={(e) => setEditText(e.target.value)}
                       onKeyDown={(e) => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                          e.preventDefault();
-                          saveEdit(comment.id);
-                        }
+                        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); saveEdit(comment.id); }
                         if (e.key === 'Escape') setEditingId(null);
                       }}
                     />
@@ -161,29 +135,25 @@ export function DishCommentsModal({
                   </div>
                 ) : (
                   <>
-                    <p className="text-xs leading-relaxed text-foreground">
-                      {comment.text}
-                    </p>
+                    <p className="text-xs leading-relaxed text-foreground">{comment.text}</p>
                     <div className="flex items-center justify-between">
                       <span className="text-[10px] text-muted-foreground">
                         {formatTimestamp(comment.created_at)}
                       </span>
                       {comment.resolved ? (
-                        <span className="text-[10px] italic text-muted-foreground">
-                          resolved
-                        </span>
+                        <span className="text-[10px] italic text-muted-foreground">resolved</span>
                       ) : (
                         <div className="flex items-center gap-0.5">
                           <button
                             title="Edit"
-                            onClick={() => startEdit(comment)}
+                            onClick={() => { setEditingId(comment.id); setEditText(comment.text); }}
                             className="rounded p-0.5 text-muted-foreground hover:text-foreground"
                           >
                             <Pencil className="h-3 w-3" />
                           </button>
                           <button
                             title="Resolve"
-                            onClick={() => resolveComment(comment.id)}
+                            onClick={() => resolveComment.mutate(comment.id)}
                             className="rounded p-0.5 text-muted-foreground hover:text-foreground"
                           >
                             <Check className="h-3 w-3" />
@@ -213,10 +183,7 @@ export function DishCommentsModal({
                 value={newText}
                 onChange={(e) => setNewText(e.target.value)}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    addComment();
-                  }
+                  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); addComment(); }
                 }}
                 className="w-full resize-none rounded-md border border-border bg-muted px-2 py-1.5 pr-8 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
               />
@@ -237,7 +204,8 @@ export function DishCommentsModal({
         isOpen={deletingId !== null}
         onClose={() => setDeletingId(null)}
         onConfirm={() => {
-          if (deletingId) deleteComment(deletingId);
+          if (deletingId != null) { deleteComment.mutate(deletingId); }
+          setDeletingId(null);
         }}
         title="Delete comment"
         message="Are you sure you want to delete this comment? This cannot be undone."

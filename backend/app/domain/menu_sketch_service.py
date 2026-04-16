@@ -9,6 +9,8 @@ from app.models.menu_sketch import (
     MenuSketchCreate,
     MenuSketchUpdate,
 )
+from app.models.menu_sketch_section import MenuSketchSection
+from app.models.menu_sketch_section_item import MenuSketchSectionItem
 
 
 class MenuSketchService:
@@ -78,7 +80,7 @@ class MenuSketchService:
         return True
 
     def fork_sketch(self, sketch_id: int) -> MenuSketch | None:
-        """Fork a sketch — copy fields, increment version, set root to original ID."""
+        """Fork a sketch — copy metadata + all sections and items, increment version."""
         original = self.session.get(MenuSketch, sketch_id)
         if original is None:
             return None
@@ -93,4 +95,45 @@ class MenuSketchService:
         self.session.add(forked)
         self.session.commit()
         self.session.refresh(forked)
+
+        # Copy every section, then every item within each section
+        sections = list(
+            self.session.exec(
+                select(MenuSketchSection)
+                .where(MenuSketchSection.menu_sketch_id == sketch_id)
+                .order_by(MenuSketchSection.order_no)  # type: ignore[arg-type]
+            ).all()
+        )
+        for section in sections:
+            new_section = MenuSketchSection(
+                name=section.name,
+                menu_sketch_id=forked.id,
+                order_no=section.order_no,
+            )
+            self.session.add(new_section)
+            self.session.commit()
+            self.session.refresh(new_section)
+
+            items = list(
+                self.session.exec(
+                    select(MenuSketchSectionItem)
+                    .where(MenuSketchSectionItem.menu_sketch_section_id == section.id)
+                    .order_by(MenuSketchSectionItem.order_no)  # type: ignore[arg-type]
+                ).all()
+            )
+            for item in items:
+                new_item = MenuSketchSectionItem(
+                    menu_sketch_section_id=new_section.id,
+                    recipe_id=item.recipe_id,
+                    sales_price=item.sales_price,
+                    cost_price=item.cost_price,
+                    margin=item.margin,
+                    description=item.description,
+                    is_highlight=item.is_highlight,
+                    icons=item.icons if isinstance(item.icons, list) else [],
+                    order_no=item.order_no,
+                )
+                self.session.add(new_item)
+            self.session.commit()
+
         return forked

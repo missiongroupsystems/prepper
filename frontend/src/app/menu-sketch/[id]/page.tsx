@@ -1,14 +1,36 @@
 'use client';
 
 import { useParams, useRouter } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
-import { toast } from 'sonner';
-import { useMenuSketch, useUpdateMenuSketch, useForkMenuSketch, useRecipes } from '@/lib/hooks';
-import type { Recipe } from '@/types';
-import type { SketchSection, SketchDish, SketchComment, SketchComments } from '@/types';
+import { useRef, useState } from 'react';
+import { useQuery, useQueries } from '@tanstack/react-query';
+import {
+  useMenuSketch,
+  useUpdateMenuSketch,
+  useForkMenuSketch,
+  useRecipes,
+  useMenuSketchSections,
+  useCreateMenuSketchSection,
+  useUpdateMenuSketchSection,
+  useDeleteMenuSketchSection,
+  useMenuSketchSectionItems,
+  useCreateMenuSketchSectionItem,
+  useUpdateMenuSketchSectionItem,
+  useDeleteMenuSketchSectionItem,
+  useMenuSketchComments,
+  useRecipeIngredients,
+  useAddRecipeIngredient,
+  useRemoveRecipeIngredient,
+  useCreateIngredient,
+} from '@/lib/hooks';
+import * as api from '@/lib/api';
+import type { Recipe, Ingredient } from '@/types';
+import type {
+  MenuSketchSection,
+  MenuSketchSectionItem,
+  MenuSketchSectionItemComment,
+} from '@/types';
 import {
   GitFork,
-  Save,
   X,
   ChevronDown,
   ChevronUp,
@@ -18,13 +40,16 @@ import {
   GripVertical,
   Eye,
   Pencil,
-  SendHorizonal,
   MessageSquare,
   SlidersHorizontal,
   Check,
+  Plus,
+  FlaskConical,
+  SendHorizontal,
 } from 'lucide-react';
 import { CommentsPanel } from './CommentsPanel';
 import { DishCommentsModal } from './DishCommentsModal';
+import { DishFeedbackModal } from './DishFeedbackModal';
 import dynamic from 'next/dynamic';
 const NotesEditor = dynamic(() => import('./NotesEditor').then((m) => m.NotesEditor), { ssr: false });
 import { ConfirmModal } from '@/components/ui';
@@ -59,114 +84,138 @@ function chunk<T>(arr: T[], n: number): T[][] {
   return result;
 }
 
-// ─── Empty factories ──────────────────────────────────────────────────────────
-function emptyDish(name = ''): SketchDish {
-  return { id: crypto.randomUUID(), name, ingredients: [], sales_price: 0, cost_price: 0, description: '' };
-}
-
-function emptySection(name = ''): SketchSection {
-  return { id: crypto.randomUUID(), name, dishes: [] };
-}
-
-// ─── Icon defs for dish tags ──────────────────────────────────────────────────
-const ICON_DEFS: { key: string; label: string; emoji: string }[] = [
-  { key: 'signature', label: 'Signature', emoji: '⭐' },
-  { key: 'spicy',     label: 'Spicy',     emoji: '🌶️' },
-  { key: 'vegetarian',label: 'Vegetarian',emoji: '🌿' },
-  { key: 'seafood',   label: 'Seafood',   emoji: '🐟' },
-  { key: 'beef',      label: 'Beef',      emoji: '🥩' },
-  { key: 'pork',      label: 'Pork',      emoji: '🐷' },
-  { key: 'nuts',      label: 'Nuts',      emoji: '🥜' },
+const ICON_DEFS = [
+  { key: '⭐', label: 'Signature' },
+  { key: '🌶️', label: 'Spicy' },
+  { key: '🌿', label: 'Vegetarian' },
+  { key: '🐟', label: 'Seafood' },
+  { key: '🥩', label: 'Beef' },
+  { key: '🐷', label: 'Pork' },
+  { key: '🥜', label: 'Nuts' },
 ];
 
-// ─── Preview components ───────────────────────────────────────────────────────
 interface DisplayOptions {
   description: boolean;
   ingredients: boolean;
   cost: boolean;
   costMargins: boolean;
   comments: boolean;
+  feedback: boolean;
 }
 
+// ─── Preview components ────────────────────────────────────────────────────────
 function DishPreviewCell({
-  dish,
+  item,
   comments,
   onOpenComments,
   display,
 }: {
-  dish: SketchDish | undefined;
-  comments?: SketchComments;
+  item: MenuSketchSectionItem;
+  comments: MenuSketchSectionItemComment[];
   onOpenComments?: () => void;
   display: DisplayOptions;
 }) {
+  const [showFeedback, setShowFeedback] = useState(false);
+  const commentCount = comments.filter((c) => !c.resolved).length;
   const costPct =
-    dish && dish.sales_price > 0
-      ? ((dish.cost_price / dish.sales_price) * 100).toFixed(2) + '%'
+    item.sales_price && item.cost_price && Number(item.sales_price) > 0
+      ? ((Number(item.cost_price) / Number(item.sales_price)) * 100).toFixed(2) + '%'
       : '—';
-  const commentCount =
-    dish?.id ? (comments?.[dish.id] ?? []).filter((c) => !c.resolved).length : 0;
-  if (!dish) return <div className="px-4 py-3" />;
+  const { data: recipeIngredients = [] } = useRecipeIngredients(
+    display.ingredients ? item.recipe_id : null
+  );
+
   return (
-    <div className={`relative px-4 py-3 space-y-2${dish.is_highlight ? ' bg-amber-500/10 dark:bg-amber-500/25' : ''}`}>
-      {/* Dish name + icons + prices + comment badge on one row */}
+    <div className={`relative px-4 py-3 space-y-2${item.is_highlight ? ' bg-amber-500/10 dark:bg-amber-500/25' : ''}`}>
+      {/* Dish name + icons + prices + badges on one row */}
       <div className="flex items-center gap-2">
         <p className="flex-1 text-base font-semibold text-foreground leading-snug">
-          {dish.name || '—'}
+          {item.recipe_name || '—'}
         </p>
-        {dish.icons && dish.icons.length > 0 && (
+        {(item.icons ?? []).length > 0 && (
           <div className="flex shrink-0 gap-0.5">
-            {dish.icons.map((key) => {
-              const def = ICON_DEFS.find((d) => d.key === key);
-              return def ? <span key={key} title={def.label} className="text-sm leading-none">{def.emoji}</span> : null;
-            })}
+            {(item.icons ?? []).map((ic) => (
+              <span key={ic} className="text-sm leading-none">{ic}</span>
+            ))}
           </div>
         )}
         <div className="flex shrink-0 gap-3 text-right text-xs tabular-nums items-center">
-          <span className="text-foreground w-14 text-right">${dish.sales_price.toFixed(2)}</span>
+          <span className="text-foreground w-14 text-right">
+            {item.sales_price != null ? `$${Number(item.sales_price).toFixed(2)}` : '—'}
+          </span>
           {display.cost && (
-            <span className="text-muted-foreground w-14 text-right">${dish.cost_price.toFixed(2)}</span>
+            <span className="text-muted-foreground w-14 text-right">
+              {item.cost_price != null ? `$${Number(item.cost_price).toFixed(2)}` : '—'}
+            </span>
           )}
           {display.costMargins && (
             <span className="text-muted-foreground/70 w-12 font-medium text-right">{costPct}</span>
           )}
         </div>
-        {display.comments && (
-          <button
-            type="button"
-            onClick={onOpenComments}
-            className={`shrink-0 flex items-center gap-0.5 rounded-full border px-1.5 text-[10px] transition-colors hover:opacity-80 ${
-              commentCount > 0
-                ? 'border-orange-400/50 bg-orange-500/15 text-orange-600 dark:text-orange-400'
-                : 'border-border bg-muted/60 text-muted-foreground'
-            }`}
-          >
-            <MessageSquare className="h-2.5 w-2.5" />
-            {commentCount}
-          </button>
-        )}
       </div>
-      {/* Description — directly below dish name */}
-      {display.description && dish.description?.trim() && (
-        <p className="text-sm text-muted-foreground leading-relaxed">
-          {dish.description}
-        </p>
-      )}
-      {/* Key ingredients */}
-      {display.ingredients && (
-        <div className="text-sm text-muted-foreground leading-relaxed">
-          <span className="font-semibold">Key ingredients:</span>{' '}
-          {dish.ingredients.length > 0
-            ? (
-              <span className="flex flex-wrap gap-1 mt-0.5">
-                {dish.ingredients.map((ing, i) => (
-                  <span key={i} className="rounded border border-border bg-muted/60 px-1.5 py-0.5 text-xs">
-                    {ing}
-                  </span>
-                ))}
-              </span>
-            )
-            : '—'}
+
+      {/* Description + actions row — always rendered; feedback/comment buttons always present */}
+      <div className="flex items-start gap-2">
+        {display.description && item.description?.trim() ? (
+          <p className="flex-1 text-sm text-muted-foreground leading-relaxed">{item.description}</p>
+        ) : (
+          <span className="flex-1" />
+        )}
+        <div className="flex items-center gap-1 shrink-0">
+          {display.feedback && (
+            <button
+              type="button"
+              onClick={() => setShowFeedback((v) => !v)}
+              className={`shrink-0 flex items-center gap-0.5 rounded-full border px-1.5 text-[10px] transition-colors hover:opacity-80 ${
+                showFeedback
+                  ? 'border-blue-400/80 bg-blue-500/25 text-blue-600 dark:text-blue-400'
+                  : item.tasting_notes.length > 0
+                  ? 'border-blue-400/50 bg-blue-500/15 text-blue-600 dark:text-blue-400'
+                  : 'border-border bg-muted/60 text-muted-foreground'
+              }`}
+              title="Tasting feedback"
+            >
+              <FlaskConical className="h-2.5 w-2.5" />
+              {item.tasting_notes.length}
+            </button>
+          )}
+          {display.comments && (
+            <button
+              type="button"
+              onClick={onOpenComments}
+              className={`shrink-0 flex items-center gap-0.5 rounded-full border px-1.5 text-[10px] transition-colors hover:opacity-80 ${
+                commentCount > 0
+                  ? 'border-orange-400/50 bg-orange-500/15 text-orange-600 dark:text-orange-400'
+                  : 'border-border bg-muted/60 text-muted-foreground'
+              }`}
+            >
+              <MessageSquare className="h-2.5 w-2.5" />
+              {commentCount}
+            </button>
+          )}
         </div>
+      </div>
+
+      {/* Ingredient chips */}
+      {display.ingredients && recipeIngredients.length > 0 && (
+        <div className="flex flex-wrap gap-1">
+          {recipeIngredients.map((ri) => (
+            <span
+              key={ri.id}
+              className="inline-flex items-center rounded-full bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground"
+            >
+              {ri.ingredient?.name ?? `Ingredient #${ri.ingredient_id}`}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {showFeedback && (
+        <DishFeedbackModal
+          dishName={item.recipe_name ?? ''}
+          notes={item.tasting_notes}
+          onClose={() => setShowFeedback(false)}
+        />
       )}
     </div>
   );
@@ -175,14 +224,16 @@ function DishPreviewCell({
 function MenuSketchPreview({
   name,
   sections,
-  comments,
+  itemsBySection,
+  commentsByItemId,
   onOpenComments,
   display,
 }: {
   name: string;
-  sections: SketchSection[];
-  comments?: SketchComments;
-  onOpenComments?: (dishId: string) => void;
+  sections: MenuSketchSection[];
+  itemsBySection: Record<number, MenuSketchSectionItem[]>;
+  commentsByItemId: Record<number, MenuSketchSectionItemComment[]>;
+  onOpenComments: (itemId: number, dishName: string) => void;
   display: DisplayOptions;
 }) {
   return (
@@ -192,16 +243,17 @@ function MenuSketchPreview({
           {name}
         </h1>
       )}
-      {sections.map((section, si) => {
-        const pairs = chunk(section.dishes, 2);
+      {sections.map((section) => {
+        const items = itemsBySection[section.id] ?? [];
+        const pairs = chunk(items, 2);
         return (
-          <div key={si} className="rounded-xl overflow-hidden border border-border shadow-sm">
+          <div key={section.id} className="rounded-xl overflow-hidden border border-border shadow-sm">
             {/* Section header */}
             <div className="text-center font-bold tracking-widest uppercase text-sm py-2.5 px-4 bg-muted text-foreground">
               {section.name || 'Unnamed Section'}
             </div>
 
-            {/* Column headers — mirrors DishPreviewCell row structure */}
+            {/* Column headers */}
             <div className="grid grid-cols-2 divide-x divide-border border-t border-border bg-muted/30">
               {[0, 1].map((col) => (
                 <div key={col} className="flex items-center gap-2 px-4 py-1.5">
@@ -211,31 +263,35 @@ function MenuSketchPreview({
                     {display.cost && <span className="w-14 text-right">Cost</span>}
                     {display.costMargins && <span className="w-12 text-right">%</span>}
                   </div>
-                  {/* Invisible spacer matching comment badge width */}
-                  {display.comments && (
-                    <span aria-hidden className="invisible shrink-0 flex items-center gap-0.5 rounded-full border px-1.5 text-[10px]">
-                      <MessageSquare className="h-2.5 w-2.5" />0
-                    </span>
-                  )}
                 </div>
               ))}
             </div>
 
-            {/* No dishes */}
             {pairs.length === 0 && (
-              <div className="px-4 py-4 text-muted-foreground italic text-xs text-center">
-                No dishes
-              </div>
+              <div className="px-4 py-4 text-muted-foreground italic text-xs text-center">No dishes</div>
             )}
 
-            {/* Dish pairs */}
             {pairs.map(([d1, d2], pi) => (
               <div
                 key={pi}
                 className={`grid grid-cols-2 divide-x divide-border ${pi > 0 ? 'border-t border-border' : ''}`}
               >
-                <DishPreviewCell dish={d1} comments={comments} onOpenComments={d1?.id ? () => onOpenComments?.(d1.id!) : undefined} display={display} />
-                <DishPreviewCell dish={d2} comments={comments} onOpenComments={d2?.id ? () => onOpenComments?.(d2.id!) : undefined} display={display} />
+                <DishPreviewCell
+                  item={d1}
+                  comments={commentsByItemId[d1.id] ?? []}
+                  onOpenComments={() => onOpenComments(d1.id, d1.recipe_name ?? '')}
+                  display={display}
+                />
+                {d2 ? (
+                  <DishPreviewCell
+                    item={d2}
+                    comments={commentsByItemId[d2.id] ?? []}
+                    onOpenComments={() => onOpenComments(d2.id, d2.recipe_name ?? '')}
+                    display={display}
+                  />
+                ) : (
+                  <div className="px-4 py-3" />
+                )}
               </div>
             ))}
           </div>
@@ -245,779 +301,1169 @@ function MenuSketchPreview({
   );
 }
 
-// ─── Dish card (card view) ────────────────────────────────────────────────────
+// ─── DishCard ─────────────────────────────────────────────────────────────────
 function DishCard({
-  id,
-  dish,
-  onChange,
-  onRemove,
-  commentCount,
+  item,
+  unresolvedCount,
   onOpenComments,
-  recipes = [],
+  recipes,
+  dragHandleProps,
+  isSelected,
+  onToggle,
 }: {
-  id: string;
-  dish: SketchDish;
-  onChange: (patch: Partial<SketchDish>) => void;
-  onRemove: () => void;
-  commentCount: number;
+  item: MenuSketchSectionItem;
+  unresolvedCount: number;
   onOpenComments: () => void;
-  recipes?: Recipe[];
+  recipes: Recipe[];
+  dragHandleProps?: Record<string, unknown>;
+  isSelected: boolean;
+  onToggle: () => void;
 }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
+  const updateItem = useUpdateMenuSketchSectionItem();
+  const deleteItem = useDeleteMenuSketchSectionItem();
+  const addIngredient = useAddRecipeIngredient();
+  const removeIngredient = useRemoveRecipeIngredient();
+  const createIngredient = useCreateIngredient();
+  const { data: recipeIngredients = [] } = useRecipeIngredients(item.recipe_id);
+  const [showIcons, setShowIcons] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [nameDraft, setNameDraft] = useState(item.recipe_name ?? '');
+  const [ingredientSearch, setIngredientSearch] = useState('');
+  const [showIngredientSuggestions, setShowIngredientSuggestions] = useState(false);
+  const [ingPageSize, setIngPageSize] = useState(8);
+  const [selectedIngIndex, setSelectedIngIndex] = useState(-1);
+
+  const linkedIngredientIds = new Set(recipeIngredients.map((ri) => ri.ingredient_id));
+  const ingSearchTerm = ingredientSearch.trim();
+  const { data: ingSearchData } = useQuery({
+    queryKey: ['ingredients-search', ingSearchTerm, ingPageSize],
+    queryFn: () => api.getIngredients({ search: ingSearchTerm, page_size: ingPageSize, active_only: true }),
+    enabled: !!ingSearchTerm,
+    placeholderData: (prev) => prev,
+    staleTime: 30 * 1000,
+  });
+  const suggestedIngredients = (ingSearchData?.items ?? []).filter(
+    (ing) => !linkedIngredientIds.has(ing.id)
+  );
+  const hasMoreIngredients = ingSearchData
+    ? ingSearchData.total_count > ingPageSize
+    : false;
+
+  const doAddIngredient = (recipeId: number, ing: Ingredient) => {
+    addIngredient.mutate({
+      recipeId,
+      data: {
+        ingredient_id: ing.id,
+        quantity: 1,
+        unit: ing.base_unit,
+        base_unit: ing.base_unit,
+        unit_price: ing.cost_per_base_unit ?? 0,
+        supplier_id: null,
+      },
+    });
+    setIngredientSearch('');
+    setIngPageSize(8);
+    setSelectedIngIndex(-1);
+    setShowIngredientSuggestions(false);
   };
 
-  const [ingredientsText, setIngredientsText] = useState(dish.ingredients.join(', '));
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const [showTags, setShowTags] = useState(false);
-  const ingredientsRef = useRef<HTMLTextAreaElement>(null);
-  const descRef = useRef<HTMLTextAreaElement>(null);
-  const nameWrapRef = useRef<HTMLDivElement>(null);
-
-  const prevRef = useRef(dish.ingredients);
-  useEffect(() => {
-    autoResize(ingredientsRef.current);
-  }, []);
-
-  useEffect(() => {
-    if (prevRef.current !== dish.ingredients) {
-      setIngredientsText(dish.ingredients.join(', '));
-      prevRef.current = dish.ingredients;
-      autoResize(ingredientsRef.current);
+  const handleAddIngredient = (ing: Ingredient) => {
+    if (!item.recipe_id) return;
+    if (item.tasting_notes.length > 0 && item.recipe_name) {
+      updateItem.mutate(
+        { id: item.id, data: { name: item.recipe_name }, prevRecipeId: item.recipe_id },
+        { onSuccess: (updated) => { if (updated.recipe_id) doAddIngredient(updated.recipe_id, ing); } }
+      );
+    } else {
+      doAddIngredient(item.recipe_id, ing);
     }
-  }, [dish.ingredients]);
+  };
 
-  useEffect(() => {
-    autoResize(descRef.current);
-  }, [dish.description]);
-
-  useEffect(() => {
-    if (!showSuggestions) return;
-    const handler = (e: MouseEvent) => {
-      if (nameWrapRef.current && !nameWrapRef.current.contains(e.target as Node)) {
-        setShowSuggestions(false);
-      }
+  const handleCreateAndAddIngredient = (name: string) => {
+    if (!item.recipe_id) return;
+    const doCreate = (recipeId: number) => {
+      createIngredient.mutate(
+        { name, base_unit: 'unit' },
+        {
+          onSuccess: (newIng) => {
+            addIngredient.mutate({
+              recipeId,
+              data: {
+                ingredient_id: newIng.id,
+                quantity: 1,
+                unit: newIng.base_unit,
+                base_unit: newIng.base_unit,
+                unit_price: 0,
+                supplier_id: null,
+              },
+            });
+          },
+        }
+      );
+      setIngredientSearch('');
+      setIngPageSize(8);
+      setShowIngredientSuggestions(false);
     };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, [showSuggestions]);
+    if (item.tasting_notes.length > 0 && item.recipe_name) {
+      updateItem.mutate(
+        { id: item.id, data: { name: item.recipe_name }, prevRecipeId: item.recipe_id },
+        { onSuccess: (updated) => { if (updated.recipe_id) doCreate(updated.recipe_id); } }
+      );
+    } else {
+      doCreate(item.recipe_id);
+    }
+  };
 
-  const recipeSuggestions = dish.name.trim().length > 0
-    ? recipes.filter((r) => r.name.toLowerCase().includes(dish.name.toLowerCase())).slice(0, 5)
+  const filtered = nameDraft.trim()
+    ? recipes.filter(
+        (r) =>
+          r.name.toLowerCase().includes(nameDraft.toLowerCase()) &&
+          r.name.toLowerCase() !== (item.recipe_name ?? '').toLowerCase()
+      )
     : [];
 
-  const costPct = dish.sales_price > 0
-    ? ((dish.cost_price / dish.sales_price) * 100).toFixed(1) + '%'
-    : '—';
+  const save = (data: Parameters<typeof updateItem.mutate>[0]['data']) => {
+    updateItem.mutate({ id: item.id, data, prevRecipeId: item.recipe_id });
+  };
+
+  const costPct =
+    item.sales_price && item.cost_price && Number(item.sales_price) > 0
+      ? Math.round((Number(item.cost_price) / Number(item.sales_price)) * 100)
+      : null;
 
   return (
     <div
-      ref={setNodeRef}
-      style={style}
-      className="relative rounded-lg border border-border bg-card p-4 shadow-sm"
+      className={`relative rounded-lg border border-border p-3 space-y-2 ${
+        item.is_highlight ? 'bg-amber-50 dark:bg-amber-950/20' : 'bg-card'
+      }`}
     >
-      <div
-        {...attributes}
-        {...listeners}
-        className="absolute left-2 top-3 cursor-grab touch-none text-muted-foreground/40 hover:text-muted-foreground"
-      >
-        <GripVertical className="h-4 w-4" />
+      {/* Drag handle + remove */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-1.5">
+          <input
+            type="checkbox"
+            checked={isSelected}
+            onChange={onToggle}
+            className="h-3 w-3 rounded accent-primary"
+          />
+          <span
+            className="cursor-grab text-muted-foreground hover:text-foreground"
+            {...(dragHandleProps ?? {})}
+          >
+            <GripVertical className="h-3.5 w-3.5" />
+          </span>
+        </div>
+        <button
+          onClick={() => setConfirmDelete(true)}
+          className="rounded p-0.5 text-muted-foreground hover:text-destructive"
+          title="Remove dish"
+        >
+          <X className="h-3.5 w-3.5" />
+        </button>
       </div>
-      <button
-        onClick={onRemove}
-        className="absolute right-2 top-2 rounded p-1 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
-      >
-        <X className="h-3.5 w-3.5" />
-      </button>
 
-      <div className="space-y-3 pl-5 pr-6">
-        <div ref={nameWrapRef} className="relative">
-          <label className="mb-1 block text-xs font-medium text-muted-foreground">Dish</label>
+      {/* Dish name (searches & links existing recipes; creates new recipe on blur) */}
+      <div className="relative">
+        <input
+          type="text"
+          value={nameDraft}
+          onChange={(e) => {
+            setNameDraft(e.target.value);
+            setShowSuggestions(true);
+          }}
+          onBlur={() => {
+            setShowSuggestions(false);
+            if (nameDraft.trim() !== (item.recipe_name ?? '')) save({ name: nameDraft.trim() });
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') {
+              setNameDraft(item.recipe_name ?? '');
+              setShowSuggestions(false);
+            }
+          }}
+          placeholder="Dish name…"
+          className="w-full rounded border border-border bg-muted px-2 py-1 text-sm font-medium text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+        />
+        {showSuggestions && filtered.length > 0 && (
+          <div className="absolute left-0 top-full z-10 mt-0.5 w-full rounded border border-border bg-card shadow-lg">
+            {filtered.slice(0, 5).map((r) => (
+              <button
+                key={r.id}
+                type="button"
+                onMouseDown={() => {
+                  setNameDraft(r.name);
+                  setShowSuggestions(false);
+                  save({ name: r.name, recipe_id: r.id });
+                }}
+                className="w-full px-2 py-1 text-left text-xs hover:bg-muted"
+              >
+                {r.name}
+              </button>
+            ))}
+            {filtered.length > 5 && (
+              <p className="px-2 py-1 text-[10px] text-muted-foreground">+{filtered.length - 5} more</p>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Ingredients */}
+      {(recipeIngredients.length > 0 || item.recipe_id) && (
+        <div className="space-y-1">
+          {recipeIngredients.length > 0 && (
+            <div className="flex flex-wrap gap-1">
+              {recipeIngredients.map((ri) => (
+                <span
+                  key={ri.id}
+                  className="inline-flex items-center gap-0.5 rounded-full bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground"
+                >
+                  {ri.ingredient?.name ?? `Ingredient #${ri.ingredient_id}`}
+                  <button
+                    type="button"
+                    onClick={() =>
+                      removeIngredient.mutate({ recipeId: item.recipe_id!, ingredientId: ri.id })
+                    }
+                    className="ml-0.5 rounded-full text-muted-foreground hover:text-destructive"
+                    title="Remove ingredient"
+                  >
+                    <X className="h-2.5 w-2.5" />
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
+          {item.recipe_id && (
+            <div className="relative">
+              <input
+                type="text"
+                value={ingredientSearch}
+                onChange={(e) => { setIngredientSearch(e.target.value); setIngPageSize(8); setSelectedIngIndex(-1); setShowIngredientSuggestions(true); }}
+                onFocus={() => setShowIngredientSuggestions(true)}
+                onBlur={() => setTimeout(() => setShowIngredientSuggestions(false), 150)}
+                onKeyDown={(e) => {
+                  if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    setSelectedIngIndex((i) => Math.min(i + 1, suggestedIngredients.length - 1));
+                  } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    setSelectedIngIndex((i) => Math.max(i - 1, -1));
+                  } else if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (selectedIngIndex >= 0 && selectedIngIndex < suggestedIngredients.length) {
+                      handleAddIngredient(suggestedIngredients[selectedIngIndex]);
+                    } else if (suggestedIngredients.length > 0) {
+                      handleAddIngredient(suggestedIngredients[0]);
+                    } else if (ingSearchTerm) {
+                      handleCreateAndAddIngredient(ingSearchTerm);
+                    }
+                  }
+                }}
+                placeholder="Add ingredient…"
+                className="w-full rounded border border-border bg-muted px-2 py-0.5 text-[10px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+              />
+              {showIngredientSuggestions && (suggestedIngredients.length > 0 || ingSearchTerm) && (
+                <div className="absolute left-0 top-full z-10 mt-0.5 max-h-40 w-full overflow-y-auto rounded border border-border bg-card shadow-lg">
+                  {suggestedIngredients.map((ing, idx) => (
+                    <button
+                      key={ing.id}
+                      type="button"
+                      onMouseDown={() => handleAddIngredient(ing)}
+                      className={`w-full px-2 py-1 text-left text-[10px] hover:bg-muted${idx === selectedIngIndex ? ' bg-muted' : ''}`}
+                    >
+                      {ing.name}
+                    </button>
+                  ))}
+                  {hasMoreIngredients && (
+                    <button
+                      type="button"
+                      onMouseDown={(e) => { e.preventDefault(); setIngPageSize((p) => p + 8); }}
+                      className="w-full px-2 py-1 text-left text-[10px] text-muted-foreground hover:bg-muted"
+                    >
+                      Load more…
+                    </button>
+                  )}
+                  {ingSearchTerm && (
+                    <button
+                      type="button"
+                      onMouseDown={() => handleCreateAndAddIngredient(ingSearchTerm)}
+                      className="w-full px-2 py-1 text-left text-[10px] text-primary hover:bg-muted"
+                    >
+                      + Create &ldquo;{ingSearchTerm}&rdquo;
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Prices */}
+      <div className="grid grid-cols-3 gap-1 text-xs">
+        <div>
+          <span className="text-muted-foreground">Sale</span>
+          <input
+            type="number"
+            step="0.01"
+            min="0"
+            defaultValue={item.sales_price ?? ''}
+            onBlur={(e) => {
+              const val = e.target.value === '' ? null : parseFloat(e.target.value);
+              if (val !== item.sales_price) save({ sales_price: val });
+            }}
+            placeholder="0.00"
+            className="mt-0.5 w-full rounded border border-border bg-muted px-1.5 py-0.5 text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+          />
+        </div>
+        <div>
+          <span className="text-muted-foreground">Cost</span>
+          <input
+            type="number"
+            step="0.01"
+            min="0"
+            defaultValue={item.cost_price ?? ''}
+            onBlur={(e) => {
+              const val = e.target.value === '' ? null : parseFloat(e.target.value);
+              if (val !== item.cost_price) save({ cost_price: val });
+            }}
+            placeholder="0.00"
+            className="mt-0.5 w-full rounded border border-border bg-muted px-1.5 py-0.5 text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+          />
+        </div>
+        <div>
+          <span className="text-muted-foreground">%</span>
+          <div className="mt-0.5 rounded border border-border bg-muted/50 px-1.5 py-0.5 text-muted-foreground">
+            {costPct != null ? `${costPct}%` : '—'}
+          </div>
+        </div>
+      </div>
+
+      {/* Description */}
+      <textarea
+        rows={1}
+        defaultValue={item.description ?? ''}
+        onFocus={(e) => autoResize(e.currentTarget)}
+        onChange={(e) => autoResize(e.currentTarget)}
+        onBlur={(e) => {
+          const val = e.target.value.trim() || null;
+          if (val !== item.description) save({ description: val });
+        }}
+        placeholder="Description…"
+        className="w-full resize-none rounded border border-border bg-muted px-2 py-1 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+      />
+
+      {/* Footer actions */}
+      <div className="flex items-center gap-1.5">
+        <label className="flex cursor-pointer items-center gap-1 text-[10px] text-muted-foreground">
+          <input
+            type="checkbox"
+            checked={item.is_highlight}
+            onChange={(e) => save({ is_highlight: e.target.checked })}
+            className="h-3 w-3 rounded accent-amber-500"
+          />
+          Highlight
+        </label>
+        <button
+          onClick={() => setShowIcons((v) => !v)}
+          className="ml-auto rounded p-0.5 text-xs text-muted-foreground hover:text-foreground"
+        >
+          Tags
+        </button>
+        <button
+          onClick={() => setShowFeedback(true)}
+          className={`flex items-center gap-0.5 rounded p-0.5 text-xs hover:opacity-80 ${
+            item.tasting_notes.length > 0 ? 'text-blue-600 dark:text-blue-400' : 'text-muted-foreground'
+          }`}
+          title="Tasting feedback"
+        >
+          <FlaskConical className="h-3 w-3" />
+          {item.tasting_notes.length > 0 && <span>{item.tasting_notes.length}</span>}
+        </button>
+        <button
+          onClick={onOpenComments}
+          className={`flex items-center gap-0.5 rounded p-0.5 text-xs ${
+            unresolvedCount > 0 ? 'text-orange-500' : 'text-muted-foreground hover:text-foreground'
+          }`}
+          title="Comments"
+        >
+          <MessageSquare className="h-3 w-3" />
+          {unresolvedCount > 0 && <span>{unresolvedCount}</span>}
+        </button>
+      </div>
+
+      {showFeedback && (
+        <DishFeedbackModal
+          dishName={item.recipe_name ?? ''}
+          notes={item.tasting_notes}
+          onClose={() => setShowFeedback(false)}
+        />
+      )}
+
+      {showIcons && (
+        <div className="flex flex-wrap gap-1">
+          {ICON_DEFS.map(({ key, label }) => {
+            const active = (item.icons ?? []).includes(key);
+            return (
+              <button
+                key={key}
+                title={label}
+                onClick={() => {
+                  const icons = active
+                    ? (item.icons ?? []).filter((i) => i !== key)
+                    : [...(item.icons ?? []), key];
+                  save({ icons });
+                }}
+                className={`rounded px-1.5 py-0.5 text-xs ${
+                  active ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/70'
+                }`}
+              >
+                {key}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      <ConfirmModal
+        isOpen={confirmDelete}
+        onClose={() => setConfirmDelete(false)}
+        onConfirm={() => { deleteItem.mutate(item.id); setConfirmDelete(false); }}
+        title="Remove dish"
+        message={`Remove "${item.recipe_name || 'this dish'}" from the menu?`}
+        confirmLabel="Remove"
+        variant="destructive"
+      />
+    </div>
+  );
+}
+
+// ─── SortableDishCard ─────────────────────────────────────────────────────────
+function SortableDishCard(props: Omit<React.ComponentProps<typeof DishCard>, 'dragHandleProps'>) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: props.item.id,
+  });
+  const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1 };
+  return (
+    <div ref={setNodeRef} style={style}>
+      <DishCard {...props} dragHandleProps={{ ...attributes, ...listeners }} />
+    </div>
+  );
+}
+
+// ─── DishRow ─────────────────────────────────────────────────────────────────
+function DishRow({
+  item,
+  unresolvedCount,
+  onOpenComments,
+  recipes,
+  dragHandleProps,
+  isSelected,
+  onToggle,
+}: {
+  item: MenuSketchSectionItem;
+  unresolvedCount: number;
+  onOpenComments: () => void;
+  recipes: Recipe[];
+  dragHandleProps?: Record<string, unknown>;
+  isSelected: boolean;
+  onToggle: () => void;
+}) {
+  const updateItem = useUpdateMenuSketchSectionItem();
+  const deleteItem = useDeleteMenuSketchSectionItem();
+  const addIngredient = useAddRecipeIngredient();
+  const removeIngredient = useRemoveRecipeIngredient();
+  const createIngredient = useCreateIngredient();
+  const { data: recipeIngredients = [] } = useRecipeIngredients(item.recipe_id);
+  const [showIcons, setShowIcons] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [nameDraft, setNameDraft] = useState(item.recipe_name ?? '');
+  const [ingredientSearch, setIngredientSearch] = useState('');
+  const [showIngredientSuggestions, setShowIngredientSuggestions] = useState(false);
+  const [ingPageSize, setIngPageSize] = useState(8);
+  const [selectedIngIndex, setSelectedIngIndex] = useState(-1);
+
+  const linkedIngredientIds = new Set(recipeIngredients.map((ri) => ri.ingredient_id));
+  const ingSearchTerm = ingredientSearch.trim();
+  const { data: ingSearchData } = useQuery({
+    queryKey: ['ingredients-search', ingSearchTerm, ingPageSize],
+    queryFn: () => api.getIngredients({ search: ingSearchTerm, page_size: ingPageSize, active_only: true }),
+    enabled: !!ingSearchTerm,
+    placeholderData: (prev) => prev,
+    staleTime: 30 * 1000,
+  });
+  const suggestedIngredients = (ingSearchData?.items ?? []).filter(
+    (ing) => !linkedIngredientIds.has(ing.id)
+  );
+  const hasMoreIngredients = ingSearchData
+    ? ingSearchData.total_count > ingPageSize
+    : false;
+
+  const doAddIngredient = (recipeId: number, ing: Ingredient) => {
+    addIngredient.mutate({
+      recipeId,
+      data: {
+        ingredient_id: ing.id,
+        quantity: 1,
+        unit: ing.base_unit,
+        base_unit: ing.base_unit,
+        unit_price: ing.cost_per_base_unit ?? 0,
+        supplier_id: null,
+      },
+    });
+    setIngredientSearch('');
+    setIngPageSize(8);
+    setSelectedIngIndex(-1);
+    setShowIngredientSuggestions(false);
+  };
+
+  const handleAddIngredient = (ing: Ingredient) => {
+    if (!item.recipe_id) return;
+    if (item.tasting_notes.length > 0 && item.recipe_name) {
+      updateItem.mutate(
+        { id: item.id, data: { name: item.recipe_name }, prevRecipeId: item.recipe_id },
+        { onSuccess: (updated) => { if (updated.recipe_id) doAddIngredient(updated.recipe_id, ing); } }
+      );
+    } else {
+      doAddIngredient(item.recipe_id, ing);
+    }
+  };
+
+  const handleCreateAndAddIngredient = (name: string) => {
+    if (!item.recipe_id) return;
+    const doCreate = (recipeId: number) => {
+      createIngredient.mutate(
+        { name, base_unit: 'unit' },
+        {
+          onSuccess: (newIng) => {
+            addIngredient.mutate({
+              recipeId,
+              data: {
+                ingredient_id: newIng.id,
+                quantity: 1,
+                unit: newIng.base_unit,
+                base_unit: newIng.base_unit,
+                unit_price: 0,
+                supplier_id: null,
+              },
+            });
+          },
+        }
+      );
+      setIngredientSearch('');
+      setIngPageSize(8);
+      setShowIngredientSuggestions(false);
+    };
+    if (item.tasting_notes.length > 0 && item.recipe_name) {
+      updateItem.mutate(
+        { id: item.id, data: { name: item.recipe_name }, prevRecipeId: item.recipe_id },
+        { onSuccess: (updated) => { if (updated.recipe_id) doCreate(updated.recipe_id); } }
+      );
+    } else {
+      doCreate(item.recipe_id);
+    }
+  };
+
+  const filtered = nameDraft.trim()
+    ? recipes.filter(
+        (r) =>
+          r.name.toLowerCase().includes(nameDraft.toLowerCase()) &&
+          r.name.toLowerCase() !== (item.recipe_name ?? '').toLowerCase()
+      )
+    : [];
+
+  const save = (data: Parameters<typeof updateItem.mutate>[0]['data']) => {
+    updateItem.mutate({ id: item.id, data, prevRecipeId: item.recipe_id });
+  };
+
+  const costPct =
+    item.sales_price && item.cost_price && Number(item.sales_price) > 0
+      ? Math.round((Number(item.cost_price) / Number(item.sales_price)) * 100)
+      : null;
+
+  return (
+    <div
+      className={`overflow-hidden rounded-lg border ${
+        isSelected ? 'border-primary/50' : 'border-border'
+      } ${item.is_highlight ? 'bg-amber-50 dark:bg-amber-950/20' : 'bg-card'}`}
+    >
+      {/* Main row — table-like with column dividers */}
+      <div
+        className="grid items-stretch text-sm"
+        style={{ gridTemplateColumns: '44px 1fr 2fr 88px 72px 52px' }}
+      >
+        {/* Grip + select */}
+        <div className="flex items-center justify-center gap-1 border-r border-border py-2">
+          <input
+            type="checkbox"
+            checked={isSelected}
+            onChange={onToggle}
+            className="h-3 w-3 rounded accent-primary"
+          />
+          <span
+            className="cursor-grab text-muted-foreground hover:text-foreground"
+            {...(dragHandleProps ?? {})}
+          >
+            <GripVertical className="h-3.5 w-3.5" />
+          </span>
+        </div>
+
+        {/* Dish name */}
+        <div className="relative min-w-0 border-r border-border px-3 py-2">
           <input
             type="text"
-            value={dish.name}
-            onChange={(e) => { onChange({ name: e.target.value }); setShowSuggestions(true); }}
-            onFocus={() => setShowSuggestions(true)}
-            placeholder="Dish name or search recipes…"
-            className="w-full rounded-md border border-border bg-muted px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            value={nameDraft}
+            onChange={(e) => { setNameDraft(e.target.value); setShowSuggestions(true); }}
+            onBlur={() => {
+              setShowSuggestions(false);
+              if (nameDraft.trim() !== (item.recipe_name ?? '')) save({ name: nameDraft.trim() });
+            }}
+            onKeyDown={(e) => { if (e.key === 'Escape') { setNameDraft(item.recipe_name ?? ''); setShowSuggestions(false); } }}
+            placeholder="Dish name…"
+            className="w-full bg-transparent font-medium text-foreground placeholder:text-muted-foreground focus:outline-none"
           />
-          {showSuggestions && recipeSuggestions.length > 0 && (
-            <div className="absolute left-0 right-0 top-full z-50 mt-1 rounded-md border border-border bg-card shadow-lg py-1 max-h-48 overflow-auto">
-              {recipeSuggestions.map((r) => (
+          {showSuggestions && filtered.length > 0 && (
+            <div className="absolute left-0 top-full z-10 mt-0.5 w-56 rounded border border-border bg-card shadow-lg">
+              {filtered.slice(0, 5).map((r) => (
                 <button
                   key={r.id}
                   type="button"
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => {
-                    onChange({
-                      name: r.name,
-                      description: r.description ?? '',
-                      cost_price: r.cost_price ?? 0,
-                      sales_price: r.selling_price_est ?? 0,
-                    });
+                  onMouseDown={() => {
+                    setNameDraft(r.name);
                     setShowSuggestions(false);
+                    save({ name: r.name, recipe_id: r.id });
                   }}
-                  className="flex w-full items-center px-3 py-1.5 text-left text-sm text-foreground hover:bg-muted"
+                  className="w-full px-2 py-1.5 text-left text-xs hover:bg-muted"
                 >
                   {r.name}
                 </button>
               ))}
-            </div>
-          )}
-        </div>
-
-        <div>
-          <label className="mb-1 block text-xs font-medium text-muted-foreground">Key ingredients</label>
-          <textarea
-            ref={ingredientsRef}
-            rows={1}
-            value={ingredientsText}
-            onChange={(e) => setIngredientsText(e.target.value)}
-            onBlur={(e) => {
-              const ingredients = e.target.value
-                .split(',')
-                .map((s) => s.trim())
-                .filter(Boolean);
-              onChange({ ingredients });
-            }}
-            onInput={(e) => autoResize(e.currentTarget)}
-            onFocus={(e) => autoResize(e.currentTarget)}
-            placeholder="e.g. chicken stock, cream, butter"
-            className="w-full rounded-md border border-border bg-muted px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring overflow-hidden"
-          />
-        </div>
-
-        <div className="grid grid-cols-3 gap-3">
-          <div>
-            <label className="mb-1 block text-xs font-medium text-muted-foreground">Sale price</label>
-            <input
-              type="number"
-              step="0.01"
-              min="0"
-              value={dish.sales_price || ''}
-              onChange={(e) => onChange({ sales_price: parseFloat(e.target.value) || 0 })}
-              placeholder="0.00"
-              className="w-full rounded-md border border-border bg-muted px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-xs font-medium text-muted-foreground">Cost price</label>
-            <input
-              type="number"
-              step="0.01"
-              min="0"
-              value={dish.cost_price || ''}
-              onChange={(e) => onChange({ cost_price: parseFloat(e.target.value) || 0 })}
-              placeholder="0.00"
-              className="w-full rounded-md border border-border bg-muted px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-xs font-medium text-muted-foreground">Cost %</label>
-            <div className="w-full rounded-md border border-border bg-muted/50 px-3 py-1.5 text-sm tabular-nums text-muted-foreground">
-              {costPct}
-            </div>
-          </div>
-        </div>
-
-        <div>
-          <label className="mb-1 block text-xs font-medium text-muted-foreground">Description</label>
-          <textarea
-            ref={descRef}
-            rows={1}
-            value={dish.description ?? ''}
-            onChange={(e) => onChange({ description: e.target.value })}
-            onInput={(e) => autoResize(e.currentTarget)}
-            onFocus={(e) => autoResize(e.currentTarget)}
-            placeholder="Optional dish description…"
-            className="w-full rounded-md border border-border bg-muted px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring overflow-hidden"
-          />
-        </div>
-
-        {/* Highlight + Tags (D1, D2) */}
-        <div className="space-y-2 pt-1">
-          <label className="flex cursor-pointer select-none items-center gap-2">
-            <input
-              type="checkbox"
-              checked={dish.is_highlight ?? false}
-              onChange={(e) => onChange({ is_highlight: e.target.checked })}
-              className="h-3.5 w-3.5 rounded border-border accent-amber-500"
-            />
-            <span className="text-xs text-muted-foreground">⭐ Highlight dish</span>
-          </label>
-          <div>
-            <button
-              type="button"
-              onClick={() => setShowTags((v) => !v)}
-              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
-            >
-              {showTags ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
-              Tags{dish.icons && dish.icons.length > 0 ? ` (${dish.icons.length})` : ''}
-            </button>
-            {showTags && (
-              <div className="mt-1.5 grid grid-cols-2 gap-1">
-                {ICON_DEFS.map(({ key, label, emoji }) => (
-                  <label key={key} className="flex cursor-pointer select-none items-center gap-1.5">
-                    <input
-                      type="checkbox"
-                      checked={(dish.icons ?? []).includes(key)}
-                      onChange={(e) => {
-                        const icons = dish.icons ?? [];
-                        onChange({
-                          icons: e.target.checked ? [...icons, key] : icons.filter((k) => k !== key),
-                        });
-                      }}
-                      className="h-3.5 w-3.5 rounded border-border"
-                    />
-                    <span className="text-xs text-muted-foreground">{emoji} {label}</span>
-                  </label>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="flex justify-end pt-1">
-          <button
-            type="button"
-            onClick={onOpenComments}
-            className={`flex items-center gap-1 rounded px-1.5 py-0.5 text-xs transition-colors ${commentCount > 0 ? 'bg-orange-500/15 text-orange-600 dark:text-orange-400 hover:bg-orange-500/25' : 'text-muted-foreground hover:text-foreground'}`}
-          >
-            <MessageSquare className="h-3 w-3" />
-            {commentCount > 0 ? `Comments (${commentCount})` : 'Comments'}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ─── Dish row (list view) ──────────────────────────────────────────────────────
-function DishRow({
-  id,
-  dish,
-  onChange,
-  onRemove,
-  onEnter,
-  autoFocus,
-  commentCount,
-  onOpenComments,
-  recipes = [],
-}: {
-  id: string;
-  dish: SketchDish;
-  onChange: (patch: Partial<SketchDish>) => void;
-  onRemove: () => void;
-  onEnter: () => void;
-  autoFocus?: boolean;
-  commentCount: number;
-  onOpenComments: () => void;
-  recipes?: Recipe[];
-}) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-  };
-
-  const nameRef = useRef<HTMLInputElement>(null);
-  const nameWrapRef = useRef<HTMLDivElement>(null);
-  const [ingredientsText, setIngredientsText] = useState(dish.ingredients.join(', '));
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const [showTags, setShowTags] = useState(false);
-  const ingredientsRef = useRef<HTMLTextAreaElement>(null);
-  const descRef = useRef<HTMLTextAreaElement>(null);
-
-  useEffect(() => {
-    if (autoFocus) nameRef.current?.focus();
-  }, [autoFocus]);
-
-  useEffect(() => {
-    autoResize(ingredientsRef.current);
-  }, []);
-
-  const prevRef = useRef(dish.ingredients);
-  useEffect(() => {
-    if (prevRef.current !== dish.ingredients) {
-      setIngredientsText(dish.ingredients.join(', '));
-      prevRef.current = dish.ingredients;
-      autoResize(ingredientsRef.current);
-    }
-  }, [dish.ingredients]);
-
-  useEffect(() => {
-    autoResize(descRef.current);
-  }, [dish.description]);
-
-  useEffect(() => {
-    if (!showSuggestions) return;
-    const handler = (e: MouseEvent) => {
-      if (nameWrapRef.current && !nameWrapRef.current.contains(e.target as Node)) {
-        setShowSuggestions(false);
-      }
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, [showSuggestions]);
-
-  const recipeSuggestions = dish.name.trim().length > 0
-    ? recipes.filter((r) => r.name.toLowerCase().includes(dish.name.toLowerCase())).slice(0, 5)
-    : [];
-
-  const costPct = dish.sales_price > 0
-    ? ((dish.cost_price / dish.sales_price) * 100).toFixed(1) + '%'
-    : '—';
-
-  return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className="group rounded-lg border border-border bg-card transition-shadow hover:shadow-sm"
-    >
-      {/* Main row */}
-      <div className="grid grid-cols-[auto_1fr_auto]">
-        <div
-          {...attributes}
-          {...listeners}
-          className="flex cursor-grab touch-none items-center px-2 text-muted-foreground/40 hover:text-muted-foreground"
-        >
-          <GripVertical className="h-4 w-4" />
-        </div>
-        <div className="grid grid-cols-[1fr_1fr_80px_80px_56px] divide-x divide-border">
-          <div ref={nameWrapRef} className="relative">
-            <input
-              ref={nameRef}
-              type="text"
-              placeholder="Dish name or search recipes…"
-              value={dish.name}
-              onChange={(e) => { onChange({ name: e.target.value }); setShowSuggestions(true); }}
-              onFocus={() => setShowSuggestions(true)}
-              onKeyDown={(e) => e.key === 'Enter' && onEnter()}
-              className="w-full px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground bg-card focus:outline-none focus:ring-2 focus:ring-inset focus:ring-ring/10"
-            />
-            {showSuggestions && recipeSuggestions.length > 0 && (
-              <div className="absolute left-0 top-full z-50 mt-0.5 w-56 rounded-md border border-border bg-card shadow-lg py-1 max-h-48 overflow-auto">
-                {recipeSuggestions.map((r) => (
-                  <button
-                    key={r.id}
-                    type="button"
-                    onMouseDown={(e) => e.preventDefault()}
-                    onClick={() => {
-                      onChange({
-                        name: r.name,
-                        description: r.description ?? '',
-                        cost_price: r.cost_price ?? 0,
-                        sales_price: r.selling_price_est ?? 0,
-                      });
-                      setShowSuggestions(false);
-                    }}
-                    className="flex w-full items-center px-3 py-1.5 text-left text-sm text-foreground hover:bg-muted"
-                  >
-                    {r.name}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-          <textarea
-            ref={ingredientsRef}
-            rows={1}
-            placeholder="Ingredients (comma-separated)"
-            value={ingredientsText}
-            onChange={(e) => setIngredientsText(e.target.value)}
-            onBlur={(e) => {
-              const ingredients = e.target.value
-                .split(',')
-                .map((s) => s.trim())
-                .filter(Boolean);
-              onChange({ ingredients });
-            }}
-            onInput={(e) => autoResize(e.currentTarget)}
-            onFocus={(e) => autoResize(e.currentTarget)}
-            className="px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground bg-card focus:outline-none focus:ring-2 focus:ring-inset focus:ring-ring/10 overflow-hidden"
-          />
-          <input
-            type="number"
-            placeholder="Sale"
-            step="0.01"
-            min="0"
-            value={dish.sales_price || ''}
-            onChange={(e) => onChange({ sales_price: parseFloat(e.target.value) || 0 })}
-            className="px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground bg-card focus:outline-none focus:ring-2 focus:ring-inset focus:ring-ring/10 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-          />
-          <input
-            type="number"
-            placeholder="Cost"
-            step="0.01"
-            min="0"
-            value={dish.cost_price || ''}
-            onChange={(e) => onChange({ cost_price: parseFloat(e.target.value) || 0 })}
-            className="px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground bg-card focus:outline-none focus:ring-2 focus:ring-inset focus:ring-ring/10 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-          />
-          <div className="px-3 py-2 text-xs tabular-nums text-muted-foreground text-right">
-            {costPct}
-          </div>
-        </div>
-        <button
-          onClick={onRemove}
-          className="flex items-center justify-center rounded-tr-lg border-l border-border px-2 opacity-0 transition-opacity group-hover:opacity-100 hover:bg-destructive/10 hover:text-destructive"
-        >
-          <X className="h-3.5 w-3.5" />
-        </button>
-      </div>
-      {/* Description + Comments */}
-      <div className="border-t border-border">
-        <div className="flex items-center justify-end px-3 py-1">
-          <button
-            type="button"
-            onClick={onOpenComments}
-            className={`flex items-center gap-1 text-xs transition-colors ${commentCount > 0 ? 'text-orange-600 dark:text-orange-400 hover:text-orange-500' : 'text-muted-foreground hover:text-foreground'}`}
-          >
-            <MessageSquare className="h-3 w-3" />
-            {commentCount > 0 && (
-              <span className="rounded-full border border-orange-400/50 bg-orange-500/15 px-1 text-[10px]">
-                {commentCount}
-              </span>
-            )}
-          </button>
-        </div>
-        <textarea
-          ref={descRef}
-          rows={1}
-          placeholder="Description (optional)"
-          value={dish.description ?? ''}
-          onChange={(e) => onChange({ description: e.target.value })}
-          onInput={(e) => autoResize(e.currentTarget)}
-          onFocus={(e) => autoResize(e.currentTarget)}
-          className="w-full overflow-hidden border-t border-border px-3 py-1.5 text-xs text-muted-foreground placeholder:text-muted-foreground bg-card focus:outline-none focus:ring-2 focus:ring-inset focus:ring-ring/10"
-        />
-        {/* Highlight + Tags (D1, D2) */}
-        <div className="border-t border-border px-3 py-2 space-y-2">
-          <label className="flex cursor-pointer select-none items-center gap-2">
-            <input
-              type="checkbox"
-              checked={dish.is_highlight ?? false}
-              onChange={(e) => onChange({ is_highlight: e.target.checked })}
-              className="h-3.5 w-3.5 rounded border-border accent-amber-500"
-            />
-            <span className="text-xs text-muted-foreground">⭐ Highlight dish</span>
-          </label>
-          <div>
-            <button
-              type="button"
-              onClick={() => setShowTags((v) => !v)}
-              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
-            >
-              {showTags ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
-              Tags{dish.icons && dish.icons.length > 0 ? ` (${dish.icons.length})` : ''}
-            </button>
-            {showTags && (
-              <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1">
-                {ICON_DEFS.map(({ key, label, emoji }) => (
-                  <label key={key} className="flex cursor-pointer select-none items-center gap-1">
-                    <input
-                      type="checkbox"
-                      checked={(dish.icons ?? []).includes(key)}
-                      onChange={(e) => {
-                        const icons = dish.icons ?? [];
-                        onChange({
-                          icons: e.target.checked ? [...icons, key] : icons.filter((k) => k !== key),
-                        });
-                      }}
-                      className="h-3.5 w-3.5 rounded border-border"
-                    />
-                    <span className="text-xs text-muted-foreground">{emoji} {label}</span>
-                  </label>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ─── Section card ──────────────────────────────────────────────────────────────
-function SectionCard({
-  id,
-  section,
-  viewMode,
-  onChange,
-  onRemove,
-  onDishRemoved,
-  onEnterInName,
-  autoFocusName,
-  comments,
-  onOpenComments,
-  recipes = [],
-}: {
-  id: string;
-  section: SketchSection;
-  viewMode: 'list' | 'card';
-  onChange: (patch: Partial<SketchSection>) => void;
-  onRemove: () => void;
-  onDishRemoved: (dishId: string) => void;
-  onEnterInName: () => void;
-  autoFocusName?: boolean;
-  comments: SketchComments;
-  onOpenComments: (dishId: string) => void;
-  recipes?: Recipe[];
-}) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-  };
-
-  const nameRef = useRef<HTMLInputElement>(null);
-  const [collapsed, setCollapsed] = useState(false);
-  const [newDishName, setNewDishName] = useState('');
-  const [showNewSuggestions, setShowNewSuggestions] = useState(false);
-  const newDishWrapRef = useRef<HTMLDivElement>(null);
-  const newDishSuggestions = newDishName.trim().length > 0
-    ? recipes.filter((r) => r.name.toLowerCase().includes(newDishName.toLowerCase())).slice(0, 5)
-    : [];
-  const [confirmRemoveSection, setConfirmRemoveSection] = useState(false);
-  const [confirmRemoveDishIdx, setConfirmRemoveDishIdx] = useState<number | null>(null);
-
-  useEffect(() => {
-    if (autoFocusName) nameRef.current?.focus();
-  }, [autoFocusName]);
-
-  useEffect(() => {
-    if (!showNewSuggestions) return;
-    const handler = (e: MouseEvent) => {
-      if (newDishWrapRef.current && !newDishWrapRef.current.contains(e.target as Node)) {
-        setShowNewSuggestions(false);
-      }
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, [showNewSuggestions]);
-
-  const updateDish = (i: number, patch: Partial<SketchDish>) => {
-    const dishes = section.dishes.map((d, idx) => (idx === i ? { ...d, ...patch } : d));
-    onChange({ dishes });
-  };
-
-  const addDish = (name: string) => {
-    onChange({ dishes: [...section.dishes, emptyDish(name)] });
-  };
-
-  const addDishFromRecipe = (recipe: Recipe) => {
-    onChange({
-      dishes: [
-        ...section.dishes,
-        {
-          id: crypto.randomUUID(),
-          name: recipe.name,
-          ingredients: [],
-          sales_price: recipe.selling_price_est ?? 0,
-          cost_price: recipe.cost_price ?? 0,
-          description: recipe.description ?? '',
-        },
-      ],
-    });
-    setNewDishName('');
-    setShowNewSuggestions(false);
-  };
-
-  const removeDish = (i: number) => {
-    onChange({ dishes: section.dishes.filter((_, idx) => idx !== i) });
-  };
-
-  const handleNewDishKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && newDishName.trim()) {
-      addDish(newDishName.trim());
-      setNewDishName('');
-      setShowNewSuggestions(false);
-    }
-  };
-
-  const dishIds = section.dishes.map((d) => d.id!);
-
-  return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className="rounded-xl border border-border bg-muted/30"
-    >
-      {/* Section header */}
-      <div className="flex items-center gap-2 px-4 py-3">
-        <div
-          {...attributes}
-          {...listeners}
-          className="cursor-grab touch-none text-muted-foreground/40 hover:text-muted-foreground"
-        >
-          <GripVertical className="h-4 w-4" />
-        </div>
-        <button
-          onClick={() => setCollapsed((v) => !v)}
-          className="text-muted-foreground hover:text-foreground"
-        >
-          {collapsed ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
-        </button>
-        <input
-          ref={nameRef}
-          type="text"
-          placeholder="Section name (e.g. Starters)"
-          value={section.name}
-          onChange={(e) => onChange({ name: e.target.value })}
-          onKeyDown={(e) => e.key === 'Enter' && onEnterInName()}
-          className="flex-1 bg-transparent text-sm font-semibold text-foreground placeholder:text-muted-foreground focus:outline-none"
-        />
-        <span className="text-xs text-muted-foreground">
-          {section.dishes.length} {section.dishes.length === 1 ? 'dish' : 'dishes'}
-        </span>
-        <button
-          onClick={() => setConfirmRemoveSection(true)}
-          className="ml-1 rounded p-1 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
-        >
-          <X className="h-3.5 w-3.5" />
-        </button>
-      </div>
-
-      <ConfirmModal
-        isOpen={confirmRemoveSection}
-        onClose={() => setConfirmRemoveSection(false)}
-        onConfirm={() => { onRemove(); setConfirmRemoveSection(false); toast.success('Section deleted'); }}
-        title="Delete section"
-        message="Are you sure you want to delete this section and all its dishes? This cannot be undone."
-        confirmLabel="Delete"
-        variant="destructive"
-      />
-      <ConfirmModal
-        isOpen={confirmRemoveDishIdx !== null}
-        onClose={() => setConfirmRemoveDishIdx(null)}
-        onConfirm={() => {
-          if (confirmRemoveDishIdx !== null) {
-            const dish = section.dishes[confirmRemoveDishIdx];
-            if (dish?.id) onDishRemoved(dish.id);
-            removeDish(confirmRemoveDishIdx);
-            setConfirmRemoveDishIdx(null);
-            toast.success('Dish deleted');
-          }
-        }}
-        title="Delete dish"
-        message="Are you sure you want to delete this dish? This cannot be undone."
-        confirmLabel="Delete"
-        variant="destructive"
-      />
-
-      {!collapsed && (
-        <div className="px-4 pb-4 space-y-2">
-          {/* Dishes */}
-          {viewMode === 'list' ? (
-            <div className="space-y-1.5">
-              {section.dishes.length > 0 && (
-                <div className="grid grid-cols-[32px_1fr_1fr_80px_80px_56px_32px] px-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                  <span />
-                  <span className="px-2">Dish</span>
-                  <span className="px-2">Key ingredients</span>
-                  <span className="px-2">Sale</span>
-                  <span className="px-2">Cost</span>
-                  <span className="px-2">%</span>
-                  <span />
-                </div>
+              {filtered.length > 5 && (
+                <p className="px-2 py-1 text-[10px] text-muted-foreground">+{filtered.length - 5} more</p>
               )}
-              <SortableContext items={dishIds} strategy={verticalListSortingStrategy}>
-                {section.dishes.map((dish, i) => (
-                  <DishRow
-                    key={dish.id!}
-                    id={dish.id!}
-                    dish={dish}
-                    onChange={(patch) => updateDish(i, patch)}
-                    onRemove={() => setConfirmRemoveDishIdx(i)}
-                    onEnter={() => {}}
-                    autoFocus={false}
-                    commentCount={dish.id ? (comments[dish.id] ?? []).filter((c) => !c.resolved).length : 0}
-                    onOpenComments={() => dish.id && onOpenComments(dish.id)}
-                    recipes={recipes}
-                  />
-                ))}
-              </SortableContext>
             </div>
-          ) : (
-            <SortableContext items={dishIds} strategy={verticalListSortingStrategy}>
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                {section.dishes.map((dish, i) => (
-                  <DishCard
-                    key={dish.id!}
-                    id={dish.id!}
-                    dish={dish}
-                    onChange={(patch) => updateDish(i, patch)}
-                    onRemove={() => setConfirmRemoveDishIdx(i)}
-                    commentCount={dish.id ? (comments[dish.id] ?? []).filter((c) => !c.resolved).length : 0}
-                    onOpenComments={() => dish.id && onOpenComments(dish.id)}
-                    recipes={recipes}
-                  />
-                ))}
-              </div>
-            </SortableContext>
           )}
+        </div>
 
-          {/* Quick-add dish input */}
-          <div ref={newDishWrapRef} className="relative">
-            <input
-              type="text"
-              placeholder="Type a dish name or search recipes…"
-              value={newDishName}
-              onChange={(e) => { setNewDishName(e.target.value); setShowNewSuggestions(true); }}
-              onFocus={() => setShowNewSuggestions(true)}
-              onKeyDown={handleNewDishKeyDown}
-              className="w-full rounded-lg border border-dashed border-border bg-card px-3 py-2 pr-9 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-0"
-            />
-            {showNewSuggestions && (newDishSuggestions.length > 0 || newDishName.trim().length > 0) && (
-              <div className="absolute left-0 right-0 top-full z-50 mt-0.5 rounded-md border border-border bg-card shadow-lg py-1 max-h-48 overflow-auto">
-                {newDishSuggestions.map((r) => (
-                  <button
-                    key={r.id}
-                    type="button"
-                    onMouseDown={(e) => e.preventDefault()}
-                    onClick={() => addDishFromRecipe(r)}
-                    className="flex w-full items-center px-3 py-1.5 text-left text-sm text-foreground hover:bg-muted"
-                  >
-                    {r.name}
-                  </button>
-                ))}
-                {newDishName.trim().length > 0 && (
-                  <>
-                    {newDishSuggestions.length > 0 && <div className="my-1 border-t border-border" />}
+        {/* Key Ingredients — ingredient search input beside dish name */}
+        <div className="relative border-r border-border px-3 py-2">
+          {item.recipe_id ? (
+            <>
+              <input
+                type="text"
+                value={ingredientSearch}
+                onChange={(e) => { setIngredientSearch(e.target.value); setIngPageSize(8); setSelectedIngIndex(-1); setShowIngredientSuggestions(true); }}
+                onFocus={() => setShowIngredientSuggestions(true)}
+                onBlur={() => setTimeout(() => setShowIngredientSuggestions(false), 150)}
+                onKeyDown={(e) => {
+                  if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    setSelectedIngIndex((i) => Math.min(i + 1, suggestedIngredients.length - 1));
+                  } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    setSelectedIngIndex((i) => Math.max(i - 1, -1));
+                  } else if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (selectedIngIndex >= 0 && selectedIngIndex < suggestedIngredients.length) {
+                      handleAddIngredient(suggestedIngredients[selectedIngIndex]);
+                    } else if (suggestedIngredients.length > 0) {
+                      handleAddIngredient(suggestedIngredients[0]);
+                    } else if (ingSearchTerm) {
+                      handleCreateAndAddIngredient(ingSearchTerm);
+                    }
+                  }
+                }}
+                placeholder="Add ingredient…"
+                className="w-full bg-transparent text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none"
+              />
+              {showIngredientSuggestions && (suggestedIngredients.length > 0 || ingSearchTerm) && (
+                <div className="absolute left-0 top-full z-10 mt-0.5 max-h-40 w-full overflow-y-auto rounded border border-border bg-card shadow-lg">
+                  {suggestedIngredients.map((ing, idx) => (
+                    <button
+                      key={ing.id}
+                      type="button"
+                      onMouseDown={() => handleAddIngredient(ing)}
+                      className={`w-full px-2 py-1.5 text-left text-xs hover:bg-muted${idx === selectedIngIndex ? ' bg-muted' : ''}`}
+                    >
+                      {ing.name}
+                    </button>
+                  ))}
+                  {hasMoreIngredients && (
                     <button
                       type="button"
-                      onMouseDown={(e) => e.preventDefault()}
-                      onClick={() => { addDish(newDishName.trim()); setNewDishName(''); setShowNewSuggestions(false); }}
-                      className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
+                      onMouseDown={(e) => { e.preventDefault(); setIngPageSize((p) => p + 8); }}
+                      className="w-full px-2 py-1.5 text-left text-xs text-muted-foreground hover:bg-muted"
                     >
-                      <span className="text-base leading-none">+</span>
-                      Add &ldquo;{newDishName.trim()}&rdquo; as new dish
+                      Load more…
                     </button>
-                  </>
-                )}
-              </div>
-            )}
-            <button
-              type="button"
-              onClick={() => {
-                if (newDishName.trim()) {
-                  addDish(newDishName.trim());
-                  setNewDishName('');
-                  setShowNewSuggestions(false);
-                }
-              }}
-              className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-muted-foreground hover:text-foreground"
-            >
-              <SendHorizonal className="h-3.5 w-3.5" />
-            </button>
+                  )}
+                  {ingSearchTerm && (
+                    <button
+                      type="button"
+                      onMouseDown={() => handleCreateAndAddIngredient(ingSearchTerm)}
+                      className="w-full px-2 py-1.5 text-left text-xs text-primary hover:bg-muted"
+                    >
+                      + Create &ldquo;{ingSearchTerm}&rdquo;
+                    </button>
+                  )}
+                </div>
+              )}
+            </>
+          ) : (
+            <span className="text-sm text-muted-foreground/40">—</span>
+          )}
+        </div>
+
+        {/* Sale price */}
+        <div className="border-r border-border px-2 py-2">
+          <input
+            type="number"
+            step="0.01"
+            min="0"
+            defaultValue={item.sales_price ?? ''}
+            onBlur={(e) => {
+              const val = e.target.value === '' ? null : parseFloat(e.target.value);
+              if (val !== item.sales_price) save({ sales_price: val });
+            }}
+            placeholder="Sale"
+            className="w-full bg-transparent text-sm text-muted-foreground placeholder:text-muted-foreground/60 focus:text-foreground focus:outline-none"
+          />
+        </div>
+
+        {/* Cost price */}
+        <div className="border-r border-border px-2 py-2">
+          <input
+            type="number"
+            step="0.01"
+            min="0"
+            defaultValue={item.cost_price ?? ''}
+            onBlur={(e) => {
+              const val = e.target.value === '' ? null : parseFloat(e.target.value);
+              if (val !== item.cost_price) save({ cost_price: val });
+            }}
+            placeholder="Cost"
+            className="w-full bg-transparent text-sm text-muted-foreground placeholder:text-muted-foreground/60 focus:text-foreground focus:outline-none"
+          />
+        </div>
+
+        {/* Cost % */}
+        <div className="flex items-center justify-center px-2 py-2 text-sm text-muted-foreground">
+          {costPct != null ? `${costPct}%` : '—'}
+        </div>
+      </div>
+
+      {/* Ingredient badges — always visible, not inside collapsible */}
+      {recipeIngredients.length > 0 && (
+        <div className="border-t border-border px-3 py-2">
+          <div className="flex flex-wrap gap-1">
+            {recipeIngredients.map((ri) => (
+              <span
+                key={ri.id}
+                className="inline-flex items-center gap-0.5 rounded-full bg-muted px-2 py-0.5 text-[11px] text-muted-foreground"
+              >
+                {ri.ingredient?.name ?? `Ingredient #${ri.ingredient_id}`}
+                <button
+                  type="button"
+                  onClick={() =>
+                    removeIngredient.mutate({ recipeId: item.recipe_id!, ingredientId: ri.id })
+                  }
+                  className="ml-0.5 rounded-full text-muted-foreground hover:text-destructive"
+                  title="Remove ingredient"
+                >
+                  <X className="h-2.5 w-2.5" />
+                </button>
+              </span>
+            ))}
           </div>
         </div>
       )}
+
+      {/* Description — always visible */}
+      <div className="border-t border-border px-3 py-2">
+        <textarea
+          rows={1}
+          defaultValue={item.description ?? ''}
+          onFocus={(e) => autoResize(e.currentTarget)}
+          onChange={(e) => autoResize(e.currentTarget)}
+          onBlur={(e) => {
+            const val = e.target.value.trim() || null;
+            if (val !== item.description) save({ description: val });
+          }}
+          // placeholder="Description (optional)"
+          // className="w-full resize-none bg-transparent px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none"
+
+          placeholder="Description (optional)"
+          className="w-full resize-none overflow-hidden rounded border border-border bg-muted px-2 py-1 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+        />
+      </div>
+
+      {/* Highlight — always visible */}
+      <div className="border-t border-border px-3 py-2">
+        <label className="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground">
+          <input
+            type="checkbox"
+            checked={item.is_highlight}
+            onChange={(e) => save({ is_highlight: e.target.checked })}
+            className="h-3.5 w-3.5 rounded accent-amber-500"
+          />
+          ⭐ Highlight dish
+        </label>
+      </div>
+
+      {/* Tags collapsible */}
+      <div className="border-t border-border">
+        {/* Comment + feedback icon row */}
+        <div className="flex items-center justify-end gap-2 border-b border-border px-3 py-1.5">
+          <button
+            onClick={() => setShowFeedback(true)}
+            className={`flex items-center gap-1 rounded p-0.5 text-xs hover:opacity-80 ${
+              item.tasting_notes.length > 0 ? 'text-blue-600 dark:text-blue-400' : 'text-muted-foreground'
+            }`}
+            title="Tasting feedback"
+          >
+            <FlaskConical className="h-3.5 w-3.5" />
+            {item.tasting_notes.length > 0 && <span>{item.tasting_notes.length}</span>}
+          </button>
+          <button
+            onClick={onOpenComments}
+            className={`flex items-center gap-1 rounded p-0.5 text-xs ${
+              unresolvedCount > 0 ? 'text-orange-500' : 'text-muted-foreground hover:text-foreground'
+            }`}
+            title="Comments"
+          >
+            <MessageSquare className="h-3.5 w-3.5" />
+            {unresolvedCount > 0 && <span>{unresolvedCount}</span>}
+          </button>
+        </div>
+
+        {/* Tags + Remove */}
+        <div className="px-3 py-2.5 space-y-2">
+          <button
+            onClick={() => setShowIcons((v) => !v)}
+            className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+          >
+            <ChevronDown className={`h-3.5 w-3.5 transition-transform ${showIcons ? 'rotate-180' : ''}`} />
+            Tags{(item.icons ?? []).length > 0 ? ` (${item.icons!.length})` : ''}
+          </button>
+          {showIcons && (
+            <div className="flex flex-wrap gap-x-3 gap-y-1.5 pt-0.5">
+              {ICON_DEFS.map(({ key, label }) => {
+                const active = (item.icons ?? []).includes(key);
+                return (
+                  <label key={key} className="flex cursor-pointer items-center gap-1 text-sm text-muted-foreground">
+                    <input
+                      type="checkbox"
+                      checked={active}
+                      onChange={() => {
+                        const icons = active
+                          ? (item.icons ?? []).filter((i) => i !== key)
+                          : [...(item.icons ?? []), key];
+                        save({ icons });
+                      }}
+                      className="h-3.5 w-3.5 rounded border-border"
+                    />
+                    {key} {label}
+                  </label>
+                );
+              })}
+            </div>
+          )}
+          <div className="flex justify-end pt-0.5">
+            <button
+              onClick={() => setConfirmDelete(true)}
+              className="text-xs text-muted-foreground hover:text-destructive"
+            >
+              Remove dish
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <ConfirmModal
+        isOpen={confirmDelete}
+        onClose={() => setConfirmDelete(false)}
+        onConfirm={() => { deleteItem.mutate(item.id); setConfirmDelete(false); }}
+        title="Remove dish"
+        message={`Remove "${item.recipe_name || 'this dish'}" from the menu?`}
+        confirmLabel="Remove"
+        variant="destructive"
+      />
+
+      {showFeedback && (
+        <DishFeedbackModal
+          dishName={item.recipe_name ?? ''}
+          notes={item.tasting_notes}
+          onClose={() => setShowFeedback(false)}
+        />
+      )}
+    </div>
+  );
+}
+
+// ─── SortableDishRow ──────────────────────────────────────────────────────────
+function SortableDishRow(props: Omit<React.ComponentProps<typeof DishRow>, 'dragHandleProps'>) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: props.item.id,
+  });
+  const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1 };
+  return (
+    <div ref={setNodeRef} style={style}>
+      <DishRow {...props} dragHandleProps={{ ...attributes, ...listeners }} />
+    </div>
+  );
+}
+
+// ─── SectionCard ──────────────────────────────────────────────────────────────
+function SectionCard({
+  section,
+  commentsByItemId,
+  onOpenComments,
+  viewMode,
+  recipes,
+  dragHandleProps,
+  selectedItemIds,
+  onToggleItem,
+}: {
+  section: MenuSketchSection;
+  commentsByItemId: Record<number, MenuSketchSectionItemComment[]>;
+  onOpenComments: (itemId: number, dishName: string) => void;
+  viewMode: 'list' | 'card';
+  recipes: Recipe[];
+  dragHandleProps?: Record<string, unknown>;
+  selectedItemIds: Set<number>;
+  onToggleItem: (itemId: number) => void;
+}) {
+  const { data: serverItems = [] } = useMenuSketchSectionItems(section.id);
+  const updateSection = useUpdateMenuSketchSection();
+  const deleteSection = useDeleteMenuSketchSection();
+  const createItem = useCreateMenuSketchSectionItem();
+  const updateItem = useUpdateMenuSketchSectionItem();
+
+  const [collapsed, setCollapsed] = useState(false);
+  const [sectionName, setSectionName] = useState(section.name);
+  const [newDishName, setNewDishName] = useState('');
+  const [showDishSuggestions, setShowDishSuggestions] = useState(false);
+  const [confirmDeleteSection, setConfirmDeleteSection] = useState(false);
+  const [itemOrder, setItemOrder] = useState<number[]>([]);
+
+  // Keep local order in sync with server data
+  const prevItemsRef = useRef<MenuSketchSectionItem[]>([]);
+  if (prevItemsRef.current !== serverItems) {
+    const newIds = serverItems.map((i) => i.id);
+    const added = newIds.filter((id) => !itemOrder.includes(id));
+    const removed = itemOrder.filter((id) => !newIds.includes(id));
+    if (added.length > 0 || removed.length > 0) {
+      setItemOrder(newIds);
+    }
+    prevItemsRef.current = serverItems;
+  }
+
+  const orderedItems = itemOrder
+    .map((id) => serverItems.find((i) => i.id === id))
+    .filter((i): i is MenuSketchSectionItem => i != null);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
+
+  const handleItemDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const oldIndex = orderedItems.findIndex((i) => i.id === active.id);
+    const newIndex = orderedItems.findIndex((i) => i.id === over.id);
+    const newOrder = arrayMove(orderedItems, oldIndex, newIndex);
+    setItemOrder(newOrder.map((i) => i.id));
+    // Persist new order_no values
+    newOrder.forEach((item, idx) => {
+      if (item.order_no !== idx) {
+        updateItem.mutate({ id: item.id, data: { order_no: idx }, prevRecipeId: item.recipe_id });
+      }
+    });
+  };
+
+  const dishSuggestions = newDishName.trim()
+    ? recipes.filter((r) => r.name.toLowerCase().includes(newDishName.toLowerCase()))
+    : [];
+
+  const addDish = (name: string, recipeId?: number) => {
+    if (!name.trim()) return;
+    createItem.mutate({
+      menu_sketch_section_id: section.id,
+      name: name.trim(),
+      recipe_id: recipeId,
+      order_no: orderedItems.length,
+    });
+    setNewDishName('');
+    setShowDishSuggestions(false);
+  };
+
+  return (
+    <div className="rounded-xl border border-border bg-card shadow-sm">
+      {/* Section header */}
+      <div className="flex items-center gap-2 border-b border-border px-3 py-2">
+        <span
+          className="cursor-grab text-muted-foreground hover:text-foreground"
+          {...(dragHandleProps ?? {})}
+        >
+          <GripVertical className="h-4 w-4" />
+        </span>
+        <input
+          type="text"
+          value={sectionName}
+          onChange={(e) => setSectionName(e.target.value)}
+          onBlur={() => {
+            if (sectionName.trim() !== section.name && sectionName.trim()) {
+              updateSection.mutate({ id: section.id, data: { name: sectionName.trim() } });
+            }
+          }}
+          onKeyDown={(e) => { if (e.key === 'Enter') e.currentTarget.blur(); }}
+          className="flex-1 bg-transparent text-sm font-semibold text-foreground placeholder:text-muted-foreground focus:outline-none"
+          placeholder="Section name…"
+        />
+        <button
+          onClick={() => setCollapsed((v) => !v)}
+          className="rounded p-0.5 text-muted-foreground hover:text-foreground"
+        >
+          {collapsed ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
+        </button>
+        <button
+          onClick={() => setConfirmDeleteSection(true)}
+          className="rounded p-0.5 text-muted-foreground hover:text-destructive"
+          title="Delete section"
+        >
+          <X className="h-4 w-4" />
+        </button>
+      </div>
+
+      {!collapsed && (
+        <div className="p-2 space-y-1.5">
+          {/* Column headers (list view) */}
+          {viewMode === 'list' && orderedItems.length > 0 && (
+            <div
+              className="grid items-center text-[10px] font-medium uppercase tracking-wider text-muted-foreground"
+              style={{ gridTemplateColumns: '44px 1fr 2fr 88px 72px 52px' }}
+            >
+              <span />
+              <span className="px-3">Dish</span>
+              <span className="px-3">Key Ingredients</span>
+              <span className="px-2">Sale</span>
+              <span className="px-2">Cost</span>
+              <span className="px-2 text-center">%</span>
+            </div>
+          )}
+
+          {/* Items */}
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleItemDragEnd}
+          >
+            <SortableContext items={orderedItems.map((i) => i.id)} strategy={verticalListSortingStrategy}>
+              {viewMode === 'card' ? (
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {orderedItems.map((item) => (
+                    <SortableDishCard
+                      key={item.id}
+                      item={item}
+                      unresolvedCount={(commentsByItemId[item.id] ?? []).filter((c) => !c.resolved).length}
+                      onOpenComments={() => onOpenComments(item.id, item.recipe_name ?? '')}
+                      recipes={recipes}
+                      isSelected={selectedItemIds.has(item.id)}
+                      onToggle={() => onToggleItem(item.id)}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="space-y-1">
+                  {orderedItems.map((item) => (
+                    <SortableDishRow
+                      key={item.id}
+                      item={item}
+                      unresolvedCount={(commentsByItemId[item.id] ?? []).filter((c) => !c.resolved).length}
+                      onOpenComments={() => onOpenComments(item.id, item.recipe_name ?? '')}
+                      recipes={recipes}
+                      isSelected={selectedItemIds.has(item.id)}
+                      onToggle={() => onToggleItem(item.id)}
+                    />
+                  ))}
+                </div>
+              )}
+            </SortableContext>
+          </DndContext>
+
+          {/* Add dish input */}
+          <div className="relative">
+            <div className="flex items-center gap-2 rounded-xl border border-dashed border-border px-3 py-2">
+              <input
+                type="text"
+                value={newDishName}
+                onChange={(e) => { setNewDishName(e.target.value); setShowDishSuggestions(true); }}
+                onFocus={() => setShowDishSuggestions(true)}
+                onBlur={() => setTimeout(() => setShowDishSuggestions(false), 150)}
+                onKeyDown={(e) => { if (e.key === 'Enter') addDish(newDishName); }}
+                placeholder="Type a dish name or search recipes..."
+                className="flex-1 bg-transparent text-sm text-muted-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:text-foreground"
+              />
+              <button
+                onClick={() => addDish(newDishName)}
+                className="shrink-0 text-muted-foreground hover:text-foreground"
+              >
+                <SendHorizontal className="h-4 w-4" />
+              </button>
+            </div>
+            {showDishSuggestions && dishSuggestions.length > 0 && (
+              <div className="absolute left-0 top-full z-10 mt-0.5 w-full rounded border border-border bg-card shadow-lg">
+                {newDishName.trim() && (
+                  <button
+                    type="button"
+                    onMouseDown={() => addDish(newDishName)}
+                    className="flex w-full items-center gap-1.5 px-2 py-1.5 text-xs hover:bg-muted"
+                  >
+                    <Plus className="h-3 w-3" /> Add as new dish: <span className="font-medium">&quot;{newDishName}&quot;</span>
+                  </button>
+                )}
+                {dishSuggestions.slice(0, 5).map((r) => (
+                  <button
+                    key={r.id}
+                    type="button"
+                    onMouseDown={() => addDish(r.name, r.id)}
+                    className="w-full px-2 py-1.5 text-left text-xs hover:bg-muted"
+                  >
+                    {r.name}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      <ConfirmModal
+        isOpen={confirmDeleteSection}
+        onClose={() => setConfirmDeleteSection(false)}
+        onConfirm={() => { deleteSection.mutate(section.id); setConfirmDeleteSection(false); }}
+        title="Delete section"
+        message={`Delete "${section.name || 'this section'}" and all its dishes?`}
+        confirmLabel="Delete"
+        variant="destructive"
+      />
+    </div>
+  );
+}
+
+// ─── SortableSectionCard ──────────────────────────────────────────────────────
+function SortableSectionCard(props: Omit<React.ComponentProps<typeof SectionCard>, 'dragHandleProps'>) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: props.section.id,
+  });
+  const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1 };
+  return (
+    <div ref={setNodeRef} style={style}>
+      <SectionCard {...props} dragHandleProps={{ ...attributes, ...listeners }} />
     </div>
   );
 }
@@ -1026,231 +1472,174 @@ function SectionCard({
 export default function MenuSketchEditorPage() {
   const params = useParams();
   const router = useRouter();
-  const sketchId = Number(params.id);
+  const sketchId = params.id ? parseInt(params.id as string, 10) : null;
 
-  const { data: sketch, isLoading } = useMenuSketch(sketchId);
-  const updateMutation = useUpdateMenuSketch();
-  const forkMutation = useForkMenuSketch();
+  const { data: sketch } = useMenuSketch(sketchId);
+  const { data: sections = [] } = useMenuSketchSections(sketchId);
+  const { data: commentsData } = useMenuSketchComments(sketchId);
   const { data: recipesData } = useRecipes();
-  const allRecipes: Recipe[] = recipesData?.items ?? [];
+  const recipes = recipesData?.items ?? [];
+
+  const updateSketch = useUpdateMenuSketch();
+  const forkSketch = useForkMenuSketch();
+  const createSection = useCreateMenuSketchSection();
+  const updateSection = useUpdateMenuSketchSection();
 
   const [name, setName] = useState('');
-  const [sections, setSections] = useState<SketchSection[]>([]);
   const [editingName, setEditingName] = useState(false);
   const [newSectionName, setNewSectionName] = useState('');
-  const [newSectionIndex, setNewSectionIndex] = useState<number | null>(null);
+  const [sectionOrder, setSectionOrder] = useState<number[]>([]);
   const [viewMode, setViewMode] = useState<'list' | 'card'>('list');
   const [previewMode, setPreviewMode] = useState(false);
-  const [showComments, setShowComments] = useState(true);
-  const [comments, setComments] = useState<SketchComments>({});
-  const [activeDishId, setActiveDishId] = useState<string | null>(null);
-  const [notes, setNotes] = useState<string | null>(null);
-  const [notesOpen, setNotesOpen] = useState(true);
-  const [isDirty, setIsDirty] = useState(false);
+  const [showComments, setShowComments] = useState(false);
+  const [notesOpen, setNotesOpen] = useState(false);
+  const [activeDishComments, setActiveDishComments] = useState<{ itemId: number; dishName: string } | null>(null);
+  const [selectedItems, setSelectedItems] = useState<Set<number>>(new Set());
+
+  const handleToggleItem = (itemId: number) => {
+    setSelectedItems((prev) => {
+      const next = new Set(prev);
+      if (next.has(itemId)) next.delete(itemId);
+      else next.add(itemId);
+      return next;
+    });
+  };
+
+  const handleCreateTasting = () => {
+    const allItems = Object.values(itemsBySection).flat();
+    const recipeIds = [...selectedItems]
+      .map((itemId) => allItems.find((i) => i.id === itemId)?.recipe_id)
+      .filter((id): id is number => id != null);
+    if (recipeIds.length === 0) return;
+    router.push(`/tastings/new?recipe_ids=${recipeIds.join(',')}`);
+  };
+
   const [displayOptions, setDisplayOptions] = useState<DisplayOptions>({
     description: true,
     ingredients: true,
     cost: true,
     costMargins: true,
     comments: true,
+    feedback: true,
   });
   const [showDisplayMenu, setShowDisplayMenu] = useState(false);
-  const displayMenuRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (!showDisplayMenu) return;
-    const handler = (e: MouseEvent) => {
-      if (displayMenuRef.current && !displayMenuRef.current.contains(e.target as Node)) {
-        setShowDisplayMenu(false);
-      }
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, [showDisplayMenu]);
+  // Sync name from server
+  const prevSketchRef = useRef<typeof sketch>(undefined);
+  if (sketch && sketch !== prevSketchRef.current) {
+    setName(sketch.name);
+    prevSketchRef.current = sketch;
+  }
+
+  // Sync section order
+  const prevSectionsRef = useRef<MenuSketchSection[]>([]);
+  if (prevSectionsRef.current !== sections) {
+    const newIds = sections.map((s) => s.id);
+    const added = newIds.filter((id) => !sectionOrder.includes(id));
+    const removed = sectionOrder.filter((id) => !newIds.includes(id));
+    if (added.length > 0 || removed.length > 0) {
+      setSectionOrder(newIds);
+    }
+    prevSectionsRef.current = sections;
+  }
+
+  const orderedSections = sectionOrder
+    .map((id) => sections.find((s) => s.id === id))
+    .filter((s): s is MenuSketchSection => s != null);
+
+  // Build commentsByItemId from aggregated response
+  const commentsByItemId: Record<number, MenuSketchSectionItemComment[]> = {};
+  (commentsData?.data ?? []).forEach(({ menu_sketch_section_item_id, comments }) => {
+    commentsByItemId[menu_sketch_section_item_id] = comments;
+  });
+
+  // For CommentsPanel: build itemsBySection from per-section queries
+  const itemQueries = useQueries({
+    queries: sections.map((section) => ({
+      queryKey: ['menu-sketch-section-items', section.id],
+      queryFn: () => api.getMenuSketchSectionItems(section.id),
+      enabled: sections.length > 0,
+    })),
+  });
+  const itemsBySection: Record<number, MenuSketchSectionItem[]> = {};
+  sections.forEach((section, i) => {
+    itemsBySection[section.id] = itemQueries[i]?.data ?? [];
+  });
 
   const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
-  const commentsSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    if (sketch) {
-      setName(sketch.name);
-      setComments(sketch.comments ?? {});
-      setNotes(sketch.notes ?? null);
-
-      // Lazily assign stable UUIDs to any sections or dishes that lack one
-      const hadMissingIds = (sketch.sections ?? []).some((s) =>
-        !s.id || s.dishes.some((d) => !d.id),
-      );
-      const sectionsWithIds = (sketch.sections ?? []).map((s) => ({
-        ...s,
-        id: s.id ?? crypto.randomUUID(),
-        dishes: s.dishes.map((d) => ({ ...d, id: d.id ?? crypto.randomUUID() })),
-      }));
-      setSections(sectionsWithIds);
-
-      if (hadMissingIds) {
-        updateMutation.mutate({ id: sketchId, data: { sections: sectionsWithIds } });
-      }
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sketch]);
-
-  const handleSave = () => {
-    updateMutation.mutate(
-      { id: sketchId, data: { name, sections } },
-      { onSuccess: () => { toast.success('Menu saved'); setIsDirty(false); } },
-    );
-  };
-
-  const handleNotesSave = (html: string) => {
-    updateMutation.mutate({ id: sketchId, data: { notes: html } });
-  };
-
-  const handleCommentsChange = (c: SketchComments) => {
-    setComments(c);
-    if (commentsSaveTimer.current) clearTimeout(commentsSaveTimer.current);
-    commentsSaveTimer.current = setTimeout(() => {
-      updateMutation.mutate({ id: sketchId, data: { comments: c } });
-    }, 600);
-  };
-
-  const handleDishCommentChange = (dishId: string, updated: SketchComment[]) => {
-    const next = { ...comments };
-    if (updated.length === 0) {
-      delete next[dishId];
-    } else {
-      next[dishId] = updated;
-    }
-    handleCommentsChange(next);
-  };
-
-  const handleDragEnd = (event: DragEndEvent) => {
+  const handleSectionDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
-
-    const activeId = String(active.id);
-    const overId = String(over.id);
-
-    const fromSectionIdx = sections.findIndex((s) => s.id === activeId);
-    const toSectionIdx = sections.findIndex((s) => s.id === overId);
-
-    if (fromSectionIdx >= 0 && toSectionIdx >= 0) {
-      // Section drag
-      setSections((prev) => arrayMove(prev, fromSectionIdx, toSectionIdx));
-    } else {
-      // Dish drag — look up by dish UUID across all sections
-      let activeSec = -1, activeDishIdx = -1, overSec = -1, overDishIdx = -1;
-      for (let si = 0; si < sections.length; si++) {
-        for (let di = 0; di < sections[si].dishes.length; di++) {
-          if (sections[si].dishes[di].id === activeId) { activeSec = si; activeDishIdx = di; }
-          if (sections[si].dishes[di].id === overId) { overSec = si; overDishIdx = di; }
-        }
+    const oldIndex = orderedSections.findIndex((s) => s.id === active.id);
+    const newIndex = orderedSections.findIndex((s) => s.id === over.id);
+    const newOrder = arrayMove(orderedSections, oldIndex, newIndex);
+    setSectionOrder(newOrder.map((s) => s.id));
+    newOrder.forEach((section, idx) => {
+      if (section.order_no !== idx) {
+        updateSection.mutate({ id: section.id, data: { order_no: idx } });
       }
-      if (activeSec >= 0 && activeSec === overSec) {
-        setSections((prev) => {
-          const next = [...prev];
-          next[activeSec] = {
-            ...next[activeSec],
-            dishes: arrayMove(next[activeSec].dishes, activeDishIdx, overDishIdx),
-          };
-          return next;
-        });
-      }
-    }
-  };
-
-  const handleNewSectionKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && newSectionName.trim()) {
-      setSections((prev) => {
-        const next = [...prev, emptySection(newSectionName.trim())];
-        setNewSectionIndex(next.length - 1);
-        return next;
-      });
-      setNewSectionName('');
-      setIsDirty(true);
-    }
-  };
-
-  const updateSection = (i: number, patch: Partial<SketchSection>) => {
-    setSections((prev) => prev.map((s, idx) => (idx === i ? { ...s, ...patch } : s)));
-    setIsDirty(true);
-  };
-
-  const removeSection = (i: number) => {
-    const dishIds = sections[i]?.dishes.map((d) => d.id).filter(Boolean) as string[];
-    setSections((prev) => prev.filter((_, idx) => idx !== i));
-    if (dishIds?.length) {
-      setComments((prev) => {
-        const next = { ...prev };
-        dishIds.forEach((id) => delete next[id]);
-        return next;
-      });
-    }
-  };
-
-  const handleDishRemoved = (dishId: string) => {
-    setComments((prev) => {
-      if (!prev[dishId]) return prev;
-      const next = { ...prev };
-      delete next[dishId];
-      return next;
     });
   };
 
-  const activeDish = activeDishId
-    ? sections.flatMap((s) => s.dishes).find((d) => d.id === activeDishId)
-    : undefined;
+  const handleAddSection = () => {
+    const name = newSectionName.trim();
+    if (!name) return;
+    createSection.mutate({ menu_sketch_id: sketchId!, name, order_no: sections.length });
+    setNewSectionName('');
+  };
 
-  if (isLoading) {
-    return (
-      <div className="flex h-[calc(100vh-4rem)] items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-border border-t-foreground" />
-      </div>
-    );
-  }
+  const handleNameSave = () => {
+    if (sketchId && name.trim() && name.trim() !== sketch?.name) {
+      updateSketch.mutate({ id: sketchId, data: { name: name.trim() } });
+    }
+    setEditingName(false);
+  };
+
+  const handleNotesSave = (html: string) => {
+    if (sketchId) updateSketch.mutate({ id: sketchId, data: { notes: html } });
+  };
 
   if (!sketch) {
     return (
-      <div className="flex h-[calc(100vh-4rem)] items-center justify-center text-muted-foreground">
-        Sketch not found
+      <div className="flex h-screen items-center justify-center">
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
       </div>
     );
   }
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] flex-col bg-background">
+    <div className="flex h-screen flex-col overflow-hidden bg-background">
       {/* Top bar */}
-      <div className="flex shrink-0 items-center gap-3 border-b border-border bg-card px-6 py-3">
-        {/* Back */}
+      <div className="flex shrink-0 items-center gap-2 border-b border-border bg-card px-4 py-2">
         <button
-          onClick={() => router.push('/menu')}
-          className="flex items-center gap-1 rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          onClick={() => router.push('/menu-sketch')}
+          className="rounded p-1 text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="h-4 w-4" />
         </button>
 
-        <div className="mx-1 h-4 w-px bg-border" />
-
-        {/* Editable name */}
+        {/* Sketch name */}
         {editingName ? (
           <input
             autoFocus
-            className="rounded border border-border bg-card px-2 py-1 text-sm font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            type="text"
             value={name}
-            onChange={(e) => { setName(e.target.value); setIsDirty(true); }}
-            onBlur={() => setEditingName(false)}
-            onKeyDown={(e) => e.key === 'Enter' && setEditingName(false)}
+            onChange={(e) => setName(e.target.value)}
+            onBlur={handleNameSave}
+            onKeyDown={(e) => { if (e.key === 'Enter') handleNameSave(); if (e.key === 'Escape') { setName(sketch.name); setEditingName(false); } }}
+            className="w-48 rounded border border-border bg-muted px-2 py-0.5 text-sm font-semibold text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
           />
         ) : (
           <button
-            className="text-sm font-semibold text-foreground hover:underline"
             onClick={() => setEditingName(true)}
+            className="flex items-center gap-1 rounded px-2 py-0.5 text-sm font-semibold text-foreground hover:bg-muted"
           >
-            {name || 'Untitled Menu'}
+            {name || 'Untitled'}
+            <Pencil className="h-3 w-3 text-muted-foreground" />
           </button>
         )}
 
@@ -1258,225 +1647,211 @@ export default function MenuSketchEditorPage() {
           v{sketch.version}
         </span>
 
-        {isDirty && (
-          <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
-            Unsaved changes
-          </span>
-        )}
+        <div className="ml-auto flex items-center gap-1.5">
+          {/* View toggle (edit mode only) */}
+          {!previewMode && (
+            <div className="flex rounded-md border border-border">
+              <button
+                onClick={() => setViewMode('list')}
+                className={`rounded-l-md p-1.5 ${viewMode === 'list' ? 'bg-muted text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+                title="List view"
+              >
+                <List className="h-3.5 w-3.5" />
+              </button>
+              <button
+                onClick={() => setViewMode('card')}
+                className={`rounded-r-md p-1.5 ${viewMode === 'card' ? 'bg-muted text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+                title="Card view"
+              >
+                <LayoutGrid className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          )}
 
-        <div className="flex-1" />
+          {/* Display options (preview mode only) */}
+          {previewMode && (
+            <div className="relative">
+              <button
+                onClick={() => setShowDisplayMenu((v) => !v)}
+                className="flex items-center gap-1 rounded border border-border px-2 py-1 text-xs text-muted-foreground hover:text-foreground"
+              >
+                <SlidersHorizontal className="h-3 w-3" />
+                Display
+              </button>
+              {showDisplayMenu && (
+                <div className="absolute right-0 top-full z-20 mt-1 w-44 rounded-lg border border-border bg-card p-2 shadow-xl">
+                  {(Object.keys(displayOptions) as (keyof DisplayOptions)[]).map((key) => (
+                    <label key={key} className="flex cursor-pointer items-center gap-2 rounded px-2 py-1 hover:bg-muted">
+                      <input
+                        type="checkbox"
+                        checked={displayOptions[key]}
+                        onChange={(e) => setDisplayOptions((o) => ({ ...o, [key]: e.target.checked }))}
+                        className="h-3 w-3 rounded accent-primary"
+                      />
+                      <span className="text-xs capitalize text-foreground">
+                        {key === 'costMargins' ? 'Cost margins' : key === 'feedback' ? 'Feedback' : key}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
-        {/* View toggle (hidden in preview mode) */}
-        {!previewMode && (
-          <div className="flex items-center gap-0.5 rounded-md border border-border p-0.5">
-            <button
-              onClick={() => setViewMode('list')}
-              className={`rounded p-1.5 transition-colors ${
-                viewMode === 'list'
-                  ? 'bg-primary text-primary-foreground'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              <List className="h-3.5 w-3.5" />
-            </button>
-            <button
-              onClick={() => setViewMode('card')}
-              className={`rounded p-1.5 transition-colors ${
-                viewMode === 'card'
-                  ? 'bg-primary text-primary-foreground'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              <LayoutGrid className="h-3.5 w-3.5" />
-            </button>
-          </div>
-        )}
+          {/* Preview / Edit toggle */}
+          <button
+            onClick={() => setPreviewMode((v) => !v)}
+            className={`flex items-center gap-1 rounded border border-border px-2 py-1 text-xs ${
+              previewMode ? 'bg-muted text-foreground' : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            <Eye className="h-3.5 w-3.5" />
+            {previewMode ? 'Edit' : 'Preview'}
+          </button>
 
-        {/* Display options — only in preview mode */}
-        {previewMode && (
-          <div className="relative" ref={displayMenuRef}>
+          {/* Comments panel toggle */}
+          <button
+            onClick={() => setShowComments((v) => !v)}
+            className={`flex items-center gap-1 rounded border border-border px-2 py-1 text-xs ${
+              showComments ? 'bg-muted text-foreground' : 'text-muted-foreground hover:text-foreground'
+            }`}
+            title="Comments panel"
+          >
+            <MessageSquare className="h-3.5 w-3.5" />
+          </button>
+
+          {/* Create Tasting Session (shown when dishes are selected) */}
+          {selectedItems.size > 0 && !previewMode && (
             <button
-              onClick={() => setShowDisplayMenu((v) => !v)}
-              className={`flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-xs font-medium transition-colors hover:bg-muted ${showDisplayMenu ? 'bg-muted text-foreground' : 'text-muted-foreground'}`}
+              onClick={handleCreateTasting}
+              className="flex items-center gap-1 rounded bg-primary px-2 py-1 text-xs text-primary-foreground hover:bg-primary/90"
+              title={`Create tasting session with ${selectedItems.size} dish${selectedItems.size !== 1 ? 'es' : ''}`}
             >
-              <SlidersHorizontal className="h-3.5 w-3.5" />
-              Display
+              <FlaskConical className="h-3 w-3" />
+              Tasting ({selectedItems.size})
             </button>
-            {showDisplayMenu && (
-              <div className="absolute right-0 top-full z-50 mt-1 w-44 rounded-lg border border-border bg-card shadow-lg py-1">
-                {(
-                  [
-                    { key: 'description', label: 'Description' },
-                    { key: 'ingredients', label: 'Key ingredients' },
-                    { key: 'cost', label: 'Cost' },
-                    { key: 'costMargins', label: 'Cost margins' },
-                    { key: 'comments', label: 'Comments' },
-                  ] as const
-                ).map(({ key, label }) => (
-                  <button
-                    key={key}
-                    type="button"
-                    onClick={() => setDisplayOptions((prev) => ({ ...prev, [key]: !prev[key] }))}
-                    className="flex w-full items-center gap-2 px-3 py-1.5 text-xs text-foreground hover:bg-muted"
+          )}
+
+          {/* Fork */}
+          <button
+            onClick={() => sketchId && forkSketch.mutate(sketchId)}
+            disabled={forkSketch.isPending}
+            className="flex items-center gap-1 rounded border border-border px-2 py-1 text-xs text-muted-foreground hover:text-foreground disabled:opacity-50"
+            title="Fork sketch"
+          >
+            <GitFork className="h-3.5 w-3.5" />
+            Fork
+          </button>
+        </div>
+      </div>
+
+      {/* Body */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* Main area */}
+        <div className="flex flex-1 flex-col overflow-hidden">
+          <div className="flex-1 overflow-y-auto p-4">
+            {previewMode ? (
+              <MenuSketchPreview
+                name={name}
+                sections={orderedSections}
+                itemsBySection={itemsBySection}
+                commentsByItemId={commentsByItemId}
+                onOpenComments={(itemId, dishName) => setActiveDishComments({ itemId, dishName })}
+                display={displayOptions}
+              />
+            ) : (
+              <div className="space-y-3">
+                <DndContext
+                  sensors={sensors}
+                  collisionDetection={closestCenter}
+                  onDragEnd={handleSectionDragEnd}
+                >
+                  <SortableContext
+                    items={orderedSections.map((s) => s.id)}
+                    strategy={verticalListSortingStrategy}
                   >
-                    <span className={`flex h-3.5 w-3.5 items-center justify-center rounded border ${displayOptions[key] ? 'border-primary bg-primary text-primary-foreground' : 'border-border'}`}>
-                      {displayOptions[key] && <Check className="h-2.5 w-2.5" />}
-                    </span>
-                    {label}
+                    {orderedSections.map((section) => (
+                      <SortableSectionCard
+                        key={section.id}
+                        section={section}
+                        commentsByItemId={commentsByItemId}
+                        onOpenComments={(itemId, dishName) =>
+                          setActiveDishComments({ itemId, dishName })
+                        }
+                        viewMode={viewMode}
+                        recipes={recipes}
+                        selectedItemIds={selectedItems}
+                        onToggleItem={handleToggleItem}
+                      />
+                    ))}
+                  </SortableContext>
+                </DndContext>
+
+                {/* Add section */}
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={newSectionName}
+                    onChange={(e) => setNewSectionName(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') handleAddSection(); }}
+                    placeholder="New section name…"
+                    className="flex-1 rounded-lg border border-dashed border-border bg-transparent px-3 py-2 text-sm text-muted-foreground placeholder:text-muted-foreground/60 focus:border-primary focus:outline-none focus:text-foreground"
+                  />
+                  <button
+                    onClick={handleAddSection}
+                    disabled={!newSectionName.trim() || createSection.isPending}
+                    className="rounded-lg border border-border px-3 py-2 text-xs text-muted-foreground hover:bg-muted disabled:opacity-40"
+                  >
+                    <Plus className="h-3.5 w-3.5" />
                   </button>
-                ))}
+                </div>
               </div>
             )}
           </div>
-        )}
 
-        {/* Preview toggle */}
-        <button
-          onClick={() => setPreviewMode((v) => !v)}
-          title={previewMode ? 'Back to edit' : 'Preview'}
-          className="flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted"
-        >
-          {previewMode ? <Pencil className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-          {previewMode ? 'Edit' : 'Preview'}
-        </button>
-
-        {/* Comments panel toggle */}
-        <button
-          onClick={() => setShowComments((v) => !v)}
-          title={showComments ? 'Hide comments' : 'Show comments'}
-          className={`flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-xs font-medium transition-colors hover:bg-muted ${
-            showComments ? 'bg-muted text-foreground' : 'text-muted-foreground'
-          }`}
-        >
-          <MessageSquare className="h-3.5 w-3.5" />
-          Comments
-        </button>
-
-        {/* Fork */}
-        <button
-          onClick={() => forkMutation.mutate(sketchId)}
-          disabled={forkMutation.isPending}
-          className="flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted disabled:opacity-50"
-        >
-          <GitFork className="h-3.5 w-3.5" />
-          Fork
-        </button>
-
-        {/* Save */}
-        <button
-          onClick={handleSave}
-          disabled={updateMutation.isPending}
-          className="flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
-        >
-          <Save className="h-3.5 w-3.5" />
-          {updateMutation.isPending ? 'Saving…' : 'Save'}
-        </button>
-      </div>
-
-      {/* Editor body / Preview + Comments panel */}
-      <div className="flex flex-1 overflow-hidden">
-        <div className="flex-1 overflow-auto min-w-0">
-        {previewMode ? (
-          <MenuSketchPreview name={name} sections={sections} comments={comments} onOpenComments={setActiveDishId} display={displayOptions} />
-        ) : (
-          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-            <div className="mx-auto max-w-4xl px-6 py-8 space-y-4">
-              {/* Sections */}
-              <SortableContext
-                items={sections.map((s) => s.id!)}
-                strategy={verticalListSortingStrategy}
-              >
-                {sections.map((section, i) => (
-                  <SectionCard
-                    key={section.id!}
-                    id={section.id!}
-                    section={section}
-                    viewMode={viewMode}
-                    onChange={(patch) => updateSection(i, patch)}
-                    onRemove={() => removeSection(i)}
-                    onDishRemoved={handleDishRemoved}
-                    onEnterInName={() => {
-                      const el = document.querySelector<HTMLInputElement>(
-                        'input[placeholder*="section name"]',
-                      );
-                      el?.focus();
-                    }}
-                    autoFocusName={newSectionIndex === i}
-                    comments={comments}
-                    onOpenComments={setActiveDishId}
-                    recipes={allRecipes}
-                  />
-                ))}
-              </SortableContext>
-
-              {/* New section input at bottom */}
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Type a section name and press Enter to add…"
-                  value={newSectionName}
-                  onChange={(e) => setNewSectionName(e.target.value)}
-                  onKeyDown={handleNewSectionKeyDown}
-                  className="w-full rounded-xl border border-dashed border-border bg-card px-4 py-3 pr-11 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none"
+          {/* Notes panel */}
+          <div className="shrink-0 border-t border-border bg-card">
+            <button
+              onClick={() => setNotesOpen((v) => !v)}
+              className="flex w-full items-center gap-2 px-4 py-2 text-xs text-muted-foreground hover:text-foreground"
+            >
+              {notesOpen ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronUp className="h-3.5 w-3.5" />}
+              Notes
+              {sketch.notes && !notesOpen && (
+                <Check className="ml-auto h-3 w-3 text-green-500" />
+              )}
+            </button>
+            {notesOpen && (
+              <div className="max-h-48 overflow-y-auto px-4 pb-3">
+                <NotesEditor
+                  initialContent={sketch.notes ?? ''}
+                  onChange={() => {}}
+                  onSave={handleNotesSave}
                 />
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (newSectionName.trim()) {
-                      setSections((prev) => {
-                        const next = [...prev, emptySection(newSectionName.trim())];
-                        setNewSectionIndex(next.length - 1);
-                        return next;
-                      });
-                      setNewSectionName('');
-                    }
-                  }}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded p-1 text-muted-foreground hover:text-foreground"
-                >
-                  <SendHorizonal className="h-3.5 w-3.5" />
-                </button>
               </div>
-            </div>
-          </DndContext>
-        )}
+            )}
+          </div>
         </div>
 
-        {/* Right: Comments panel */}
+        {/* Comments panel */}
         {showComments && (
-          <div className="hidden lg:flex w-[300px] shrink-0 overflow-hidden flex-col">
+          <div className="hidden w-72 shrink-0 md:block">
             <CommentsPanel
-              sections={sections}
-              comments={comments}
-              onChange={handleCommentsChange}
+              sections={orderedSections}
+              itemsBySection={itemsBySection}
+              commentsByItemId={commentsByItemId}
             />
           </div>
         )}
       </div>
 
-      {/* Notes section */}
-      <div className="shrink-0 border-t border-border">
-        <button
-          type="button"
-          onClick={() => setNotesOpen((v) => !v)}
-          className="flex w-full items-center gap-2 px-6 py-2 text-sm font-medium text-muted-foreground hover:text-foreground"
-        >
-          {notesOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-          Menu Notes
-        </button>
-        {notesOpen && (
-          <div className="px-6 pb-4">
-            <NotesEditor initialContent={notes} onChange={setNotes} onSave={handleNotesSave} />
-          </div>
-        )}
-      </div>
-
-      {/* Dish comments modal — rendered outside scroll container */}
-      {activeDishId && activeDish && (
+      {/* Dish comments modal */}
+      {activeDishComments && (
         <DishCommentsModal
-          dishName={activeDish.name}
-          dishComments={comments[activeDishId] ?? []}
-          onClose={() => setActiveDishId(null)}
-          onChange={(updated) => handleDishCommentChange(activeDishId, updated)}
+          itemId={activeDishComments.itemId}
+          dishName={activeDishComments.dishName}
+          comments={commentsByItemId[activeDishComments.itemId] ?? []}
+          onClose={() => setActiveDishComments(null)}
         />
       )}
     </div>

@@ -2,7 +2,7 @@
 
 from datetime import datetime
 from decimal import Decimal
-from typing import Any
+from typing import Any, Optional
 
 from pydantic import field_validator
 from sqlalchemy import JSON, Column
@@ -10,18 +10,19 @@ from sqlmodel import Field, SQLModel
 
 
 class MenuSketchSectionItem(SQLModel, table=True):
-    """A dish (item) within a MenuSketchSection."""
+    """A dish (item) within a MenuSketchSection.
+
+    The display name is derived from the linked Recipe (via recipe_id).
+    Items without a recipe_id are name-less stubs.
+    """
 
     __tablename__ = "menu_sketch_section_item"
 
     id: int | None = Field(default=None, primary_key=True)
     menu_sketch_section_id: int = Field(foreign_key="menu_sketch_section.id")
 
-    # Optional link to the recipes table; NULL = name-only stub
+    # Link to the recipes table — NULL only when recipe creation is deferred
     recipe_id: int | None = Field(default=None, foreign_key="recipes.id")
-
-    # Display name — may diverge from recipe.name
-    name: str
 
     sales_price: Decimal | None = Field(default=None, decimal_places=2, max_digits=10)
     cost_price: Decimal | None = Field(default=None, decimal_places=2, max_digits=10)
@@ -41,11 +42,17 @@ class MenuSketchSectionItem(SQLModel, table=True):
 
 
 class MenuSketchSectionItemCreate(SQLModel):
-    """Schema for creating a new dish item."""
+    """Schema for creating a new dish item.
+
+    Either pass an existing ``recipe_id`` OR a ``name`` string to have a new
+    Recipe created automatically.  At least one must be provided.
+    """
 
     menu_sketch_section_id: int
     recipe_id: int | None = None
-    name: str
+    # Used both to auto-create a Recipe (when recipe_id is None) and to name
+    # the dish on the menu.  When recipe_id is given, ``name`` is ignored.
+    name: str | None = None
     sales_price: Decimal | None = None
     cost_price: Decimal | None = None
     description: str | None = None
@@ -55,7 +62,13 @@ class MenuSketchSectionItemCreate(SQLModel):
 
 
 class MenuSketchSectionItemUpdate(SQLModel):
-    """Schema for updating a dish item (all fields optional)."""
+    """Schema for updating a dish item (all fields optional).
+
+    - Pass ``recipe_id`` to switch to an existing recipe.
+    - Pass ``name`` to rename the currently-linked recipe (with optional fork
+      logic when the recipe has tasting feedback).
+    - Pass ``name`` without ``recipe_id`` to auto-create a new recipe.
+    """
 
     recipe_id: int | None = None
     name: str | None = None
@@ -68,13 +81,27 @@ class MenuSketchSectionItemUpdate(SQLModel):
     order_no: int | None = None
 
 
+class MenuSketchTastingNoteRead(SQLModel):
+    """Compact tasting note embedded in MenuSketchSectionItemRead."""
+
+    id: int
+    feedback: Optional[str]
+    taster_name: Optional[str]
+    decision: Optional[str]
+    overall_rating: Optional[int]
+    session_name: Optional[str]
+    session_date: Optional[datetime]
+    created_at: datetime
+
+
 class MenuSketchSectionItemRead(SQLModel):
     """Schema for reading a dish item (API response)."""
 
     id: int
     menu_sketch_section_id: int
     recipe_id: int | None
-    name: str
+    # Resolved from the linked Recipe at read time
+    recipe_name: str | None
     sales_price: Decimal | None
     cost_price: Decimal | None
     margin: Decimal | None
@@ -82,6 +109,7 @@ class MenuSketchSectionItemRead(SQLModel):
     is_highlight: bool
     icons: list[str]
     order_no: int
+    tasting_notes: list[MenuSketchTastingNoteRead]
     created_at: datetime
     updated_at: datetime
 

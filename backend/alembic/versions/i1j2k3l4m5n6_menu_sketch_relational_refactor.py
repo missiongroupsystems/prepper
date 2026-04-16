@@ -137,7 +137,6 @@ def upgrade() -> None:
         sa.Column('id', sa.Integer(), nullable=False),
         sa.Column('menu_sketch_section_id', sa.Integer(), nullable=False),
         sa.Column('recipe_id', sa.Integer(), nullable=True),
-        sa.Column('name', sa.String(), nullable=False),
         sa.Column('sales_price', sa.Numeric(10, 2), nullable=True),
         sa.Column('cost_price', sa.Numeric(10, 2), nullable=True),
         sa.Column('margin', sa.Numeric(10, 2), nullable=True),
@@ -272,26 +271,52 @@ def upgrade() -> None:
 # ---------------------------------------------------------------------------
 
 def downgrade() -> None:
+    conn = op.get_bind()
 
-    # Drop RLS from new tables
+    # Drop RLS from new tables (ignore if they don't exist)
     for table in [
         'menu_sketch_section_item_comments',
         'menu_sketch_section_item',
         'menu_sketch_section',
     ]:
-        _drop_policies(table)
-        _disable_rls(table)
+        exists = conn.execute(
+            sa.text("SELECT 1 FROM pg_tables WHERE schemaname='public' AND tablename=:t"),
+            {"t": table},
+        ).scalar()
+        if exists:
+            _drop_policies(table)
+            _disable_rls(table)
 
     # Drop new tables (reverse order due to FK dependencies)
-    op.drop_table('menu_sketch_section_item_comments')
-    op.drop_table('menu_sketch_section_item')
-    op.drop_table('menu_sketch_section')
+    _exec('DROP TABLE IF EXISTS menu_sketch_section_item_comments CASCADE')
+    _exec('DROP TABLE IF EXISTS menu_sketch_section_item CASCADE')
+    _exec('DROP TABLE IF EXISTS menu_sketch_section CASCADE')
 
-    # Revert menus_sketch changes
-    op.drop_constraint('fk_menus_sketch_root', 'menus_sketch', type_='foreignkey')
-    op.drop_column('menus_sketch', 'root')
-    op.drop_column('menus_sketch', 'status')
+    # Revert menus_sketch changes (idempotent — only if columns still exist)
+    has_root_fk = conn.execute(
+        sa.text(
+            "SELECT 1 FROM pg_constraint WHERE conname = 'fk_menus_sketch_root'"
+        )
+    ).scalar()
+    if has_root_fk:
+        op.drop_constraint('fk_menus_sketch_root', 'menus_sketch', type_='foreignkey')
 
-    # Restore dropped columns
-    op.add_column('menus_sketch', sa.Column('sections', sa.JSON(), nullable=True))
-    op.add_column('menus_sketch', sa.Column('comments', sa.JSON(), nullable=True))
+    menus_cols = {
+        r[0]
+        for r in conn.execute(
+            sa.text(
+                "SELECT column_name FROM information_schema.columns "
+                "WHERE table_name = 'menus_sketch'"
+            )
+        ).fetchall()
+    }
+    if 'root' in menus_cols:
+        op.drop_column('menus_sketch', 'root')
+    if 'status' in menus_cols:
+        op.drop_column('menus_sketch', 'status')
+
+    # Restore dropped columns (only if missing)
+    if 'sections' not in menus_cols:
+        op.add_column('menus_sketch', sa.Column('sections', sa.JSON(), nullable=True))
+    if 'comments' not in menus_cols:
+        op.add_column('menus_sketch', sa.Column('comments', sa.JSON(), nullable=True))

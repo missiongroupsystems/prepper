@@ -3,10 +3,10 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session
 
-from app.api.deps import get_session
+from app.api.deps import get_current_user, get_session
 from app.domain.menu_sketch_section_item_service import MenuSketchSectionItemService
+from app.models import User
 from app.models.menu_sketch_section_item import (
-    MenuSketchSectionItem,
     MenuSketchSectionItemCreate,
     MenuSketchSectionItemRead,
     MenuSketchSectionItemUpdate,
@@ -19,7 +19,7 @@ router = APIRouter()
 def list_menu_sketch_section_items(
     section_id: int,
     session: Session = Depends(get_session),
-) -> list[MenuSketchSectionItem]:
+) -> list[MenuSketchSectionItemRead]:
     """List all items for a section."""
     return MenuSketchSectionItemService(session).list_items(section_id)
 
@@ -28,9 +28,14 @@ def list_menu_sketch_section_items(
 def create_menu_sketch_section_item(
     data: MenuSketchSectionItemCreate,
     session: Session = Depends(get_session),
-) -> MenuSketchSectionItem:
-    """Create a dish item. Returns 404 if section does not exist."""
-    item = MenuSketchSectionItemService(session).create_item(data)
+    current_user: User = Depends(get_current_user),
+) -> MenuSketchSectionItemRead:
+    """Create a dish item. Returns 404 if section does not exist.
+
+    Pass ``recipe_id`` to link an existing recipe, or ``name`` to auto-create
+    a new draft recipe and link it.
+    """
+    item = MenuSketchSectionItemService(session).create_item(data, owner_id=current_user.id)
     if item is None:
         raise HTTPException(status_code=404, detail="Section not found")
     return item
@@ -41,10 +46,14 @@ def update_menu_sketch_section_item(
     item_id: int,
     data: MenuSketchSectionItemUpdate,
     session: Session = Depends(get_session),
-) -> MenuSketchSectionItem:
-    """Update a dish item. If the item has a linked recipe with tasting feedback,
-    the recipe is silently forked before applying the name change."""
-    item = MenuSketchSectionItemService(session).update_item(item_id, data)
+    current_user: User = Depends(get_current_user),
+) -> MenuSketchSectionItemRead:
+    """Update a dish item.
+
+    If ``name`` is provided and the linked recipe has tasting feedback, the
+    recipe is silently forked before applying the rename.
+    """
+    item = MenuSketchSectionItemService(session).update_item(item_id, data, owner_id=current_user.id)
     if item is None:
         raise HTTPException(status_code=404, detail="Item not found")
     return item

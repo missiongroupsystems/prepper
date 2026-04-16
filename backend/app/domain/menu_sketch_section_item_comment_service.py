@@ -6,6 +6,7 @@ from sqlmodel import Session, select
 
 from app.models.menu_sketch_section import MenuSketchSection
 from app.models.menu_sketch_section_item import MenuSketchSectionItem
+from app.models.recipe import Recipe
 from app.models.menu_sketch_section_item_comment import (
     CommentRead,
     DishCommentsRead,
@@ -50,10 +51,11 @@ class MenuSketchSectionItemCommentService:
                     .order_by(MenuSketchSectionItemComment.created_at)
                 ).all()
 
+                recipe = self.session.get(Recipe, item.recipe_id) if item.recipe_id else None
                 result.append(
                     DishCommentsRead(
                         menu_sketch_section_item_id=item.id,  # type: ignore[arg-type]
-                        name=item.name,
+                        name=recipe.name if recipe else None,
                         comments=[
                             CommentRead(
                                 id=c.id,  # type: ignore[arg-type]
