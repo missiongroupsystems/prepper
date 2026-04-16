@@ -137,7 +137,7 @@ def test_delete_section_cascades_items(client: TestClient):
 
 
 def test_create_item_without_recipe(client: TestClient):
-    """Item can be created without a recipe_id (name-only stub)."""
+    """Item created with name-only auto-creates a Recipe and links it."""
     sketch_id = _make_sketch(client)
     section_id = _make_section(client, sketch_id)
 
@@ -146,8 +146,8 @@ def test_create_item_without_recipe(client: TestClient):
     )
     assert response.status_code == 201
     data = response.json()
-    assert data["name"] == "Mystery Dish"
-    assert data["recipe_id"] is None
+    assert data["recipe_name"] == "Mystery Dish"
+    assert data["recipe_id"] is not None
 
 
 def test_create_item_with_recipe(client: TestClient):
@@ -190,7 +190,7 @@ def test_update_item_no_feedback_updates_recipe(client: TestClient):
     data = resp.json()
     # recipe_id unchanged — same recipe, name updated in place
     assert data["recipe_id"] == recipe_id
-    assert data["name"] == "Updated Dish"
+    assert data["recipe_name"] == "Updated Dish"
 
     # Recipe itself should reflect the new name
     recipe = client.get(f"{RECIPES}/{recipe_id}").json()
