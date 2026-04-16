@@ -1489,7 +1489,7 @@ export default function MenuSketchEditorPage() {
   const [editingName, setEditingName] = useState(false);
   const [newSectionName, setNewSectionName] = useState('');
   const [sectionOrder, setSectionOrder] = useState<number[]>([]);
-  const [viewMode, setViewMode] = useState<'list' | 'card'>('list');
+  const [viewMode, setViewMode] = useState<'list' | 'card'>('card');
   const [previewMode, setPreviewMode] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const [notesOpen, setNotesOpen] = useState(false);

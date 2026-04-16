@@ -6,6 +6,7 @@ All notable changes to Prepper are documented here.
 
 ## Index
 
+- **[0.0.36](#0036---2026-04-16)** — Menu Sketch Relational Refactor: Replace JSON sections/comments with relational tables, per-dish comments, recipe fork-on-edit, soft-delete & tasting session creation from menu
 - **[0.0.35](#0035---2026-04-15)** — PostgreSQL Row-Level Security: Database-Layer Access Policies, RLS Helper Functions & Integration Tests
 - **[0.0.34](#0034---2026-04-14)** — Ingredient Search, Filter & Sort Enhancements: Cross-Table Search, SKU-First FMH Upsert, Category Filter Pills & Server-Side Sorting
 - **[0.0.33](#0033---2026-04-13)** — Menu Nav Restructure, Sketch Editor Overhaul & Dish Highlights / Icon Tags
@@ -41,6 +42,57 @@ All notable changes to Prepper are documented here.
 - **[0.0.3](#003---2024-11-27)** — Database Migration: Alembic Initial Tables to Supabase + PostgreSQL JSON Compatibility Fix
 - **[0.0.2](#002---2024-11-27)** — Frontend Implementation: Next.js 15 Recipe Canvas with Drag-and-Drop, Autosave & TanStack Query
 - **[0.0.1](#001---2024-11-27)** — Backend Foundation: FastAPI + SQLModel with 17 API Endpoints, Domain Services & Unit Conversion
+---
+
+## [0.0.36] - 2026-04-16
+
+### Added
+
+#### Menu Sketch Relational Refactor (Plan 27)
+
+**Database Migration**
+- Alembic migration drops JSON `sections` and `comments` columns from `menus_sketch`
+- Added `status` (`draft` / `archived`, default `draft`) and `root` (nullable FK → `menus_sketch.id`) columns to `menus_sketch`
+- New table `menu_sketch_section` — relational sections with `name`, `menu_sketch_id`, `order_no`
+- New table `menu_sketch_section_item` — per-dish rows with `name`, `sales_price`, `cost_price`, `margin`, `description`, `is_highlight`, `icons`, `recipe_id` (optional FK), `order_no`
+- New table `menu_sketch_section_item_comments` — per-dish comment threads with `text`, `resolved`; all cascade-delete from parent
+
+**Backend Models**
+- `MenuSketch` model updated: removed `sections`/`comments`, added `status` and `root`
+- New model files: `menu_sketch_section.py`, `menu_sketch_section_item.py`, `menu_sketch_section_item_comment.py`
+- Aggregated DTOs: `CommentRead`, `DishCommentsRead`, `MenuSketchCommentsResponse`
+
+**Backend Services**
+- `menu_sketch_service.py`: soft-delete (sets `status = archived`), list filters archived, fork sets `root`
+- New `menu_sketch_section_service.py`: create, delete (cascade), list sections
+- New `menu_sketch_section_item_service.py`: create, update with fork-on-feedback logic (forks recipe if tasting notes exist), delete (recipe untouched)
+- New `menu_sketch_section_item_comment_service.py`: aggregated comments view, create, update, resolve, delete
+
+**Backend API**
+- `DELETE /menu-sketches/{id}` now soft-deletes (sets `status = archived`)
+- New router `menu_sketch_sections.py`: `POST /menu-sketch-sections`, `DELETE /menu-sketch-sections/{id}`
+- New router `menu_sketch_section_items.py`: `POST`, `PATCH /{id}`, `DELETE /{id}`
+- New router `menu_sketch_section_item_comments.py`: `GET /menu-sketch/{id}`, `POST`, `PATCH /{id}`, `PATCH /resolve/{id}`, `DELETE /{id}`
+- All three routers registered in `main.py` under `/api/v1/`
+
+**Backend Tests** (`tests/test_menu_sketch_relational.py`)
+- 11 tests covering: section validation, cascade deletes, item CRUD, recipe fork-on-feedback, comment aggregation, resolve, soft-delete, fork root tracking
+
+**Frontend Types & API**
+- `MenuSketch`, `MenuSketchSection`, `MenuSketchSectionItem`, `MenuSketchSectionItemComment`, `DishCommentsRead`, `MenuSketchCommentsResponse` interfaces updated/added in `types/index.ts`
+- 10 new API functions added to `api.ts` for all new endpoints
+
+**Frontend Hooks** (`useMenuSketches.ts`)
+- New hooks: `useMenuSketchSections`, `useCreateMenuSketchSection`, `useDeleteMenuSketchSection`, `useMenuSketchSectionItems`, `useCreateMenuSketchSectionItem`, `useUpdateMenuSketchSectionItem`, `useDeleteMenuSketchSectionItem`, `useMenuSketchComments`, `useCreateMenuSketchComment`, `useUpdateMenuSketchComment`, `useResolveMenuSketchComment`, `useDeleteMenuSketchComment`
+
+**Frontend Pages & Components**
+- Menu sketch editor (`/menu-sketch/[id]/page.tsx`) rewritten to use relational data: section + item hooks replace JSON state
+- `MenuBuilder` component refactored: removes JSON section/dish state, data flows from relational hooks, drag-and-drop calls `useUpdateMenuSketchSectionItem({ order_no })`
+- `CommentsPanel.tsx` / `DishCommentsModal.tsx` refactored to use new comment hooks
+- Per-dish unresolved comment count badge retained in edit mode
+- Dish selection checkboxes + "Create Tasting Session" button navigate to `/tastings/new` with pre-selected dish IDs via URL query params
+- `/tastings/new/page.tsx` accepts `dish_ids` query param and pre-populates session recipe list
+
 ---
 
 ## [0.0.35] - 2026-04-15
