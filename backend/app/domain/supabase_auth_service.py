@@ -9,7 +9,12 @@ Supports local JWT verification to eliminate network round-trips on every auth c
 
 from functools import lru_cache
 
-import jwt
+from ebb_flow_tech_auth import (
+    AuthError as _EbbAuthError,
+    TokenExpiredError as _EbbTokenExpiredError,
+    TokenInvalidError as _EbbTokenInvalidError,
+)
+from ebb_flow_tech_auth import verify_token as _ebb_verify_token
 from supabase import create_client
 
 from app.config import get_settings
@@ -148,9 +153,9 @@ class SupabaseAuthService:
         """
         Verify JWT token and return user ID if valid.
 
-        Uses local JWT verification when SUPABASE_JWT_SECRET is configured,
-        eliminating the network round-trip to Supabase on every request.
-        Falls back to remote verification if local verification is not configured.
+        Delegates to the shared `ebb_flow_tech_auth` library which handles
+        JWKS caching and ES256/RS256 signature verification locally — no
+        network round-trip to Supabase per request (only periodic JWKS fetch).
 
         Args:
             token: JWT access token
@@ -158,24 +163,14 @@ class SupabaseAuthService:
         Returns:
             User ID if token is valid, None if invalid or expired
         """
-        # Try local JWT verification first (no network call)
-        if self._jwt_secret:
-            try:
-                payload = jwt.decode(
-                    token,
-                    self._jwt_secret,
-                    algorithms=["HS256"],
-                    audience="authenticated",
-                )
-                return payload.get("sub")
-            except (jwt.ExpiredSignatureError, jwt.InvalidTokenError):
-                return None
-
-        # Fall back to remote verification
+        settings = get_settings()
         try:
-            user = self.client.auth.get_user(token)
-            return user.user.id if user and user.user else None
-        except Exception:
+            identity = _ebb_verify_token(
+                token,
+                supabase_url=settings.supabase_url,
+            )
+            return identity.user_id
+        except (_EbbTokenExpiredError, _EbbTokenInvalidError, _EbbAuthError):
             return None
 
 

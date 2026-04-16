@@ -98,7 +98,7 @@ app/
 │   ├── recipe_recipe_category_service.py # Recipe-category link CRUD
 │   ├── menu_sketch_service.py   # MenuSketch CRUD + fork + delete
 │   ├── user_service.py          # User CRUD and management
-│   └── supabase_auth_service.py # Supabase authentication integration
+│   └── supabase_auth_service.py # Supabase auth (JWT verification delegates to ebb-flow-tech-auth shared lib)
 ├── api/                 # FastAPI routers (one per resource)
 │   ├── recipes.py               # Recipe CRUD + fork + versions + image management
 │   ├── recipe_ingredients.py    # Recipe ingredient links + wastage/pricing

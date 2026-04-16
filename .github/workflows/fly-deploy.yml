@@ -1,0 +1,48 @@
+name: fly-deploy
+
+on:
+  push:
+    branches: [master, stage]
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Which app to deploy to"
+        type: choice
+        options:
+          - production
+          - staging
+        default: staging
+
+concurrency:
+  group: fly-deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Deploy to production
+        if: |
+          github.event_name == 'push' && github.ref == 'refs/heads/master' ||
+          github.event_name == 'workflow_dispatch' && inputs.target == 'production'
+        working-directory: backend
+        run: flyctl deploy --remote-only --config fly.toml --build-secret gh_token=$GH_TOKEN
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          GH_TOKEN: ${{ secrets.EBB_PACKAGES_TOKEN }}
+
+      - name: Deploy to staging
+        if: |
+          github.event_name == 'push' && github.ref == 'refs/heads/stage' ||
+          github.event_name == 'workflow_dispatch' && inputs.target == 'staging'
+        working-directory: backend
+        run: flyctl deploy --remote-only --config fly.stage.toml --build-secret gh_token=$GH_TOKEN
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          GH_TOKEN: ${{ secrets.EBB_PACKAGES_TOKEN }}

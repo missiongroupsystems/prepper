@@ -5,16 +5,26 @@ FROM python:3.11-slim
 WORKDIR /app
 
 # Install system dependencies
+# git is required for pip to clone the private ebb-flow-tech-auth package
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
+    git \
     libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy dependency files
 COPY pyproject.toml README.md ./
 
-# Install Python dependencies
-RUN pip install --no-cache-dir .
+# Install Python dependencies.
+# ebb-flow-tech-auth installs from a private GitHub repo — inject a PAT via
+# BuildKit secret. Deploy with: flyctl deploy --build-secret gh_token=$EBB_PACKAGES_TOKEN
+RUN --mount=type=secret,id=gh_token,required=false \
+    if [ -f /run/secrets/gh_token ]; then \
+        TOKEN=$(cat /run/secrets/gh_token) && \
+        git config --global url."https://${TOKEN}@github.com/".insteadOf "https://github.com/"; \
+    fi && \
+    pip install --no-cache-dir . && \
+    git config --global --unset url."https://${TOKEN:-placeholder}@github.com/".insteadOf || true
 
 # Copy application code
 COPY app/ app/
