@@ -19,15 +19,16 @@ class MenuSketchService:
     def __init__(self, session: Session):
         self.session = session
 
-    def list_sketches(self) -> list[MenuSketch]:
-        """Return all non-archived menu sketches ordered by most recently updated."""
-        return list(
-            self.session.exec(
-                select(MenuSketch)
-                .where(MenuSketch.status != "archived")
-                .order_by(MenuSketch.updated_at.desc())  # type: ignore[arg-type]
-            ).all()
-        )
+    def list_sketches(self, include_archived: bool = False) -> list[MenuSketch]:
+        """Return menu sketches ordered by most recently updated.
+
+        When *include_archived* is False (default) archived sketches are excluded.
+        """
+        stmt = select(MenuSketch)
+        if not include_archived:
+            stmt = stmt.where(MenuSketch.status != "archived")
+        stmt = stmt.order_by(MenuSketch.updated_at.desc())  # type: ignore[arg-type]
+        return list(self.session.exec(stmt).all())
 
     def get_sketch(self, sketch_id: int) -> MenuSketch | None:
         """Get a single sketch by ID."""

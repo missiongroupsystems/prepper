@@ -1509,8 +1509,9 @@ export async function downloadFMHSampleItems(): Promise<Blob> {
 
 // ============ Menu Sketches ============
 
-export async function getMenuSketches(): Promise<MenuSketch[]> {
-  return fetchApi<MenuSketch[]>('/menu-sketches');
+export async function getMenuSketches(params?: { include_archived?: boolean }): Promise<MenuSketch[]> {
+  const qs = params?.include_archived ? '?include_archived=true' : '';
+  return fetchApi<MenuSketch[]>(`/menu-sketches${qs}`);
 }
 
 export async function getMenuSketch(id: number): Promise<MenuSketch> {

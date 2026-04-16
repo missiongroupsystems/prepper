@@ -8,7 +8,8 @@ import { Plus, FileText, Trash2 } from 'lucide-react';
 import { PageHeader, Button, ConfirmModal } from '@/components/ui';
 
 export default function MenuSketchListPage() {
-  const { data: sketches, isLoading } = useMenuSketches();
+  const [showArchived, setShowArchived] = useState(false);
+  const { data: sketches, isLoading } = useMenuSketches({ include_archived: showArchived });
   const createSketch = useCreateMenuSketch();
   const deleteSketch = useDeleteMenuSketch();
   const [deleteTarget, setDeleteTarget] = useState<{ id: number; name: string } | null>(null);
@@ -21,6 +22,15 @@ export default function MenuSketchListPage() {
           title="Menu Drafts"
           description="Freeform canvas for brainstorming menu layouts"
         >
+          <label className="flex items-center gap-2 cursor-pointer select-none text-sm text-muted-foreground">
+            <input
+              type="checkbox"
+              className="h-4 w-4 rounded border-border accent-foreground"
+              checked={showArchived}
+              onChange={(e) => setShowArchived(e.target.checked)}
+            />
+            View Archives
+          </label>
           <Button
             onClick={() => createSketch.mutate(undefined)}
             disabled={createSketch.isPending}
@@ -74,6 +84,11 @@ export default function MenuSketchListPage() {
                       {sketch.name}
                     </h3>
                     <div className="flex items-center gap-1.5 shrink-0">
+                      {sketch.status === 'archived' && (
+                        <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground/70">
+                          Archived
+                        </span>
+                      )}
                       <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
                         v{sketch.version}
                       </span>

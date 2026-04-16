@@ -1,6 +1,6 @@
 """Menu sketch API router — freeform canvas menu sketches."""
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlmodel import Session
 
 from app.api.deps import get_session
@@ -17,10 +17,11 @@ router = APIRouter()
 
 @router.get("", response_model=list[MenuSketchRead])
 def list_menu_sketches(
+    include_archived: bool = Query(False, description="Include archived sketches"),
     session: Session = Depends(get_session),
 ) -> list[MenuSketch]:
-    """List all menu sketches."""
-    return MenuSketchService(session).list_sketches()
+    """List menu sketches. Pass include_archived=true to include archived ones."""
+    return MenuSketchService(session).list_sketches(include_archived=include_archived)
 
 
 @router.get("/{sketch_id}", response_model=MenuSketchRead)

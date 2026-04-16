@@ -19,10 +19,10 @@ const SECTIONS_KEY = 'menu-sketch-sections';
 const ITEMS_KEY = 'menu-sketch-section-items';
 const COMMENTS_KEY = 'menu-sketch-comments';
 
-export function useMenuSketches() {
+export function useMenuSketches(params?: { include_archived?: boolean }) {
   return useQuery({
-    queryKey: [SKETCHES_KEY],
-    queryFn: () => api.getMenuSketches(),
+    queryKey: [SKETCHES_KEY, params],
+    queryFn: () => api.getMenuSketches(params),
   });
 }
 

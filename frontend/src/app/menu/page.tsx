@@ -8,9 +8,10 @@ import { Button, Card, Skeleton, Badge, PageHeader, ConfirmModal } from '@/compo
 
 export default function MenuPage() {
   const router = useRouter();
+  const [showArchived, setShowArchived] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<{ id: number; name: string } | null>(null);
 
-  const { data: sketches, isLoading: sketchesLoading } = useMenuSketches();
+  const { data: sketches, isLoading: sketchesLoading } = useMenuSketches({ include_archived: showArchived });
   const createSketch = useCreateMenuSketch();
   const deleteSketch = useDeleteMenuSketch();
 
@@ -25,6 +26,15 @@ export default function MenuPage() {
           title="Menu"
           description="Brainstorm and sketch menus quickly"
         >
+          <label className="flex items-center gap-2 cursor-pointer select-none text-sm text-muted-foreground">
+            <input
+              type="checkbox"
+              className="h-4 w-4 rounded border-border accent-primary"
+              checked={showArchived}
+              onChange={(e) => setShowArchived(e.target.checked)}
+            />
+            View Archives
+          </label>
           <Button onClick={handleNewDraft} disabled={createSketch.isPending} className="gap-2">
             <Plus className="h-4 w-4" />
             New Draft
@@ -51,6 +61,11 @@ export default function MenuPage() {
                     <Badge variant="secondary" className="shrink-0">
                       v{sketch.version}
                     </Badge>
+                    {sketch.status === 'archived' && (
+                      <Badge variant="destructive" className="shrink-0">
+                        Archived
+                      </Badge>
+                    )}
                   </div>
                 </div>
                 <div className="mt-4 flex gap-2" onClick={(e) => e.stopPropagation()}>
