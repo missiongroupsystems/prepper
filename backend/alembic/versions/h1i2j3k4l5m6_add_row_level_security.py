@@ -108,7 +108,7 @@ def upgrade() -> None:
             SELECT EXISTS (
                 SELECT 1 FROM users
                 WHERE id = auth.uid()::text
-                  AND user_type = 'admin'
+                  AND user_type::text = 'admin'
             )
         $$
     """)
@@ -119,7 +119,7 @@ def upgrade() -> None:
             SELECT EXISTS (
                 SELECT 1 FROM users
                 WHERE id = auth.uid()::text
-                  AND (user_type = 'admin' OR is_manager = true)
+                  AND (user_type::text = 'admin' OR is_manager = true)
             )
         $$
     """)
