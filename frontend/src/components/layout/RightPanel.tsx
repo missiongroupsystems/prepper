@@ -1,15 +1,15 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { Plus, Search, GripVertical, ChevronDown, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import { useDraggable } from '@dnd-kit/core';
-import { useInfiniteIngredients, useCreateIngredient, useInfiniteRecipes, useCategories, useRecipeCategories, useAllRecipeRecipeCategories, useRecipeOutletsBatch, useCategorizeIngredient, useDebouncedValue } from '@/lib/hooks';
+import { useInfiniteIngredients, useCreateIngredient, useInfiniteRecipes, useCategoriesPaginated, useRecipeCategories, useAllRecipeRecipeCategories, useRecipeOutletsBatch, useCategorizeIngredient, useDebouncedValue } from '@/lib/hooks';
 import { useAppState } from '@/lib/store';
 import { Button, Input, Select, Skeleton, Switch } from '@/components/ui';
 import Image from 'next/image';
 import { formatCurrency, cn } from '@/lib/utils';
 import { toast } from 'sonner';
-import type { Ingredient, Recipe, Outlet } from '@/types';
+import type { Category, Ingredient, Recipe, Outlet } from '@/types';
 
 type RightPanelTab = 'all' | 'ingredients' | 'items';
 
@@ -312,6 +312,8 @@ export function RightPanel({ outlets }: RightPanelProps) {
   const [activeTab, setActiveTab] = useState<RightPanelTab>('all');
   const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
   const [showCategoryFilter, setShowCategoryFilter] = useState(false);
+  const [catPage, setCatPage] = useState(1);
+  const [displayedCategories, setDisplayedCategories] = useState<Category[]>([]);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isQuickAdding, setIsQuickAdding] = useState(false);
 
@@ -333,7 +335,21 @@ export function RightPanel({ outlets }: RightPanelProps) {
   const ingredients = ingredientsData?.pages.flatMap((page) => page.items);
   const { data: recipesData, isLoading: recipesLoading, error: recipesError, fetchNextPage: fetchNextRecipes, hasNextPage: hasNextRecipes, isFetchingNextPage: isFetchingNextRecipes } = useInfiniteRecipes(recipeParams);
   const recipes = recipesData?.pages.flatMap((page) => page.items);
-  const { data: categories } = useCategories();
+  const { data: catPageData, isFetching: catFetching } = useCategoriesPaginated({
+    page_size: 10,
+    page_number: catPage,
+    active_only: true,
+  });
+  useEffect(() => {
+    if (catPageData?.items && !catFetching) {
+      if (catPageData.page_number === 1) {
+        setDisplayedCategories(catPageData.items);
+      } else {
+        setDisplayedCategories((prev) => [...prev, ...catPageData.items]);
+      }
+    }
+  }, [catPageData, catFetching]);
+  const hasMoreCategories = catPageData ? displayedCategories.length < catPageData.total_count : false;
   const { data: recipeCategoriesData } = useRecipeCategories({ page_size: 30 });
   const recipeCategories = recipeCategoriesData?.items;
   const { data: allRecipeRecipeCategories } = useAllRecipeRecipeCategories();
@@ -376,12 +392,11 @@ export function RightPanel({ outlets }: RightPanelProps) {
 
   // Create a mapping of category ID to name for efficient lookups
   const categoryMap = useMemo(() => {
-    if (!categories) return {};
-    return categories.reduce((acc, cat) => {
+    return displayedCategories.reduce((acc, cat) => {
       acc[cat.id] = cat.name;
       return acc;
     }, {} as Record<number, string>);
-  }, [categories]);
+  }, [displayedCategories]);
 
   // Create mapping for recipe categories
   const recipeCategoryMap = useMemo(() => {
@@ -521,7 +536,7 @@ export function RightPanel({ outlets }: RightPanelProps) {
           </div>
 
           {/* Category Filter — compact */}
-          {(activeTab === 'all' || activeTab === 'ingredients') && categories && categories.length > 0 && (
+          {(activeTab === 'all' || activeTab === 'ingredients') && displayedCategories.length > 0 && (
             <div className="border-b border-zinc-200 dark:border-zinc-800">
               <button
                 onClick={() => setShowCategoryFilter(!showCategoryFilter)}
@@ -533,8 +548,8 @@ export function RightPanel({ outlets }: RightPanelProps) {
 
               {showCategoryFilter && (
                 <div className="px-3 pb-2">
-                  <div className="flex flex-wrap gap-1">
-                    {categories.filter(c => c.is_active).map((category) => (
+                  <div className="flex flex-wrap gap-1 max-h-28 overflow-y-auto">
+                    {displayedCategories.map((category) => (
                       <button
                         key={category.id}
                         onClick={() => toggleCategory(category.id)}
@@ -548,10 +563,21 @@ export function RightPanel({ outlets }: RightPanelProps) {
                         {category.name}
                       </button>
                     ))}
+                  </div>
+                  <div className="flex items-center gap-2 mt-1.5">
+                    {hasMoreCategories && (
+                      <button
+                        onClick={() => setCatPage((p) => p + 1)}
+                        disabled={catFetching}
+                        className="text-[11px] text-blue-500 dark:text-blue-400 hover:underline disabled:opacity-50"
+                      >
+                        {catFetching ? 'Loading...' : 'See more'}
+                      </button>
+                    )}
                     {selectedCategories.length > 0 && (
                       <button
                         onClick={clearCategoryFilters}
-                        className="px-2 py-0.5 text-[11px] text-blue-500 dark:text-blue-400 hover:underline"
+                        className="text-[11px] text-zinc-400 dark:text-zinc-500 hover:underline"
                       >
                         Clear
                       </button>
