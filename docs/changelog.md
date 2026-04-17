@@ -6,6 +6,7 @@ All notable changes to Prepper are documented here.
 
 ## Index
 
+- **[0.0.37](#0037---2026-04-17)** — Ingredient Library UX: Supplier Names on Draggable Cards, Token-Based AND Search, Paginated Category Filter & Menu Archives Toggle
 - **[0.0.36](#0036---2026-04-16)** — Menu Sketch Relational Refactor: Replace JSON sections/comments with relational tables, per-dish comments, recipe fork-on-edit, soft-delete & tasting session creation from menu
 - **[0.0.35](#0035---2026-04-15)** — PostgreSQL Row-Level Security: Database-Layer Access Policies, RLS Helper Functions & Integration Tests
 - **[0.0.34](#0034---2026-04-14)** — Ingredient Search, Filter & Sort Enhancements: Cross-Table Search, SKU-First FMH Upsert, Category Filter Pills & Server-Side Sorting
@@ -42,6 +43,29 @@ All notable changes to Prepper are documented here.
 - **[0.0.3](#003---2024-11-27)** — Database Migration: Alembic Initial Tables to Supabase + PostgreSQL JSON Compatibility Fix
 - **[0.0.2](#002---2024-11-27)** — Frontend Implementation: Next.js 15 Recipe Canvas with Drag-and-Drop, Autosave & TanStack Query
 - **[0.0.1](#001---2024-11-27)** — Backend Foundation: FastAPI + SQLModel with 17 API Endpoints, Domain Services & Unit Conversion
+---
+
+## [0.0.37] - 2026-04-17
+
+### Added
+
+#### Ingredient Library: Supplier Name on Draggable Cards
+- `IngredientListRead` DTO gains a `supplier_names: list[str]` field, populated via a single bulk JOIN (preferred supplier first, then alphabetical)
+- `DraggableIngredientCard` in `RightPanel.tsx` now shows supplier name, category, and unit/price on separate rows beneath the ingredient name
+
+#### Ingredient Search: Token-Based AND Matching
+- Multi-word search strings (e.g. `phoon huat baking sheet`) are split on whitespace; each token becomes an OR condition across `ingredient.name` / `supplier.name`, and all tokens are AND-ed together
+- Single-token behaviour is unchanged; results now correctly intersect across supplier and ingredient name fields
+
+#### Right Panel Category Filter: Pagination & Vertical Scroll
+- Category pill container switches from `useCategories` (all) to `useIngredientsWithCategoriesPaginated` (10 per page)
+- Pages accumulate in local state; a **"See more"** button loads the next page on demand
+- Pill container gains a constrained height with vertical scroll so the filter list never overflows the panel
+
+#### Menu Sketch Archives Toggle
+- `GET /menu-sketches` accepts new `include_archived` query param (default `false`); service filters out `status = archived` sketches unless flag is set
+- `/menu-sketch` and `/menu` list pages gain a **"View Archives"** checkbox; archived sketches display a styled **Archived** badge when the toggle is enabled
+
 ---
 
 ## [0.0.36] - 2026-04-16
