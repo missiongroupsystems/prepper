@@ -73,14 +73,18 @@ function DraggableIngredientCard({ ingredient, categoryMap }: { ingredient: Ingr
         <h3 className="font-medium text-sm text-zinc-900 dark:text-white truncate">
           {ingredient.name}
         </h3>
+        {ingredient.supplier_names?.[0] && (
+          <p className="text-[11px] text-zinc-400 dark:text-zinc-500 truncate mt-0.5">
+            {ingredient.supplier_names[0]}
+          </p>
+        )}
+        {categoryName && (
+          <p className="text-[11px] text-zinc-400 dark:text-zinc-500 truncate mt-0.5">
+            {categoryName}
+          </p>
+        )}
         <div className="flex items-center gap-1.5 mt-0.5">
           <span className="text-[11px] text-zinc-500 dark:text-zinc-400">{ingredient.base_unit}</span>
-          {categoryName && (
-            <>
-              <span className="text-zinc-300 dark:text-zinc-600 text-[11px]">·</span>
-              <span className="text-[11px] text-zinc-400 dark:text-zinc-500 truncate">{categoryName}</span>
-            </>
-          )}
           {ingredient.cost_per_base_unit !== null && (
             <>
               <span className="text-zinc-300 dark:text-zinc-600 text-[11px]">·</span>
