@@ -6,6 +6,7 @@ All notable changes to Prepper are documented here.
 
 ## Index
 
+- **[0.0.38](#0038---2026-04-17)** — Buy Catalogue Import: Single-Sheet FMH XLSX Import, Template Download & Efficiency Improvements
 - **[0.0.37](#0037---2026-04-17)** — Ingredient Library UX: Supplier Names on Draggable Cards, Token-Based AND Search, Paginated Category Filter & Menu Archives Toggle
 - **[0.0.36](#0036---2026-04-16)** — Menu Sketch Relational Refactor: Replace JSON sections/comments with relational tables, per-dish comments, recipe fork-on-edit, soft-delete & tasting session creation from menu
 - **[0.0.35](#0035---2026-04-15)** — PostgreSQL Row-Level Security: Database-Layer Access Policies, RLS Helper Functions & Integration Tests
@@ -43,6 +44,32 @@ All notable changes to Prepper are documented here.
 - **[0.0.3](#003---2024-11-27)** — Database Migration: Alembic Initial Tables to Supabase + PostgreSQL JSON Compatibility Fix
 - **[0.0.2](#002---2024-11-27)** — Frontend Implementation: Next.js 15 Recipe Canvas with Drag-and-Drop, Autosave & TanStack Query
 - **[0.0.1](#001---2024-11-27)** — Backend Foundation: FastAPI + SQLModel with 17 API Endpoints, Domain Services & Unit Conversion
+---
+
+## [0.0.38] - 2026-04-17
+
+### Added
+
+#### Buy Catalogue Import (Plan 28)
+- New single-sheet XLSX import for the `EXPORT_BUY_CATALOGUE` FMH format — all data (outlet, supplier, SKU, category, pricing) in one file with no pre-import step required
+- `import_buy_catalogue(session, wb)` in `fmh_import_service.py`: two-phase approach — Phase 1 pure in-memory mapping, Phase 2 bulk upserts with a single `session.commit()`
+- Column mapping: `Branch Name` → `Outlet`, `Supplier Name` → `Supplier`, `Sku` → `SupplierIngredient.sku`, `Category Name` → `Category`, `Packaging Note` → `base_unit` + cost divisor via new `_parse_pack_from_note()` helper
+- SKU prefix (e.g. `HENT` from `HENT-FD-POULTRY-000003`) set as `Supplier.code` for new suppliers only
+- Duplicate handling: Ingredient and SupplierIngredient overwrite on SKU match; Supplier, Category, Outlet, OutletSupplierIngredient skip on duplicate
+- Extended `_UNIT_MAP` with full FMH abbreviation set (`gm`, `gms`, `gr`, `kgs`, `kilo`, `mls`, `lt`, `ltr`, `litre`, `liter`, `pce`, `piece`, `pieces`, `unit`, `units`)
+- `POST /ingredients/buy-catalogue-import` — admin-only endpoint, `.xlsx` guard, returns `FMHImportResult`
+- `GET /ingredients/buy-catalogue-template` — returns blank XLSX with correct headers + one example row (no storage dependency)
+
+#### Frontend
+- `importIngredientsBuyCatalogue(file)` and `downloadBuyCatalogueTemplate()` API functions in `api.ts`
+- `BuyCatalogueImportModal` component — single file input, success toast with ingredient/supplier/outlet/category counts, invalidates `ingredients`, `categories`, `outlets`, `suppliers` query keys
+- **"Buy Catalogue (FMH)"** `DropdownButton` on the Ingredients page (Download Template + Import items) alongside the existing FMH button
+
+### Changed
+
+#### Import Service Efficiency
+- `import_buy_catalogue`: replaced three full-table scans (`select(Outlet/Category/Supplier).all()` + Python filter) with targeted `func.lower(col).in_(keys)` queries — pushes filtering to DB, only fetches matching rows
+
 ---
 
 ## [0.0.37] - 2026-04-17

@@ -10,6 +10,7 @@ import re
 
 import openpyxl
 from openpyxl.workbook import Workbook
+from sqlalchemy import func
 from sqlmodel import Session, SQLModel, col, select
 
 from app.models.category import Category
@@ -22,12 +23,12 @@ from app.models.supplier_ingredient import SupplierIngredient
 PRODUCT_CODE_COL = "Product code (Do not edit this field, this is for your reference)"
 
 _UNIT_MAP: dict[str, str] = {
-    "kg": "kg",
-    "g": "g",
-    "l": "l",
-    "ml": "ml",
-    "pcs": "pcs",
-    "pc": "pcs",
+    "g": "g", "gm": "g", "gms": "g", "gr": "g", "gram": "g", "grams": "g",
+    "kg": "kg", "kgs": "kg", "kilo": "kg",
+    "ml": "ml", "mls": "ml",
+    "l": "l", "lt": "l", "ltr": "l", "litre": "l", "liter": "l",
+    "pcs": "pcs", "pc": "pcs", "pce": "pcs", "piece": "pcs", "pieces": "pcs",
+    "unit": "pcs", "units": "pcs",
 }
 
 
@@ -59,6 +60,23 @@ def _read_sheet(wb: Workbook, sheet_name: str | None = None) -> list[dict]:
             continue
         result.append({headers[i]: row[i] for i in range(len(headers))})
     return result
+
+
+def _parse_pack_from_note(note: str, fallback_name: str) -> tuple[float, str]:
+    """Extract pack size and base unit from a packaging note string.
+
+    E.g. "500GM / PKT" → (500.0, "g")
+         "1KG / PKT"   → (1000.0, "kg") ... actually (1.0, "kg")
+         "1L / BTL"    → (1.0, "l")
+
+    Falls back to _parse_pack_from_name(fallback_name) if no match found.
+    """
+    pattern = r"(\d+(?:\.\d+)?)\s*(g|gm|gms|gr|gram|grams|kg|kgs|ml|mls|l|lt|ltr|pcs?|pc|pce|pieces?|units?)\b"
+    match = re.search(pattern, note, re.IGNORECASE)
+    if match:
+        raw_unit = match.group(2).lower()
+        return float(match.group(1)), _UNIT_MAP.get(raw_unit, "pcs")
+    return _parse_pack_from_name(fallback_name)
 
 
 def _parse_pack_from_name(name: str) -> tuple[float, str]:
@@ -462,6 +480,299 @@ def import_ingredients(
     if new_osis:
         session.add_all(new_osis)
     result.outlet_supplier_ingredients_created = len(new_osis)
+
+    session.commit()
+    return result
+
+
+def import_buy_catalogue(session: Session, wb: Workbook) -> FMHImportResult:
+    """Import outlets, categories, suppliers, ingredients, and supplier-ingredient links
+    from an EXPORT_BUY_CATALOGUE Excel sheet.
+
+    Phase 1 (map): reads workbook into memory — no DB writes.
+    Phase 2 (upsert): bulk writes per entity type, single commit at the end.
+    """
+    result = FMHImportResult()
+
+    # ------------------------------------------------------------------
+    # Phase 1 — Map (single pass, no DB writes)
+    # ------------------------------------------------------------------
+
+    rows = _read_sheet(wb, "EXPORT_BUY_CATALOGUE")
+
+    outlet_names: set[str] = set()
+    category_keys: dict[str, str] = {}      # lower → title-cased
+    supplier_shapes: dict[str, dict] = {}   # lower(name) → {name, code}
+    ingredient_shapes: dict[str, dict] = {} # sku → {name, base_unit, cost_per_base_unit, category_lower, pack_size}
+    si_shapes: dict[str, dict] = {}         # sku → {supplier_lower, pack_size, pack_unit, price_per_pack, currency, outlet_name}
+
+    for row in rows:
+        sku = str(row.get("Sku") or "").strip()
+        if not sku:
+            continue
+
+        branch_name = str(row.get("Branch Name") or "").strip()
+        if branch_name:
+            outlet_names.add(branch_name)
+
+        cat_raw = str(row.get("Category Name") or "").strip()
+        if cat_raw:
+            cat_lower = cat_raw.lower()
+            if cat_lower not in category_keys:
+                category_keys[cat_lower] = cat_raw.title()
+
+        supplier_name = str(row.get("Supplier Name") or "").strip()
+        if supplier_name:
+            sup_lower = supplier_name.lower()
+            supplier_shapes[sup_lower] = {
+                "name": supplier_name,
+                "code": sku.split("-")[0],
+            }
+
+        product_name = str(row.get("Product Name") or "").strip()
+        if sku not in ingredient_shapes and product_name:
+            pack_note = str(row.get("Packaging Note") or "").strip()
+            pack_size, base_unit = _parse_pack_from_note(pack_note, product_name)
+            try:
+                price_raw = row.get("Price")
+                price = float(price_raw) if price_raw not in (None, "") else None
+                cost = (price / pack_size) if price and pack_size else price
+            except (TypeError, ValueError, ZeroDivisionError):
+                cost = None
+            ingredient_shapes[sku] = {
+                "name": product_name,
+                "base_unit": base_unit,
+                "cost_per_base_unit": cost,
+                "category_lower": cat_raw.lower() if cat_raw else "",
+                "pack_size": pack_size,
+            }
+
+        try:
+            price_raw = row.get("Price")
+            price_per_pack = float(price_raw) if price_raw not in (None, "") else 0.0
+        except (TypeError, ValueError):
+            price_per_pack = 0.0
+
+        uom = str(row.get("Uom") or "").strip() or "pcs"
+        si_shapes[sku] = {
+            "supplier_lower": supplier_name.lower() if supplier_name else "",
+            "pack_size": ingredient_shapes.get(sku, {}).get("pack_size", 1.0),
+            "pack_unit": uom,
+            "price_per_pack": price_per_pack,
+            "currency": str(row.get("Currency") or "SGD").strip(),
+            "outlet_name": branch_name,
+        }
+
+    # ------------------------------------------------------------------
+    # Phase 2 — Upsert (1 bulk SELECT + add_all per entity type, 1 commit)
+    # ------------------------------------------------------------------
+
+    # 1. Outlets — filter by lower(name) IN (...) instead of full table scan
+    outlet_by_lower: dict[str, Outlet] = {}
+    if outlet_names:
+        outlet_lower_map = {n.lower(): n for n in outlet_names}
+        existing_outlets = session.exec(
+            select(Outlet).where(func.lower(Outlet.name).in_(list(outlet_lower_map.keys())))
+        ).all()
+        outlet_by_lower = {o.name.lower(): o for o in existing_outlets}
+        new_outlets = [
+            Outlet(
+                name=outlet_lower_map[lower],
+                code=None,  # type: ignore[arg-type]
+                outlet_type=OutletType.BRAND,
+                parent_outlet_id=None,
+                is_active=True,
+                source="fmh",
+            )
+            for lower in outlet_lower_map
+            if lower not in outlet_by_lower
+        ]
+        if new_outlets:
+            session.add_all(new_outlets)
+            session.flush()
+            for o in new_outlets:
+                outlet_by_lower[o.name.lower()] = o
+            result.outlets_created = len(new_outlets)
+
+    # 2. Categories — filter by lower(name) IN (...)
+    category_by_lower: dict[str, Category] = {}
+    if category_keys:
+        existing_cats = session.exec(
+            select(Category).where(func.lower(Category.name).in_(list(category_keys.keys())))
+        ).all()
+        category_by_lower = {c.name.lower(): c for c in existing_cats}
+        new_cats = [
+            Category(name=category_keys[lower], source="fmh")
+            for lower in category_keys
+            if lower not in category_by_lower
+        ]
+        if new_cats:
+            session.add_all(new_cats)
+            session.flush()
+            for c in new_cats:
+                category_by_lower[c.name.lower()] = c
+            result.categories_created = len(new_cats)
+
+    # 3. Suppliers — filter by lower(name) IN (...)
+    supplier_by_lower: dict[str, Supplier] = {}
+    if supplier_shapes:
+        existing_sups = session.exec(
+            select(Supplier).where(func.lower(Supplier.name).in_(list(supplier_shapes.keys())))
+        ).all()
+        supplier_by_lower = {s.name.lower(): s for s in existing_sups}
+        new_sups = [
+            Supplier(
+                name=v["name"],
+                code=v["code"],
+                is_active=True,
+                source="fmh",
+            )
+            for lower, v in supplier_shapes.items()
+            if lower not in supplier_by_lower
+        ]
+        if new_sups:
+            session.add_all(new_sups)
+            session.flush()
+            for s in new_sups:
+                supplier_by_lower[s.name.lower()] = s
+            result.suppliers_created = len(new_sups)
+
+    # 4. Ingredients (SKU-first upsert)
+    si_by_sku: dict[str, SupplierIngredient] = {}
+    ing_by_sku: dict[str, Ingredient] = {}
+    if si_shapes:
+        existing_sis = session.exec(
+            select(SupplierIngredient).where(col(SupplierIngredient.sku).in_(list(si_shapes.keys())))
+        ).all()
+        si_by_sku = {si.sku: si for si in existing_sis}
+        si_ing_ids = [si.ingredient_id for si in existing_sis if si.ingredient_id is not None]
+        if si_ing_ids:
+            ings_for_sis = session.exec(
+                select(Ingredient).where(col(Ingredient.id).in_(si_ing_ids))
+            ).all()
+            ing_by_id = {i.id: i for i in ings_for_sis}
+            ing_by_sku = {
+                si.sku: ing_by_id[si.ingredient_id]
+                for si in existing_sis
+                if si.ingredient_id in ing_by_id
+            }
+
+    ingredient_by_sku: dict[str, Ingredient] = {}
+    existing_ing_by_name: dict[str, Ingredient] = {}
+    if ingredient_shapes:
+        ing_names = [s["name"] for s in ingredient_shapes.values()]
+        existing_ings = session.exec(
+            select(Ingredient).where(col(Ingredient.name).in_(ing_names))
+        ).all()
+        existing_ing_by_name = {i.name: i for i in existing_ings}
+
+    def _update_buy_ing_fields(ing: Ingredient, shape: dict, category_id: int | None) -> None:
+        ing.name = shape["name"]
+        ing.base_unit = shape["base_unit"]
+        if shape["cost_per_base_unit"] is not None:
+            ing.cost_per_base_unit = shape["cost_per_base_unit"]
+        if category_id is not None:
+            ing.category_id = category_id
+        session.add(ing)
+
+    new_ings_by_name: dict[str, Ingredient] = {}
+    for sku, shape in ingredient_shapes.items():
+        name = shape["name"]
+        cat_lower = shape["category_lower"]
+        cat_obj = category_by_lower.get(cat_lower)
+        category_id = cat_obj.id if cat_obj else None
+        if sku in ing_by_sku:
+            ing = ing_by_sku[sku]
+            _update_buy_ing_fields(ing, shape, category_id)
+            result.ingredients_updated += 1
+            ingredient_by_sku[sku] = ing
+        elif name in existing_ing_by_name:
+            ing = existing_ing_by_name[name]
+            _update_buy_ing_fields(ing, shape, category_id)
+            result.ingredients_updated += 1
+            ingredient_by_sku[sku] = ing
+        elif name not in new_ings_by_name:
+            new_ings_by_name[name] = Ingredient(
+                name=name,
+                base_unit=shape["base_unit"],
+                cost_per_base_unit=shape["cost_per_base_unit"],
+                category_id=category_id,
+                source="fmh",
+                is_active=True,
+            )
+    if new_ings_by_name:
+        session.add_all(list(new_ings_by_name.values()))
+        session.flush()
+        result.ingredients_created = len(new_ings_by_name)
+    for sku, shape in ingredient_shapes.items():
+        if shape["name"] in new_ings_by_name:
+            ingredient_by_sku[sku] = new_ings_by_name[shape["name"]]
+
+    # 5. SupplierIngredients (SKU upsert)
+    new_sis_buy: list[tuple[str, SupplierIngredient]] = []
+    for sku, shape in si_shapes.items():
+        if sku in si_by_sku:
+            si = si_by_sku[sku]
+            si.pack_size = shape["pack_size"]
+            si.pack_unit = shape["pack_unit"]
+            si.price_per_pack = shape["price_per_pack"]
+            session.add(si)
+            result.supplier_ingredients_updated += 1
+            continue
+        supplier = supplier_by_lower.get(shape["supplier_lower"])
+        ingredient = ingredient_by_sku.get(sku)
+        if supplier is None or ingredient is None:
+            continue
+        new_sis_buy.append((sku, SupplierIngredient(
+            supplier_id=supplier.id,
+            ingredient_id=ingredient.id,
+            sku=sku,
+            pack_size=shape["pack_size"],
+            pack_unit=shape["pack_unit"],
+            price_per_pack=shape["price_per_pack"],
+            currency=shape["currency"],
+            source="fmh",
+        )))
+    if new_sis_buy:
+        session.add_all([si for _, si in new_sis_buy])
+        session.flush()
+        for sku, si in new_sis_buy:
+            si_by_sku[sku] = si
+        result.supplier_ingredients_created = len(new_sis_buy)
+
+    # 6. OutletSupplierIngredient links
+    all_si_ids_buy = [si.id for si in si_by_sku.values() if si.id is not None]
+    existing_osi_keys_buy: set[tuple[int, int]] = set()
+    if all_si_ids_buy:
+        existing_osis_buy = session.exec(
+            select(OutletSupplierIngredient).where(
+                col(OutletSupplierIngredient.supplier_ingredient_id).in_(all_si_ids_buy)
+            )
+        ).all()
+        existing_osi_keys_buy = {(o.supplier_ingredient_id, o.outlet_id) for o in existing_osis_buy}
+
+    new_osis_buy: list[OutletSupplierIngredient] = []
+    for sku, shape in si_shapes.items():
+        si = si_by_sku.get(sku)
+        if si is None or si.id is None:
+            continue
+        outlet_name = shape["outlet_name"]
+        if not outlet_name:
+            continue
+        outlet = outlet_by_lower.get(outlet_name.lower())
+        if outlet is None or outlet.id is None:
+            continue
+        key = (si.id, outlet.id)
+        if key in existing_osi_keys_buy:
+            continue
+        new_osis_buy.append(OutletSupplierIngredient(
+            supplier_ingredient_id=si.id,
+            outlet_id=outlet.id,
+        ))
+        existing_osi_keys_buy.add(key)
+    if new_osis_buy:
+        session.add_all(new_osis_buy)
+    result.outlet_supplier_ingredients_created = len(new_osis_buy)
 
     session.commit()
     return result

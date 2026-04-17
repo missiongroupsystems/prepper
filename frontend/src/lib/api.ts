@@ -1507,6 +1507,19 @@ export async function downloadFMHSampleItems(): Promise<Blob> {
   return fetchApiBlob('/ingredients/fmh-sample-items');
 }
 
+export async function importIngredientsBuyCatalogue(file: File): Promise<FMHImportResult> {
+  const form = new FormData();
+  form.append('products_file', file);
+  return fetchApiFormData<FMHImportResult>('/ingredients/buy-catalogue-import', {
+    method: 'POST',
+    body: form,
+  });
+}
+
+export async function downloadBuyCatalogueTemplate(): Promise<Blob> {
+  return fetchApiBlob('/ingredients/buy-catalogue-template');
+}
+
 // ============ Menu Sketches ============
 
 export async function getMenuSketches(params?: { include_archived?: boolean }): Promise<MenuSketch[]> {

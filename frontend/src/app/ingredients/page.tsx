@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Plus, Upload, Download } from 'lucide-react'; // Upload/Download used in DropdownButton items
 import { useIngredients, useDeactivateIngredient, useUpdateIngredient, useCategories, useCategoriesPaginated, useAllergens, useDebouncedValue } from '@/lib/hooks';
-import { IngredientCard, IngredientListRow, CategoriesTab, FilterButtons, AddIngredientModal, AllergensTab, FMHIngredientImportModal, ProductsTab } from '@/components/ingredients';
+import { IngredientCard, IngredientListRow, CategoriesTab, FilterButtons, AddIngredientModal, AllergensTab, FMHIngredientImportModal, BuyCatalogueImportModal, ProductsTab } from '@/components/ingredients';
 import SuppliersPage from '@/app/suppliers/page';
 import { PageHeader, SearchInput, Select, GroupSection, ListSection, Button, Skeleton, ViewToggle, Checkbox, DropdownButton } from '@/components/ui';
 import { Pagination } from '@/components/ui/Pagination';
@@ -11,7 +11,7 @@ import { toast } from 'sonner';
 import type { Ingredient, Category } from '@/types';
 import { useAppState, type IngredientTab } from '@/lib/store';
 import { cn, triggerBlobDownload } from '@/lib/utils';
-import { downloadFMHSampleItems } from '@/lib/api';
+import { downloadFMHSampleItems, downloadBuyCatalogueTemplate } from '@/lib/api';
 
 type GroupByOption = 'none' | 'unit' | 'status' | 'category';
 type ViewType = 'grid' | 'list';
@@ -92,7 +92,9 @@ function IngredientsListTab() {
 
   const [showForm, setShowForm] = useState(false);
   const [showFMHImport, setShowFMHImport] = useState(false);
+  const [showBuyCatalogueImport, setShowBuyCatalogueImport] = useState(false);
   const [downloadingItems, setDownloadingItems] = useState(false);
+  const [downloadingTemplate, setDownloadingTemplate] = useState(false);
   const [groupBy, setGroupBy] = useState<GroupByOption>('none');
 
   const handleDownloadSampleItems = async () => {
@@ -104,6 +106,18 @@ function IngredientsListTab() {
       toast.error('Failed to download sample product list file');
     } finally {
       setDownloadingItems(false);
+    }
+  };
+
+  const handleDownloadBuyCatalogueTemplate = async () => {
+    setDownloadingTemplate(true);
+    try {
+      const blob = await downloadBuyCatalogueTemplate();
+      triggerBlobDownload(blob, 'BuyCatalogue_template.xlsx');
+    } catch {
+      toast.error('Failed to download Buy Catalogue template');
+    } finally {
+      setDownloadingTemplate(false);
     }
   };
   const [showArchived, setShowArchived] = useState(false);
@@ -187,6 +201,7 @@ function IngredientsListTab() {
       {/* Always render modal so it doesn't unmount on query error */}
       <AddIngredientModal isOpen={showForm} onClose={() => setShowForm(false)} />
       <FMHIngredientImportModal isOpen={showFMHImport} onClose={() => setShowFMHImport(false)} />
+      <BuyCatalogueImportModal isOpen={showBuyCatalogueImport} onClose={() => setShowBuyCatalogueImport(false)} />
 
       {error ? (
         <div className="p-6">
@@ -214,6 +229,22 @@ function IngredientsListTab() {
                   label: 'Import',
                   icon: <Upload className="h-3.5 w-3.5" />,
                   onClick: () => setShowFMHImport(true),
+                },
+              ]}
+            />
+            <DropdownButton
+              label="Buy Catalogue (FMH)"
+              items={[
+                {
+                  label: downloadingTemplate ? 'Downloading…' : 'Download Template',
+                  icon: <Download className="h-3.5 w-3.5" />,
+                  onClick: handleDownloadBuyCatalogueTemplate,
+                  disabled: downloadingTemplate,
+                },
+                {
+                  label: 'Import',
+                  icon: <Upload className="h-3.5 w-3.5" />,
+                  onClick: () => setShowBuyCatalogueImport(true),
                 },
               ]}
             />
