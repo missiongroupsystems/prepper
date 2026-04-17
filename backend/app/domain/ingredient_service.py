@@ -92,24 +92,25 @@ class IngredientService:
             from app.models.supplier_ingredient import SupplierIngredient as SI
             from app.models.supplier import Supplier
 
-            term = f"%{search}%"
-            cat_subq = (
-                select(Ingredient.id)
-                .join(Category, Ingredient.category_id == Category.id)
-                .where(Category.name.ilike(term))
-            ).scalar_subquery()
-            sup_subq = (
-                select(SI.ingredient_id)
-                .join(Supplier, SI.supplier_id == Supplier.id)
-                .where(Supplier.name.ilike(term))
-            ).scalar_subquery()
-            statement = statement.where(
-                or_(
-                    Ingredient.name.ilike(term),
-                    Ingredient.id.in_(cat_subq),
-                    Ingredient.id.in_(sup_subq),
+            for token in search.split():
+                term = f"%{token}%"
+                cat_subq = (
+                    select(Ingredient.id)
+                    .join(Category, Ingredient.category_id == Category.id)
+                    .where(Category.name.ilike(term))
+                ).scalar_subquery()
+                sup_subq = (
+                    select(SI.ingredient_id)
+                    .join(Supplier, SI.supplier_id == Supplier.id)
+                    .where(Supplier.name.ilike(term))
+                ).scalar_subquery()
+                statement = statement.where(
+                    or_(
+                        Ingredient.name.ilike(term),
+                        Ingredient.id.in_(cat_subq),
+                        Ingredient.id.in_(sup_subq),
+                    )
                 )
-            )
         if category_ids:
             statement = statement.where(Ingredient.category_id.in_(category_ids))
         if units:
