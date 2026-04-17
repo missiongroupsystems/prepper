@@ -131,12 +131,16 @@ def download_buy_catalogue_template() -> Response:
         "Rule Name", "Branch Name", "Product Name", "Supplier Name",
         "Sku", "Category Name", "Uom", "Unit", "Price", "Currency", "Packaging Note",
     ]
-    example = [
-        "Buy Catalogue", "DINING - CURLYS", "(EX001) Example Product (PKT)",
-        "Example Supplier", "SUPP-FD-CAT-000001", "Food", "PKT", 1, 10.00, "SGD", "1KG / PKT",
+    examples = [
+        ["Buy Catalogue", "DINING - CURLYS", "(EX001) Example Chicken (PKT)", "Chicken Supplier", "SUPP-FD-MEAT-000001", "Meat", "PKT", 1, 8.50, "SGD", "1KG / PKT"],
+        ["Buy Catalogue", "DINING - CURLYS", "(EX002) Olive Oil (BTL)", "Oil Supplier", "SUPP-FD-OIL-000002", "Oil & Fat", "BTL", 1, 15.00, "SGD", "750ML / BTL"],
+        ["Buy Catalogue", "DINING - CURLYS", "(EX003) Fresh Milk (LTR)", "Dairy Supplier", "SUPP-FD-DAIRY-000003", "Dairy", "LTR", 1, 3.20, "SGD", "1LTR / PKT"],
+        ["Buy Catalogue", "DINING - CURLYS", "(EX004) Dinner Plate (PC)", "Tableware Supplier", "SUPP-EQ-WARE-000004", "Equipment", "PC", 1, 2.50, "SGD", "1PC / PC"],
+        ["Buy Catalogue", "DINING - CURLYS", "(EX005) Rock Salt (KG)", "Seasoning Supplier", "SUPP-FD-SEAS-000005", "Seasoning", "KG", 1, 1.80, "SGD", "1KG / KG"],
     ]
     ws.append(headers)
-    ws.append(example)
+    for row in examples:
+        ws.append(row)
     buf = _io.BytesIO()
     wb_out.save(buf)
     buf.seek(0)
