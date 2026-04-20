@@ -150,8 +150,9 @@ export default function LoginPage() {
                   setError(oauthError.message);
                   setIsGoogleLoading(false);
                 }
-              } catch {
-                setError('An unexpected error occurred');
+              } catch (e) {
+                console.error('Google OAuth error:', e);
+                setError(e instanceof Error ? e.message : String(e));
                 setIsGoogleLoading(false);
               }
             }}
