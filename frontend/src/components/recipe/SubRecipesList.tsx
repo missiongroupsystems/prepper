@@ -27,9 +27,10 @@ import {
   useRemoveSubRecipe,
   useReorderSubRecipes,
   useRecipes,
+  useCosting,
 } from '@/lib/hooks';
 import { Button, Input, Select, Skeleton } from '@/components/ui';
-import { cn } from '@/lib/utils';
+import { cn, formatCurrency } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useAppState } from '@/lib/store';
 import type { SubRecipe, SubRecipeUnit, Recipe } from '@/types';
@@ -57,6 +58,9 @@ function formatDate(dateString: string): string {
 interface SubRecipeRowProps {
   subRecipe: SubRecipe;
   recipeName: string;
+  childRecipeYield: number;
+  childRecipeYieldUnit: string;
+  portionCost: number | null;
   canEdit: boolean;
   onQuantityChange: (quantity: number) => void;
   onUnitChange: (unit: SubRecipeUnit) => void;
@@ -66,6 +70,9 @@ interface SubRecipeRowProps {
 function SubRecipeRow({
   subRecipe,
   recipeName,
+  childRecipeYield,
+  childRecipeYieldUnit,
+  portionCost,
   canEdit,
   onQuantityChange,
   onUnitChange,
@@ -117,7 +124,17 @@ function SubRecipeRow({
 
       <div className="min-w-0 flex-1">
         <p className="truncate font-medium">{recipeName}</p>
-        <p className="text-xs text-zinc-500">Added {formatDate(subRecipe.created_at)}</p>
+        <p className="text-xs text-zinc-500">
+          Added {formatDate(subRecipe.created_at)}
+          {childRecipeYield > 1 && (
+            <span className="ml-2 text-zinc-400">· yields {childRecipeYield} {childRecipeYieldUnit}</span>
+          )}
+        </p>
+        {subRecipe.unit === 'portion' && portionCost != null && (
+          <p className="mt-0.5 text-xs font-medium text-amber-600 dark:text-amber-400">
+            {formatCurrency(portionCost)}/portion
+          </p>
+        )}
       </div>
 
       <div className="flex items-center gap-2">
@@ -184,6 +201,8 @@ function AddSubRecipeForm({ recipeId, existingChildIds, recipes, userId, userTyp
     ...availableRecipes.map((r) => ({ value: r.id.toString(), label: r.name })),
   ];
 
+  const selectedRecipe = availableRecipes.find((r) => r.id.toString() === selectedRecipeId);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedRecipeId) return;
@@ -240,6 +259,13 @@ function AddSubRecipeForm({ recipeId, existingChildIds, recipes, userId, userTyp
           options={recipeOptions}
           className="w-full"
         />
+        {selectedRecipe && (
+          <p className="mt-1 text-xs text-zinc-500">
+            {(selectedRecipe.yield_quantity ?? 1) > 1
+              ? `Yields ${selectedRecipe.yield_quantity} ${selectedRecipe.yield_unit} per batch`
+              : 'Tip: set this recipe\'s yield for accurate per-portion costing'}
+          </p>
+        )}
       </div>
 
       <div className="w-24">
@@ -280,7 +306,12 @@ export function SubRecipesList({ recipeId, canEdit }: SubRecipesListProps) {
   const { userId, userType } = useAppState();
   const { data: subRecipes, isLoading, error } = useSubRecipes(recipeId);
   const { data: recipesData } = useRecipes({ page_size: 30 });
+  const { data: costing } = useCosting(recipeId);
   const recipes = recipesData?.items;
+
+  // Map link_id → sub_recipe_portion_cost for inline cost hints
+  const portionCostMap = new Map<number, number | null>();
+  costing?.sub_recipe_breakdown?.forEach((item) => portionCostMap.set(item.link_id, item.sub_recipe_portion_cost));
   const updateSubRecipe = useUpdateSubRecipe();
   const removeSubRecipe = useRemoveSubRecipe();
   const reorderSubRecipes = useReorderSubRecipes();
@@ -351,9 +382,9 @@ export function SubRecipesList({ recipeId, canEdit }: SubRecipesListProps) {
     disabled: !canEdit,
   });
 
-  // Create a map of recipe IDs to names for display
-  const recipeMap = new Map<number, string>();
-  recipes?.forEach((r) => recipeMap.set(r.id, r.name));
+  // Create a map of recipe IDs to full Recipe objects for display and yield context
+  const recipeMap = new Map<number, Recipe>();
+  recipes?.forEach((r) => recipeMap.set(r.id, r));
 
   if (isLoading) {
     return (
@@ -412,7 +443,10 @@ export function SubRecipesList({ recipeId, canEdit }: SubRecipesListProps) {
                 <SubRecipeRow
                   key={subRecipe.id}
                   subRecipe={subRecipe}
-                  recipeName={recipeMap.get(subRecipe.child_recipe_id) || 'Unknown Recipe'}
+                  recipeName={recipeMap.get(subRecipe.child_recipe_id)?.name || 'Unknown Recipe'}
+                  childRecipeYield={recipeMap.get(subRecipe.child_recipe_id)?.yield_quantity ?? 1}
+                  childRecipeYieldUnit={recipeMap.get(subRecipe.child_recipe_id)?.yield_unit ?? 'portion'}
+                  portionCost={portionCostMap.get(subRecipe.id) ?? null}
                   canEdit={canEdit}
                   onQuantityChange={(qty) => handleQuantityChange(subRecipe.id, qty)}
                   onUnitChange={(unit) => handleUnitChange(subRecipe.id, unit)}
