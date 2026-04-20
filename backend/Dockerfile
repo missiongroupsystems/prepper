@@ -23,8 +23,10 @@ RUN --mount=type=secret,id=gh_token,required=false \
         TOKEN=$(cat /run/secrets/gh_token) && \
         git config --global url."https://${TOKEN}@github.com/".insteadOf "https://github.com/"; \
     fi && \
-    pip install --no-cache-dir . && \
-    git config --global --unset url."https://${TOKEN:-placeholder}@github.com/".insteadOf || true
+    pip install --no-cache-dir .; \
+    EXIT_CODE=$?; \
+    git config --global --unset-all url.https://github.com/.insteadOf 2>/dev/null || true; \
+    exit $EXIT_CODE
 
 # Copy application code
 COPY app/ app/

@@ -13,3 +13,64 @@ Thumbs.db
 *.swp
 *.swo
 backend/exports
+
+# === Secrets — Wave 1.5 hardening ===
+
+# Certificates & private keys
+*.pem
+*.key
+*.crt
+*.cer
+*.p12
+*.pfx
+*.jks
+*.keystore
+!*.example.pem
+!*.example.key
+!*.public.pem
+!*.pub
+
+# SSH keys
+id_rsa
+id_rsa.*
+id_ed25519
+id_ed25519.*
+*.ppk
+
+# Cloud / service-account credentials
+service-account*.json
+*-service-account.json
+*-credentials.json
+firebase-adminsdk-*.json
+gcp-credentials*.json
+.aws/credentials
+.aws/config
+.gcp/
+.azure/credentials
+
+# Secrets files
+secrets.yml
+secrets.yaml
+secrets.json
+.netrc
+.envrc
+
+# Database dumps and backups
+*.dump
+*.dump.gz
+*.sql.gz
+*.sql.bz2
+*.bak
+*.backup
+
+# Cookies / sessions
+cookies.txt
+
+# Local dev-tool state (often contains tokens)
+.claude/settings.json
+.claude/settings.local.json
+.vscode/settings.local.json
+
+# Logs (can contain tokens)
+logs/
+*.log
