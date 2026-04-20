@@ -58,6 +58,7 @@ export interface Ingredient {
   updated_at: string;
   supplier_ingredients?: SupplierIngredient[];
   allergens?: Allergen[];
+  supplier_names?: string[];
 }
 
 export interface Recipe {

@@ -6,6 +6,9 @@ All notable changes to Prepper are documented here.
 
 ## Index
 
+- **[0.0.39](#0039---2026-04-20)** — Sub-Recipe Portion Costing: Per-Portion Cost Hints, Expandable Ingredient Breakdown, Canvas Batch Cost Fix & Scaled Ingredient Display
+- **[0.0.38](#0038---2026-04-17)** — Buy Catalogue Import: Single-Sheet FMH XLSX Import, Template Download & Efficiency Improvements
+- **[0.0.37](#0037---2026-04-17)** — Ingredient Library UX: Supplier Names on Draggable Cards, Token-Based AND Search, Paginated Category Filter & Menu Archives Toggle
 - **[0.0.36](#0036---2026-04-16)** — Menu Sketch Relational Refactor: Replace JSON sections/comments with relational tables, per-dish comments, recipe fork-on-edit, soft-delete & tasting session creation from menu
 - **[0.0.35](#0035---2026-04-15)** — PostgreSQL Row-Level Security: Database-Layer Access Policies, RLS Helper Functions & Integration Tests
 - **[0.0.34](#0034---2026-04-14)** — Ingredient Search, Filter & Sort Enhancements: Cross-Table Search, SKU-First FMH Upsert, Category Filter Pills & Server-Side Sorting
@@ -42,6 +45,82 @@ All notable changes to Prepper are documented here.
 - **[0.0.3](#003---2024-11-27)** — Database Migration: Alembic Initial Tables to Supabase + PostgreSQL JSON Compatibility Fix
 - **[0.0.2](#002---2024-11-27)** — Frontend Implementation: Next.js 15 Recipe Canvas with Drag-and-Drop, Autosave & TanStack Query
 - **[0.0.1](#001---2024-11-27)** — Backend Foundation: FastAPI + SQLModel with 17 API Endpoints, Domain Services & Unit Conversion
+---
+
+## [0.0.39] - 2026-04-20
+
+### Added
+
+#### Sub-Recipe Portion Scaling (SubRecipesList)
+- Sub-recipe rows now display `· yields N unit` metadata beneath the recipe name when `yield_quantity > 1`
+- Per-portion cost hint (`$X.XX/portion` in amber) shown inline on each sub-recipe row using `sub_recipe_portion_cost` from the costing API — no extra fetch, reuses the existing `useCosting` call
+- `AddSubRecipeForm` shows a yield hint after recipe selection: "Yields N unit per batch" when `yield_quantity > 1`, or a softer tip to set yield when it defaults to 1
+
+#### CostsTab — Sub-Recipe Cost Context & Ingredient Drill-Down
+- **Scale context**: `SubRecipeCostTable` rows show an amber secondary line (`"1 of 300 portions"`) when `unit === 'portion'` and child `yield_quantity > 1`, making the batch fraction immediately visible
+- **Expandable ingredient breakdown**: clicking the `▶` chevron on any sub-recipe row expands it to show that sub-recipe's constituent ingredients with costs prorated to the quantity being used (`ingredient.line_cost × parentQuantity / childYield`); collapses on second click
+- `SubRecipeIngredientBreakdown` component fetches child recipe costing via `useCosting(childRecipeId)` (TanStack Query cached); renders indented ingredient rows with unit cost and prorated line cost columns
+
+### Fixed
+
+#### Canvas Builder — Batch Cost Calculation
+- Fixed `calculateCanvasCost()` in `CanvasTab`: `recipe.cost_price` stores the full *batch* cost; the function was multiplying it directly by `staged.quantity` (portions), resulting in per-batch pricing for sub-recipes with `yield_quantity > 1`. Now divides by `yield_quantity` first: `costPerPortion = cost_price / yieldQty`, then `totalCost += staged.quantity × costPerPortion`
+
+#### Canvas Builder — Zero Quantity Prevention
+- All six staged item quantity inputs (ingredients and recipes across card / list / table views) now floor at `0.01` — `|| 0` replaced with `|| 0.1` in onChange handlers and `min="0.01"` set on inputs. Wastage, yield, and selling price fields are unchanged
+
+#### Canvas Builder — Scaled Ingredient Display in Sub-Recipe Cards
+- Ingredients listed inside an expanded staged recipe card now show quantities scaled to the portion fraction being used: if a recipe uses 1 kg for 2 portions and the canvas quantity is set to 1, the card displays `0.5 kg`. Formula: `ri.quantity × (staged.quantity / yield_quantity)`, formatted to 3 decimal places with trailing zeros stripped
+
+---
+
+## [0.0.38] - 2026-04-17
+
+### Added
+
+#### Buy Catalogue Import (Plan 28)
+- New single-sheet XLSX import for the `EXPORT_BUY_CATALOGUE` FMH format — all data (outlet, supplier, SKU, category, pricing) in one file with no pre-import step required
+- `import_buy_catalogue(session, wb)` in `fmh_import_service.py`: two-phase approach — Phase 1 pure in-memory mapping, Phase 2 bulk upserts with a single `session.commit()`
+- Column mapping: `Branch Name` → `Outlet`, `Supplier Name` → `Supplier`, `Sku` → `SupplierIngredient.sku`, `Category Name` → `Category`, `Packaging Note` → `base_unit` + cost divisor via new `_parse_pack_from_note()` helper
+- SKU prefix (e.g. `HENT` from `HENT-FD-POULTRY-000003`) set as `Supplier.code` for new suppliers only
+- Duplicate handling: Ingredient and SupplierIngredient overwrite on SKU match; Supplier, Category, Outlet, OutletSupplierIngredient skip on duplicate
+- Extended `_UNIT_MAP` with full FMH abbreviation set (`gm`, `gms`, `gr`, `kgs`, `kilo`, `mls`, `lt`, `ltr`, `litre`, `liter`, `pce`, `piece`, `pieces`, `unit`, `units`)
+- `POST /ingredients/buy-catalogue-import` — admin-only endpoint, `.xlsx` guard, returns `FMHImportResult`
+- `GET /ingredients/buy-catalogue-template` — returns blank XLSX with correct headers + one example row (no storage dependency)
+
+#### Frontend
+- `importIngredientsBuyCatalogue(file)` and `downloadBuyCatalogueTemplate()` API functions in `api.ts`
+- `BuyCatalogueImportModal` component — single file input, success toast with ingredient/supplier/outlet/category counts, invalidates `ingredients`, `categories`, `outlets`, `suppliers` query keys
+- **"Buy Catalogue (FMH)"** `DropdownButton` on the Ingredients page (Download Template + Import items) alongside the existing FMH button
+
+### Changed
+
+#### Import Service Efficiency
+- `import_buy_catalogue`: replaced three full-table scans (`select(Outlet/Category/Supplier).all()` + Python filter) with targeted `func.lower(col).in_(keys)` queries — pushes filtering to DB, only fetches matching rows
+
+---
+
+## [0.0.37] - 2026-04-17
+
+### Added
+
+#### Ingredient Library: Supplier Name on Draggable Cards
+- `IngredientListRead` DTO gains a `supplier_names: list[str]` field, populated via a single bulk JOIN (preferred supplier first, then alphabetical)
+- `DraggableIngredientCard` in `RightPanel.tsx` now shows supplier name, category, and unit/price on separate rows beneath the ingredient name
+
+#### Ingredient Search: Token-Based AND Matching
+- Multi-word search strings (e.g. `phoon huat baking sheet`) are split on whitespace; each token becomes an OR condition across `ingredient.name` / `supplier.name`, and all tokens are AND-ed together
+- Single-token behaviour is unchanged; results now correctly intersect across supplier and ingredient name fields
+
+#### Right Panel Category Filter: Pagination & Vertical Scroll
+- Category pill container switches from `useCategories` (all) to `useIngredientsWithCategoriesPaginated` (10 per page)
+- Pages accumulate in local state; a **"See more"** button loads the next page on demand
+- Pill container gains a constrained height with vertical scroll so the filter list never overflows the panel
+
+#### Menu Sketch Archives Toggle
+- `GET /menu-sketches` accepts new `include_archived` query param (default `false`); service filters out `status = archived` sketches unless flag is set
+- `/menu-sketch` and `/menu` list pages gain a **"View Archives"** checkbox; archived sketches display a styled **Archived** badge when the toggle is enabled
+
 ---
 
 ## [0.0.36] - 2026-04-16

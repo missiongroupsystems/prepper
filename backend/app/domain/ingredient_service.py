@@ -92,24 +92,25 @@ class IngredientService:
             from app.models.supplier_ingredient import SupplierIngredient as SI
             from app.models.supplier import Supplier
 
-            term = f"%{search}%"
-            cat_subq = (
-                select(Ingredient.id)
-                .join(Category, Ingredient.category_id == Category.id)
-                .where(Category.name.ilike(term))
-            ).scalar_subquery()
-            sup_subq = (
-                select(SI.ingredient_id)
-                .join(Supplier, SI.supplier_id == Supplier.id)
-                .where(Supplier.name.ilike(term))
-            ).scalar_subquery()
-            statement = statement.where(
-                or_(
-                    Ingredient.name.ilike(term),
-                    Ingredient.id.in_(cat_subq),
-                    Ingredient.id.in_(sup_subq),
+            for token in search.split():
+                term = f"%{token}%"
+                cat_subq = (
+                    select(Ingredient.id)
+                    .join(Category, Ingredient.category_id == Category.id)
+                    .where(Category.name.ilike(term))
+                ).scalar_subquery()
+                sup_subq = (
+                    select(SI.ingredient_id)
+                    .join(Supplier, SI.supplier_id == Supplier.id)
+                    .where(Supplier.name.ilike(term))
+                ).scalar_subquery()
+                statement = statement.where(
+                    or_(
+                        Ingredient.name.ilike(term),
+                        Ingredient.id.in_(cat_subq),
+                        Ingredient.id.in_(sup_subq),
+                    )
                 )
-            )
         if category_ids:
             statement = statement.where(Ingredient.category_id.in_(category_ids))
         if units:
@@ -135,13 +136,38 @@ class IngredientService:
         # default: name_asc
         return statement.order_by(Ingredient.name.asc())
 
+    def _bulk_load_supplier_names(self, ingredient_ids: list[int]) -> dict[int, list[str]]:
+        """Return {ingredient_id: [supplier_name, ...]} with preferred supplier first."""
+        if not ingredient_ids:
+            return {}
+        from collections import defaultdict
+        supplier_rows = self.session.exec(
+            select(SupplierIngredient.ingredient_id, Supplier.name, SupplierIngredient.is_preferred)
+            .join(Supplier, SupplierIngredient.supplier_id == Supplier.id)
+            .where(SupplierIngredient.ingredient_id.in_(ingredient_ids))
+        ).all()
+        sup_map: dict[int, list[tuple[str, bool]]] = defaultdict(list)
+        for ing_id, name, is_preferred in supplier_rows:
+            if name:
+                sup_map[ing_id].append((name, is_preferred))
+        return {
+            ing_id: [n for n, _ in sorted(entries, key=lambda x: (not x[1], x[0]))]
+            for ing_id, entries in sup_map.items()
+        }
+
     def list_paginated(self, offset: int, limit: int, active_only=True, category=None, source=None, master_only=False, search=None,
                         category_ids=None, units=None, allergen_ids=None, is_halal=None, sort_by=None) -> list[IngredientListRead]:
         statement = self._build_list_query(active_only=active_only, category=category, source=source, master_only=master_only, search=search,
                                            category_ids=category_ids, units=units, allergen_ids=allergen_ids, is_halal=is_halal)
         statement = self._apply_sort(statement, sort_by).offset(offset).limit(limit)
-        rows = self.session.exec(statement).all()
-        return [IngredientListRead.model_validate(r) for r in rows]
+        rows = list(self.session.exec(statement).all())
+        sup_map = self._bulk_load_supplier_names([r.id for r in rows])
+        result = []
+        for r in rows:
+            item = IngredientListRead.model_validate(r)
+            item.supplier_names = sup_map.get(r.id, [])
+            result.append(item)
+        return result
 
     def count(self, active_only=True, category=None, source=None, master_only=False, search=None,
               category_ids=None, units=None, allergen_ids=None, is_halal=None, sort_by=None) -> int:
@@ -159,7 +185,13 @@ class IngredientService:
                                        category_ids=category_ids, units=units, allergen_ids=allergen_ids, is_halal=is_halal)
         total = self.session.exec(select(func.count()).select_from(base.subquery())).one()
         rows = list(self.session.exec(self._apply_sort(base, sort_by).offset(offset).limit(limit)).all())
-        return [IngredientListRead.model_validate(r) for r in rows], total
+        sup_map = self._bulk_load_supplier_names([r.id for r in rows])
+        result = []
+        for r in rows:
+            item = IngredientListRead.model_validate(r)
+            item.supplier_names = sup_map.get(r.id, [])
+            result.append(item)
+        return result, total
 
     def get_ingredient(self, ingredient_id: int) -> Ingredient | None:
         """Get an ingredient by ID."""

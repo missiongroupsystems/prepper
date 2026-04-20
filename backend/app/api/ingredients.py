@@ -25,7 +25,7 @@ from app.models import (
 )
 from app.domain import IngredientService
 from app.domain.category_service import CategoryService
-from app.domain.fmh_import_service import FMHImportResult, import_ingredients
+from app.domain.fmh_import_service import FMHImportResult, import_ingredients, import_buy_catalogue
 
 router = APIRouter()
 
@@ -95,6 +95,60 @@ async def import_ingredients_fmh(
 
 
 _XLSX_CONTENT_TYPE = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+
+
+@router.post("/buy-catalogue-import", response_model=FMHImportResult)
+async def import_ingredients_buy_catalogue(
+    products_file: UploadFile = File(...),
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
+):
+    """Import Buy Catalogue XLSX (single-sheet format with inline supplier + SKU). Admin only."""
+    if current_user.user_type != UserType.ADMIN:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin only")
+    if not (products_file.filename or "").lower().endswith(".xlsx"):
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"File '{products_file.filename}' must be an .xlsx file",
+        )
+    wb = openpyxl.load_workbook(io.BytesIO(await products_file.read()), read_only=True, data_only=True)
+    try:
+        return import_buy_catalogue(session, wb)
+    except (KeyError, ValueError) as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+
+@router.get("/buy-catalogue-template")
+def download_buy_catalogue_template() -> Response:
+    """Return a blank Buy Catalogue XLSX template with header row and one example row."""
+    import openpyxl as _openpyxl
+    import io as _io
+
+    wb_out = _openpyxl.Workbook()
+    ws = wb_out.active
+    ws.title = "EXPORT_BUY_CATALOGUE"
+    headers = [
+        "Rule Name", "Branch Name", "Product Name", "Supplier Name",
+        "Sku", "Category Name", "Uom", "Unit", "Price", "Currency", "Packaging Note",
+    ]
+    examples = [
+        ["Buy Catalogue", "DINING - CURLYS", "(EX001) Example Chicken (PKT)", "Chicken Supplier", "SUPP-FD-MEAT-000001", "Meat", "PKT", 1, 8.50, "SGD", "1KG / PKT"],
+        ["Buy Catalogue", "DINING - CURLYS", "(EX002) Olive Oil (BTL)", "Oil Supplier", "SUPP-FD-OIL-000002", "Oil & Fat", "BTL", 1, 15.00, "SGD", "750ML / BTL"],
+        ["Buy Catalogue", "DINING - CURLYS", "(EX003) Fresh Milk (LTR)", "Dairy Supplier", "SUPP-FD-DAIRY-000003", "Dairy", "LTR", 1, 3.20, "SGD", "1LTR / PKT"],
+        ["Buy Catalogue", "DINING - CURLYS", "(EX004) Dinner Plate (PC)", "Tableware Supplier", "SUPP-EQ-WARE-000004", "Equipment", "PC", 1, 2.50, "SGD", "1PC / PC"],
+        ["Buy Catalogue", "DINING - CURLYS", "(EX005) Rock Salt (KG)", "Seasoning Supplier", "SUPP-FD-SEAS-000005", "Seasoning", "KG", 1, 1.80, "SGD", "1KG / KG"],
+    ]
+    ws.append(headers)
+    for row in examples:
+        ws.append(row)
+    buf = _io.BytesIO()
+    wb_out.save(buf)
+    buf.seek(0)
+    return Response(
+        content=buf.read(),
+        media_type=_XLSX_CONTENT_TYPE,
+        headers={"Content-Disposition": 'attachment; filename="BuyCatalogue_template.xlsx"'},
+    )
 
 
 @router.get("/fmh-sample-items")

@@ -3,9 +3,10 @@
 import { Info } from 'lucide-react';
 import { useState } from 'react';
 import { useAppState } from '@/lib/store';
-import { useRecipe, useCosting } from '@/lib/hooks';
+import { useRecipe, useCosting, useRecipes } from '@/lib/hooks';
 import { Card, CardContent, Skeleton } from '@/components/ui';
 import { formatCurrency } from '@/lib/utils';
+import type { Recipe } from '@/types';
 
 function IngredientCostTable({ recipeId }: { recipeId: number }) {
   const { data: costing, isLoading, error } = useCosting(recipeId);
@@ -106,6 +107,9 @@ function IngredientCostTable({ recipeId }: { recipeId: number }) {
 
 function SubRecipeCostTable({ recipeId }: { recipeId: number }) {
   const { data: costing, isLoading, error } = useCosting(recipeId);
+  const { data: recipesData } = useRecipes({ page_size: 30 });
+  const recipeMap = new Map<number, Recipe>();
+  recipesData?.items?.forEach((r) => recipeMap.set(r.id, r));
 
   if (isLoading) {
     return (
@@ -158,6 +162,11 @@ function SubRecipeCostTable({ recipeId }: { recipeId: number }) {
                 ? item.sub_recipe_batch_cost
                 : item.sub_recipe_portion_cost;
 
+            const childRecipe = recipeMap.get(item.recipe_id);
+            const childYield = childRecipe?.yield_quantity ?? 1;
+            const childYieldUnit = childRecipe?.yield_unit ?? 'portion';
+            const showScaleContext = item.unit === 'portion' && childYield > 1;
+
             return (
               <tr
                 key={item.link_id}
@@ -167,7 +176,12 @@ function SubRecipeCostTable({ recipeId }: { recipeId: number }) {
                   {item.recipe_name}
                 </td>
                 <td className="px-4 py-3 text-right text-zinc-600 dark:text-zinc-300">
-                  {item.quantity} {item.unit}
+                  <div>{item.quantity} {item.unit}</div>
+                  {showScaleContext && (
+                    <div className="text-xs text-amber-600 dark:text-amber-400">
+                      {item.quantity} of {childYield} {childYieldUnit}s
+                    </div>
+                  )}
                 </td>
                 <td className="px-4 py-3 text-right text-zinc-600 dark:text-zinc-300">
                   {unitCost != null ? `${formatCurrency(unitCost)}/${item.unit}` : '—'}

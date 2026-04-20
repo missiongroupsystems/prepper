@@ -116,6 +116,7 @@ class IngredientListRead(SQLModel):
     category_id: int | None = None
     source: str = "manual"
     master_ingredient_id: int | None = None
+    supplier_names: list[str] = Field(default_factory=list)
 
 
 class IngredientCreate(SQLModel):
