@@ -2,7 +2,7 @@ name: fly-deploy
 
 on:
   push:
-    branches: [master, stage]
+    branches: [main, staging]
   workflow_dispatch:
     inputs:
       target:
@@ -29,7 +29,7 @@ jobs:
 
       - name: Deploy to production
         if: |
-          github.event_name == 'push' && github.ref == 'refs/heads/master' ||
+          github.event_name == 'push' && github.ref == 'refs/heads/main' ||
           github.event_name == 'workflow_dispatch' && inputs.target == 'production'
         working-directory: backend
         run: flyctl deploy --remote-only --config fly.toml --build-secret gh_token=$GH_TOKEN
@@ -39,7 +39,7 @@ jobs:
 
       - name: Deploy to staging
         if: |
-          github.event_name == 'push' && github.ref == 'refs/heads/stage' ||
+          github.event_name == 'push' && github.ref == 'refs/heads/staging' ||
           github.event_name == 'workflow_dispatch' && inputs.target == 'staging'
         working-directory: backend
         run: flyctl deploy --remote-only --config fly.stage.toml --build-secret gh_token=$GH_TOKEN
