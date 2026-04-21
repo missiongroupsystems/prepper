@@ -133,15 +133,46 @@ def mock_supabase_client(monkeypatch):
             """Mock get user from token."""
             if token == "valid_token_admin":
                 response = MagicMock()
-                response.user = MockSupabaseUser("user-admin-001", "admin@prepper.com")
+                user = MockSupabaseUser("user-admin-001", "admin@prepper.com")
+                user.user_metadata = {}
+                response.user = user
                 return response
             elif token == "valid_token_chef":
                 response = MagicMock()
-                response.user = MockSupabaseUser("user-chef-002", "chef@prepper.com")
+                user = MockSupabaseUser("user-chef-002", "chef@prepper.com")
+                user.user_metadata = {}
+                response.user = user
                 return response
             elif token == "new_access_token":
                 response = MagicMock()
-                response.user = MockSupabaseUser("user-admin-001", "admin@prepper.com")
+                user = MockSupabaseUser("user-admin-001", "admin@prepper.com")
+                user.user_metadata = {}
+                response.user = user
+                return response
+            elif token == "google_token_new":
+                # First-time Google OAuth sign-in — no DB row yet.
+                response = MagicMock()
+                user = MockSupabaseUser("user-google-010", "alice@gmail.com")
+                user.user_metadata = {
+                    "full_name": "Alice Example",
+                    "name": "Alice Example",
+                    "avatar_url": "https://example.com/a.png",
+                }
+                response.user = user
+                return response
+            elif token == "google_token_no_name":
+                # Google sign-in with no full_name/name — falls back to email local-part.
+                response = MagicMock()
+                user = MockSupabaseUser("user-google-011", "bob@gmail.com")
+                user.user_metadata = {}
+                response.user = user
+                return response
+            elif token == "google_token_conflict":
+                # Supabase user whose email collides with an existing DB row.
+                response = MagicMock()
+                user = MockSupabaseUser("user-google-012", "admin@prepper.com")
+                user.user_metadata = {"full_name": "Admin Conflict"}
+                response.user = user
                 return response
             else:
                 raise Exception("Invalid or expired token")
@@ -160,6 +191,32 @@ def mock_supabase_client(monkeypatch):
     monkeypatch.setattr(
         "app.domain.supabase_auth_service.create_client",
         lambda url, key: MockSupabaseClient(url, key),
+    )
+
+    # Map our mock tokens to user_ids, bypassing the real JWT verify library.
+    _token_to_user = {
+        "valid_token_admin": "user-admin-001",
+        "valid_token_chef": "user-chef-002",
+        "valid_token_new": "user-new-003",
+        "new_access_token": "user-admin-001",
+        "google_token_new": "user-google-010",
+        "google_token_no_name": "user-google-011",
+        "google_token_conflict": "user-google-012",
+    }
+
+    def _fake_verify_token(token, supabase_url=None):
+        user_id = _token_to_user.get(token)
+        if not user_id:
+            # Mirror ebb_flow_tech_auth.TokenInvalidError → verify_token returns None
+            from ebb_flow_tech_auth import TokenInvalidError
+            raise TokenInvalidError("Invalid token")
+        identity = MagicMock()
+        identity.user_id = user_id
+        return identity
+
+    monkeypatch.setattr(
+        "app.domain.supabase_auth_service._ebb_verify_token",
+        _fake_verify_token,
     )
 
     # Clear singleton caches so mocks take effect
@@ -446,3 +503,109 @@ def test_get_current_user_token_valid_but_user_not_found(auth_client: TestClient
     assert response.status_code == 404
     data = response.json()
     assert "User not found" in data["detail"]
+
+
+# ============================================================================
+# OAuth Complete Tests (Google sign-in bridge)
+# ============================================================================
+
+
+def test_oauth_complete_existing_user(auth_client: TestClient, session):
+    """Existing users pass through unchanged — no new row, no metadata rewrite."""
+    user = User(
+        id="user-admin-001",
+        email="admin@prepper.com",
+        username="admin",
+        user_type=UserType.ADMIN,
+    )
+    session.add(user)
+    session.commit()
+
+    response = auth_client.post(
+        "/api/v1/auth/oauth-complete",
+        headers={"Authorization": "Bearer valid_token_admin"},
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["id"] == "user-admin-001"
+    assert data["email"] == "admin@prepper.com"
+    assert data["username"] == "admin"
+    assert data["user_type"] == "admin"
+
+
+def test_oauth_complete_provisions_new_user_with_google_metadata(
+    auth_client: TestClient, session
+):
+    """First-time Google sign-in creates a normal user seeded from user_metadata.full_name."""
+    from app.models import User as UserModel
+
+    response = auth_client.post(
+        "/api/v1/auth/oauth-complete",
+        headers={"Authorization": "Bearer google_token_new"},
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["id"] == "user-google-010"
+    assert data["email"] == "alice@gmail.com"
+    assert data["username"] == "Alice Example"
+    assert data["user_type"] == "normal"
+    assert data["is_manager"] is False
+    assert data["outlet_id"] is None
+
+    # Row actually persisted
+    row = session.get(UserModel, "user-google-010")
+    assert row is not None
+    assert row.username == "Alice Example"
+
+
+def test_oauth_complete_falls_back_to_email_local_part(
+    auth_client: TestClient, session
+):
+    """Missing full_name/name → username falls back to email local-part."""
+    response = auth_client.post(
+        "/api/v1/auth/oauth-complete",
+        headers={"Authorization": "Bearer google_token_no_name"},
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["id"] == "user-google-011"
+    assert data["email"] == "bob@gmail.com"
+    assert data["username"] == "bob"
+
+
+def test_oauth_complete_email_conflict_returns_409(
+    auth_client: TestClient, session
+):
+    """Different Supabase user with an email that already exists locally → 409."""
+    session.add(
+        User(
+            id="user-admin-001",
+            email="admin@prepper.com",
+            username="admin",
+            user_type=UserType.ADMIN,
+        )
+    )
+    session.commit()
+
+    response = auth_client.post(
+        "/api/v1/auth/oauth-complete",
+        headers={"Authorization": "Bearer google_token_conflict"},
+    )
+
+    assert response.status_code == 409
+
+
+def test_oauth_complete_missing_token(auth_client: TestClient):
+    response = auth_client.post("/api/v1/auth/oauth-complete")
+    assert response.status_code == 401
+
+
+def test_oauth_complete_invalid_token(auth_client: TestClient):
+    response = auth_client.post(
+        "/api/v1/auth/oauth-complete",
+        headers={"Authorization": "Bearer nope"},
+    )
+    assert response.status_code == 401

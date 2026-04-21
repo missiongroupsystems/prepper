@@ -161,6 +161,111 @@ def register(
     )
 
 
+@router.post("/oauth-complete", response_model=UserRead)
+def oauth_complete(
+    authorization: str | None = Header(None),
+    session: Session = Depends(get_session),
+) -> UserRead:
+    """
+    Complete an OAuth sign-in (e.g. Google via Supabase) by resolving or
+    provisioning the local `users` row that corresponds to the Supabase user.
+
+    Client flow: after `supabase.auth.exchangeCodeForSession(code)`, the
+    browser holds a Supabase access_token. It calls this endpoint with
+    `Authorization: Bearer <access_token>`. We verify the JWT, fetch the
+    user's Supabase profile (email + `user_metadata`) and either return
+    the existing DB row or create one seeded from the Google profile.
+
+    Defaults for new users: user_type=normal, is_manager=False, outlet_id=None.
+    Username is taken from `user_metadata.full_name`, `user_metadata.name`,
+    or the email local-part — in that order.
+    """
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated",
+        )
+
+    token = authorization.replace("Bearer ", "")
+
+    try:
+        auth_service = get_auth_service()
+    except (RuntimeError, ValueError):
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Authentication service unavailable",
+        )
+
+    user_id = auth_service.verify_token(token)
+    if not user_id:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired token",
+        )
+
+    user_service = UserService(session)
+
+    # Fast path: user already provisioned.
+    existing = user_service.get_user(user_id)
+    if existing:
+        return UserRead.model_validate(existing)
+
+    # Fetch Supabase profile for email + Google-supplied metadata.
+    try:
+        info = auth_service.get_user_info(token)
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired token",
+        )
+    except RuntimeError:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Authentication service unavailable",
+        )
+
+    email = info.get("email")
+    if not email:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="OAuth provider did not supply an email address",
+        )
+
+    # Guard: a different Supabase user already owns this email locally.
+    if user_service.get_user_by_email(email):
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="An account with this email already exists",
+        )
+
+    metadata = info.get("user_metadata") or {}
+    username = (
+        metadata.get("full_name")
+        or metadata.get("name")
+        or email.split("@", 1)[0]
+    )
+
+    try:
+        user = user_service.create_user(
+            UserCreate(
+                id=user_id,
+                email=email,
+                username=username,
+                user_type=UserType.NORMAL,
+                is_manager=False,
+                outlet_id=None,
+            )
+        )
+    except ValueError:
+        # Race: someone else provisioned between our checks.
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="An account with this email already exists",
+        )
+
+    return UserRead.model_validate(user)
+
+
 @router.post("/refresh-token", response_model=RefreshTokenResponse)
 def refresh_token(data: TokenRequest) -> RefreshTokenResponse:
     """

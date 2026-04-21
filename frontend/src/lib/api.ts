@@ -1390,6 +1390,32 @@ export async function registerUser(data: RegisterRequest): Promise<LoginResponse
   });
 }
 
+/**
+ * Bridge a Supabase OAuth session into the app's auth state.
+ * Auto-provisions a local users row on first Google sign-in.
+ */
+export async function completeOAuth(accessToken: string): Promise<User> {
+  const url = `${API_BASE}/auth/oauth-complete`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+  if (!res.ok) {
+    let detail = `OAuth completion failed (${res.status})`;
+    try {
+      const body = await res.json();
+      if (body?.detail) detail = body.detail;
+    } catch {
+      // Ignore parse errors
+    }
+    throw new ApiError(res.status, detail);
+  }
+  return res.json() as Promise<User>;
+}
+
 export async function logoutUser(): Promise<void> {
   const res = fetchApi<void>('/auth/logout', {
     method: 'POST',

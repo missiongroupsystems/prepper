@@ -37,10 +37,14 @@ const VALID_ROUTE_PATTERNS = [
   /^\/menu-sketch$/,                         // Menu sketch list
   /^\/menu-sketch\/[^/]+$/,                  // Menu sketch editor
   /^\/settings$/,                            // Settings
+  /^\/auth\/callback$/,                      // OAuth callback bridge
 ];
 
 // Routes that bypass auth checks (accessible by both authenticated and unauthenticated users)
-const PASSTHROUGH_ROUTE_PATTERNS = [/^\/tastings\/invite\/[^/]+$/];
+const PASSTHROUGH_ROUTE_PATTERNS = [
+  /^\/tastings\/invite\/[^/]+$/,
+  /^\/auth\/callback$/, // self-manages session exchange + redirect
+];
 
 function isValidRoute(pathname: string): boolean {
   return VALID_ROUTE_PATTERNS.some((pattern) => pattern.test(pathname));

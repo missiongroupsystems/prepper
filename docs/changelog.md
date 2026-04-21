@@ -6,6 +6,7 @@ All notable changes to Prepper are documented here.
 
 ## Index
 
+- **[0.0.40](#0040---2026-04-21)** — Google Sign-In Bridge: OAuth Auto-Provisioning, Supabase Session → `prepper_auth` Store Bridge & Hatchling Build Fix
 - **[0.0.39](#0039---2026-04-20)** — Sub-Recipe Portion Costing: Per-Portion Cost Hints, Expandable Ingredient Breakdown, Canvas Batch Cost Fix & Scaled Ingredient Display
 - **[0.0.38](#0038---2026-04-17)** — Buy Catalogue Import: Single-Sheet FMH XLSX Import, Template Download & Efficiency Improvements
 - **[0.0.37](#0037---2026-04-17)** — Ingredient Library UX: Supplier Names on Draggable Cards, Token-Based AND Search, Paginated Category Filter & Menu Archives Toggle
@@ -45,6 +46,34 @@ All notable changes to Prepper are documented here.
 - **[0.0.3](#003---2024-11-27)** — Database Migration: Alembic Initial Tables to Supabase + PostgreSQL JSON Compatibility Fix
 - **[0.0.2](#002---2024-11-27)** — Frontend Implementation: Next.js 15 Recipe Canvas with Drag-and-Drop, Autosave & TanStack Query
 - **[0.0.1](#001---2024-11-27)** — Backend Foundation: FastAPI + SQLModel with 17 API Endpoints, Domain Services & Unit Conversion
+---
+
+## [0.0.40] - 2026-04-21
+
+### Added
+
+#### Google Sign-In Bridge
+- New `POST /api/v1/auth/oauth-complete` endpoint (`backend/app/api/auth.py`): verifies a Supabase access token and returns the local `users` row, auto-provisioning one on first sign-in
+- Provisioning defaults for new OAuth users: `user_type=normal`, `is_manager=false`, `outlet_id=null`; `username` seeded from `user_metadata.full_name` → `user_metadata.name` → email local-part
+- New `SupabaseAuthService.get_user_info(access_token)` method (`backend/app/domain/supabase_auth_service.py`) — reads `email` + `user_metadata` (Google full_name / name / avatar_url) via the Supabase access token
+- Email-collision guard: a Supabase user whose email already maps to a different local row → `409 Conflict`
+- Client-side bridge page at `frontend/src/app/auth/callback/page.tsx` replaces the previous server route — runs `supabase.auth.exchangeCodeForSession(code)`, calls `/auth/oauth-complete`, then `useAppState().login(...)` so `prepper_auth` localStorage is populated and `AuthGuard` sees the session. On failure, signs the Supabase session out so users aren't left in a half-auth state
+- `AuthGuard` whitelist: `/auth/callback` added to `VALID_ROUTE_PATTERNS` and `PASSTHROUGH_ROUTE_PATTERNS` so the guard doesn't blank the bridge page before the code exchange runs
+- `completeOAuth(accessToken)` helper in `frontend/src/lib/api.ts`
+
+### Fixed
+
+#### Google Sign-In Immediate Logout
+- After a successful Google OAuth flow users were kicked back to `/login`: the server-side callback only set the Supabase session cookie, never populated the app's `prepper_auth` store. `AuthGuard` reads `userId` from `useAppState` (backed by `prepper_auth`), so the guard saw an unauthenticated user and redirected. The new client-side bridge page now populates both
+
+#### Docker Image Build — Hatchling Direct References
+- `backend/pyproject.toml` gained `[tool.hatch.metadata] allow-direct-references = true`. Hatchling refuses to build metadata for projects declaring direct URL deps (`ebb-flow-tech-auth @ git+https://...`) unless explicitly opted in — this was failing the Docker image build at stage-0 5/8 with `Dependency #11 of field project.dependencies cannot be a direct reference`
+
+### Tests
+
+- Extended `backend/tests/test_auth.py` mock to return `user_metadata` on `get_user` and to bypass `ebb_flow_tech_auth.verify_token` with a token→user_id table
+- New cases: existing-user passthrough (`test_oauth_complete_existing_user`), Google `full_name` → username (`test_oauth_complete_provisions_new_user_with_google_metadata`), email-local-part fallback (`test_oauth_complete_falls_back_to_email_local_part`), email conflict → 409 (`test_oauth_complete_email_conflict_returns_409`), missing/invalid token → 401
+
 ---
 
 ## [0.0.39] - 2026-04-20

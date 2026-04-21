@@ -149,6 +149,39 @@ class SupabaseAuthService:
                 raise ValueError("Invalid or expired token")
             raise RuntimeError(f"Supabase error: {str(e)}")
 
+    def get_user_info(self, access_token: str) -> dict:
+        """
+        Fetch Supabase user profile (id, email, metadata) using an access token.
+
+        Used by the OAuth completion flow to read provider-supplied metadata
+        (e.g. Google `full_name`, `name`, `avatar_url`) when auto-provisioning
+        a local users row on first sign-in.
+
+        Returns:
+            Dictionary with keys: user_id, email, user_metadata
+
+        Raises:
+            ValueError: If token is invalid or expired
+            RuntimeError: If Supabase service is unavailable
+        """
+        try:
+            response = self.client.auth.get_user(access_token)
+            if not response or not getattr(response, "user", None):
+                raise ValueError("Invalid or expired token")
+            user = response.user
+            return {
+                "user_id": user.id,
+                "email": getattr(user, "email", None),
+                "user_metadata": getattr(user, "user_metadata", None) or {},
+            }
+        except ValueError:
+            raise
+        except Exception as e:
+            error_msg = str(e).lower()
+            if "invalid" in error_msg or "expired" in error_msg:
+                raise ValueError("Invalid or expired token")
+            raise RuntimeError(f"Supabase error: {str(e)}")
+
     def verify_token(self, token: str) -> str | None:
         """
         Verify JWT token and return user ID if valid.
