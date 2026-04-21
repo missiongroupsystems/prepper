@@ -1717,9 +1717,8 @@ function calculateCanvasCost(
   for (const staged of stagedRecipes) {
     const recipe = allRecipes?.find((r) => r.id === staged.recipe.id);
     if (recipe?.cost_price != null) {
-      const yieldQty = (recipe.yield_quantity ?? 1) > 0 ? (recipe.yield_quantity ?? 1) : 1;
-      const costPerPortion = recipe.cost_price / yieldQty;
-      totalCost += staged.quantity * costPerPortion;
+      // cost_price is already cost_per_portion (set by persist_cost_snapshot on the backend)
+      totalCost += staged.quantity * recipe.cost_price;
     }
   }
 
@@ -1814,6 +1813,7 @@ export function CanvasTab({ outlets }: CanvasTabProps) {
   const removeSubRecipe = useRemoveSubRecipe();
 
   const canvasRef = useRef<HTMLDivElement | null>(null);
+  const subRecipeUpdateTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
   const [stagedIngredients, setStagedIngredients] = useState<StagedIngredient[]>([]);
   const [stagedRecipes, setStagedRecipes] = useState<StagedRecipe[]>([]);
   const [activeDragItem, setActiveDragItem] = useState<DragItem | null>(null);
@@ -2282,7 +2282,21 @@ export function CanvasTab({ outlets }: CanvasTabProps) {
     setStagedRecipes((prev) =>
       prev.map((item) => (item.id === id ? { ...item, quantity } : item))
     );
-  }, []);
+
+    // Autosave for existing sub-recipe links (id encoded as 'existing-rec-{linkId}')
+    if (selectedRecipeId && id.startsWith('existing-rec-')) {
+      const linkId = parseInt(id.replace('existing-rec-', ''), 10);
+      clearTimeout(subRecipeUpdateTimers.current[id]);
+      subRecipeUpdateTimers.current[id] = setTimeout(() => {
+        updateSubRecipeHook.mutate({
+          recipeId: selectedRecipeId,
+          linkId,
+          data: { quantity },
+        });
+        delete subRecipeUpdateTimers.current[id];
+      }, 500);
+    }
+  }, [selectedRecipeId, updateSubRecipeHook]);
 
   const handleIngredientSelect = useCallback((id: string, ingredientOrRecipe: Ingredient | Recipe): void => {
     // Check if this is actually a recipe (has yield_quantity property)

@@ -63,7 +63,7 @@ export const RecipeCard = memo(function RecipeCard({ recipe, costPerPortion, isO
                 <Badge variant="default" className="text-sm">Prep</Badge>
               )}
               {isOwned && (
-                <Badge className="text-sm bg-black text-white dark:bg-white dark:text-black">Owned</Badge>
+                <Badge className="text-sm bg-primary text-primary-foreground">Owned</Badge>
               )}
             </div>
 

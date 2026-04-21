@@ -15,6 +15,11 @@ router = APIRouter()
 _costing_cache: TTLCache = TTLCache(maxsize=256, ttl=300)
 
 
+def evict_costing_cache(recipe_id: int) -> None:
+    """Remove a recipe's cached costing result so the next GET recomputes fresh."""
+    _costing_cache.pop(recipe_id, None)
+
+
 @router.get("/{recipe_id}/costing", response_model=CostingResult)
 def get_recipe_costing(
     recipe_id: int,

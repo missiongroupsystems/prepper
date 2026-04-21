@@ -6,6 +6,7 @@ All notable changes to Prepper are documented here.
 
 ## Index
 
+- **[0.0.40](#0040---2026-04-21)** — Costing Cache Invalidation, Canvas Sub-Recipe Autosave, Cost Display Fixes & Theme Token Cleanup
 - **[0.0.39](#0039---2026-04-20)** — Sub-Recipe Portion Costing: Per-Portion Cost Hints, Expandable Ingredient Breakdown, Canvas Batch Cost Fix & Scaled Ingredient Display
 - **[0.0.38](#0038---2026-04-17)** — Buy Catalogue Import: Single-Sheet FMH XLSX Import, Template Download & Efficiency Improvements
 - **[0.0.37](#0037---2026-04-17)** — Ingredient Library UX: Supplier Names on Draggable Cards, Token-Based AND Search, Paginated Category Filter & Menu Archives Toggle
@@ -45,6 +46,38 @@ All notable changes to Prepper are documented here.
 - **[0.0.3](#003---2024-11-27)** — Database Migration: Alembic Initial Tables to Supabase + PostgreSQL JSON Compatibility Fix
 - **[0.0.2](#002---2024-11-27)** — Frontend Implementation: Next.js 15 Recipe Canvas with Drag-and-Drop, Autosave & TanStack Query
 - **[0.0.1](#001---2024-11-27)** — Backend Foundation: FastAPI + SQLModel with 17 API Endpoints, Domain Services & Unit Conversion
+---
+
+## [0.0.40] - 2026-04-21
+
+### Fixed
+
+#### Canvas Builder — Sub-Recipe Cost Calculation
+- `calculateCanvasCost()` in `CanvasTab` no longer double-divides by `yield_quantity`. `recipe.cost_price` is already stored as cost-per-portion by the backend's `persist_cost_snapshot`; the previous `/yieldQty` division caused sub-recipe costs to be understated by a factor of the yield
+
+#### Canvas Builder — Sub-Recipe Quantity Autosave
+- Changing the quantity of an existing staged sub-recipe card now persists to the backend via a debounced (500 ms) `updateSubRecipe` mutation. Previously, quantity edits were canvas-local only and lost on navigation. Implemented with a per-item timer ref (`subRecipeUpdateTimers`) to avoid flooding the API on rapid slider/input changes
+
+#### Costs Tab — Sub-Recipe Unit Cost Display
+- Unit cost column now always uses `sub_recipe_portion_cost` regardless of the link's `unit` field, matching the per-portion semantics used everywhere else in costing
+- Unit label next to the cost now shows the child recipe's yield unit (e.g. `portion`, `kg`) instead of the raw `item.unit` string from the costing payload
+- "Sub-Recipe Costs" section heading renamed to "Sub-Dishes Costs" for consistency with the rest of the UI
+
+#### Backend — Costing Cache Invalidation on Sub-Recipe Mutations
+- `add_sub_recipe`, `update_sub_recipe`, and `remove_sub_recipe` endpoints now call `evict_costing_cache(recipe_id)` after a successful mutation, ensuring the next `GET /{recipe_id}/costing` recomputes fresh instead of returning a stale cached value
+- Added `evict_costing_cache()` helper on the costing router (used by the sub-recipes router) to keep cache management co-located with the cache definition
+
+### Changed
+
+#### Theme Token Cleanup
+- Active canvas tab indicator changed from hardcoded `bg-zinc-900 text-white / dark:bg-zinc-100 dark:text-zinc-900` to `bg-primary text-primary-foreground`, picking up the design-system colour token in both light and dark modes
+- "Owned" badge on `RecipeCard` migrated from `bg-black text-white / dark:bg-white dark:text-black` to `bg-primary text-primary-foreground` for the same reason
+
+### Fixed (Tests)
+
+#### Auth Test Suite — `_ebb_verify_token` Mock
+- `mock_supabase_client` fixture in `test_auth.py` now also patches `app.domain.supabase_auth_service._ebb_verify_token` so `verify_token()` works without a live Supabase/JWT service. A small `MockIdentity` class and a token→user-id lookup table cover the four tokens used across the auth test suite
+
 ---
 
 ## [0.0.39] - 2026-04-20

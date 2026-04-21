@@ -3,6 +3,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session
 
+from app.api.costing import evict_costing_cache
 from app.api.deps import get_session
 from app.models import (
     RecipeRecipe,
@@ -42,7 +43,9 @@ def add_sub_recipe(
     """
     service = SubRecipeService(session)
     try:
-        return service.add_sub_recipe(recipe_id, data)
+        result = service.add_sub_recipe(recipe_id, data)
+        evict_costing_cache(recipe_id)
+        return result
     except CycleDetectedError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -70,6 +73,7 @@ def update_sub_recipe(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Sub-recipe link not found",
         )
+    evict_costing_cache(recipe_id)
     return result
 
 
@@ -89,6 +93,7 @@ def remove_sub_recipe(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Sub-recipe link not found",
         )
+    evict_costing_cache(recipe_id)
 
 
 @router.post("/{recipe_id}/sub-recipes/reorder", response_model=list[RecipeRecipe])
