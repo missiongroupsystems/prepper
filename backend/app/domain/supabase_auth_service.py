@@ -163,14 +163,23 @@ class SupabaseAuthService:
         Returns:
             User ID if token is valid, None if invalid or expired
         """
+        import logging
+        logger = logging.getLogger(__name__)
+
         settings = get_settings()
+        logger.debug("verify_token: supabase_url=%s token_prefix=%s", settings.supabase_url, token[:20] if token else None)
         try:
             identity = _ebb_verify_token(
                 token,
                 supabase_url=settings.supabase_url,
             )
+            logger.debug("verify_token: success user_id=%s", identity.user_id)
             return identity.user_id
-        except (_EbbTokenExpiredError, _EbbTokenInvalidError, _EbbAuthError):
+        except (_EbbTokenExpiredError, _EbbTokenInvalidError, _EbbAuthError) as e:
+            logger.warning("verify_token: rejected token type=%s msg=%s", type(e).__name__, e)
+            return None
+        except Exception as e:
+            logger.error("verify_token: unexpected error type=%s msg=%s", type(e).__name__, e, exc_info=True)
             return None
 
 
