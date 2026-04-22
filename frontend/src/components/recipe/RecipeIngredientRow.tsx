@@ -217,12 +217,11 @@ export const RecipeIngredientRow = memo(function RecipeIngredientRow({
       />
 
       <Input
-        type="number"
+        type="text"
+        inputMode="decimal"
         value={localQuantity}
         onChange={(e) => handleQuantityChange(e.target.value)}
         className="w-20"
-        min={0}
-        step={0.1}
         disabled={!canEdit}
       />
 
@@ -236,13 +235,12 @@ export const RecipeIngredientRow = memo(function RecipeIngredientRow({
 
       $
       <Input
-        type="number"
+        type="text"
+        inputMode="decimal"
         value={unitPrice}
         onChange={(e) => handleUnitPriceChange(e.target.value)}
         placeholder="Unit $"
         className="w-20"
-        min={0}
-        step={0.01}
         disabled={!canEdit}
       />/{baseUnit}
 

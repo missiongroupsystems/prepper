@@ -115,12 +115,12 @@ export function AddOutletModal({ isOpen, onClose, recipeId, outlets = [] }: AddO
               Price Override (Optional)
             </label>
             <Input
-              type="number"
+              type="text"
+              inputMode="decimal"
               placeholder="Enter price override"
               value={priceOverride}
               onChange={(e) => setPriceOverride(e.target.value)}
-              step="0.01"
-              min="0"
+              onBlur={() => { const n = parseFloat(priceOverride); if (!isNaN(n)) setPriceOverride(String(n)); }}
               className="w-full"
             />
           </div>

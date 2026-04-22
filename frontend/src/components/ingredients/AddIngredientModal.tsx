@@ -230,12 +230,12 @@ export function AddIngredientModal({ isOpen, onClose }: AddIngredientModalProps)
                 Cost per Unit (optional)
               </label>
               <Input
-                type="number"
+                type="text"
+                inputMode="decimal"
                 value={cost}
                 onChange={(e) => setCost(e.target.value)}
+                onBlur={() => { const n = parseFloat(cost); if (!isNaN(n)) setCost(String(n)); }}
                 placeholder="0.00"
-                min={0}
-                step={0.01}
               />
             </div>
           </div>
@@ -402,12 +402,12 @@ function SupplierEntryForm({
             Pack Size *
           </label>
           <Input
-            type="number"
-            step="0.01"
-            min="0"
+            type="text"
+            inputMode="decimal"
             placeholder="0.00"
             value={entry.pack_size}
             onChange={(e) => onChange(entry.id, 'pack_size', e.target.value)}
+            onBlur={() => { const n = parseFloat(entry.pack_size); if (!isNaN(n)) onChange(entry.id, 'pack_size', String(n)); }}
           />
         </div>
 
@@ -430,12 +430,12 @@ function SupplierEntryForm({
             Price per Pack *
           </label>
           <Input
-            type="number"
-            step="0.01"
-            min="0"
+            type="text"
+            inputMode="decimal"
             placeholder="0.00"
             value={entry.price_per_pack}
             onChange={(e) => onChange(entry.id, 'price_per_pack', e.target.value)}
+            onBlur={() => { const n = parseFloat(entry.price_per_pack); if (!isNaN(n)) onChange(entry.id, 'price_per_pack', String(n)); }}
           />
         </div>
 

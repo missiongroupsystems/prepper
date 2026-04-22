@@ -30,6 +30,15 @@ const UNIT_OPTIONS = [
   { value: 'pcs', label: 'pcs (pieces)' },
 ];
 
+interface IngredientRowEdit {
+  sku?: string | null;
+  pack_size?: string;
+  pack_unit?: string;
+  price_per_pack?: string;
+  is_preferred?: boolean;
+  outlet_id?: number;
+}
+
 interface SupplierPageProps {
   params: Promise<{ id: string }>;
 }
@@ -57,7 +66,7 @@ export default function SupplierPage({ params }: SupplierPageProps) {
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingIngredient, setEditingIngredient] = useState<number | null>(null);
-  const [editData, setEditData] = useState<Record<number, UpdateSupplierIngredientRequest>>({});
+  const [editData, setEditData] = useState<Record<number, IngredientRowEdit>>({});
   const [formData, setFormData] = useState({
     ingredient_id: '',
     sku: '',
@@ -395,14 +404,17 @@ export default function SupplierPage({ params }: SupplierPageProps) {
                         Pack Size
                       </label>
                       <Input
-                        type="number"
-                        step="0.01"
-                        min="0"
+                        type="text"
+                        inputMode="decimal"
                         placeholder="0.00"
                         value={formData.pack_size}
                         onChange={(e) =>
                           setFormData((prev) => ({ ...prev, pack_size: e.target.value }))
                         }
+                        onBlur={() => {
+                          const n = parseFloat(formData.pack_size);
+                          if (!isNaN(n)) setFormData((prev) => ({ ...prev, pack_size: String(n) }));
+                        }}
                       />
                     </div>
                     <div>
@@ -425,14 +437,17 @@ export default function SupplierPage({ params }: SupplierPageProps) {
                         Price/Pack
                       </label>
                       <Input
-                        type="number"
-                        step="0.01"
-                        min="0"
+                        type="text"
+                        inputMode="decimal"
                         placeholder="0.00"
                         value={formData.price_per_pack}
                         onChange={(e) =>
                           setFormData((prev) => ({ ...prev, price_per_pack: e.target.value }))
                         }
+                        onBlur={() => {
+                          const n = parseFloat(formData.price_per_pack);
+                          if (!isNaN(n)) setFormData((prev) => ({ ...prev, price_per_pack: String(n) }));
+                        }}
                       />
                     </div>
                     <div>
@@ -549,19 +564,22 @@ export default function SupplierPage({ params }: SupplierPageProps) {
                             <td className="py-3 px-2 text-right text-zinc-900 dark:text-zinc-100">
                               {editingIngredient === ingredient.id ? (
                                 <input
-                                  type="number"
-                                  step="0.01"
-                                  min="0"
-                                  value={editData[ingredient.id]?.pack_size ?? ingredient.pack_size}
+                                  type="text"
+                                  inputMode="decimal"
+                                  value={editData[ingredient.id]?.pack_size ?? ingredient.pack_size.toString()}
                                   onChange={(e) =>
                                     setEditData({
                                       ...editData,
                                       [ingredient.id]: {
                                         ...editData[ingredient.id],
-                                        pack_size: parseFloat(e.target.value),
+                                        pack_size: e.target.value,
                                       },
                                     })
                                   }
+                                  onBlur={() => {
+                                    const n = parseFloat(editData[ingredient.id]?.pack_size ?? '');
+                                    if (!isNaN(n)) setEditData({ ...editData, [ingredient.id]: { ...editData[ingredient.id], pack_size: String(n) } });
+                                  }}
                                   className="w-full px-2 py-1 text-sm border border-zinc-300 dark:border-zinc-600 rounded bg-white dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-purple-500 text-right"
                                 />
                               ) : (
@@ -596,19 +614,22 @@ export default function SupplierPage({ params }: SupplierPageProps) {
                             <td className="py-3 px-2 text-right text-zinc-900 dark:text-zinc-100">
                               {editingIngredient === ingredient.id ? (
                                 <input
-                                  type="number"
-                                  step="0.01"
-                                  min="0"
-                                  value={editData[ingredient.id]?.price_per_pack ?? ingredient.price_per_pack}
+                                  type="text"
+                                  inputMode="decimal"
+                                  value={editData[ingredient.id]?.price_per_pack ?? ingredient.price_per_pack.toString()}
                                   onChange={(e) =>
                                     setEditData({
                                       ...editData,
                                       [ingredient.id]: {
                                         ...editData[ingredient.id],
-                                        price_per_pack: parseFloat(e.target.value),
+                                        price_per_pack: e.target.value,
                                       },
                                     })
                                   }
+                                  onBlur={() => {
+                                    const n = parseFloat(editData[ingredient.id]?.price_per_pack ?? '');
+                                    if (!isNaN(n)) setEditData({ ...editData, [ingredient.id]: { ...editData[ingredient.id], price_per_pack: String(n) } });
+                                  }}
                                   className="w-full px-2 py-1 text-sm border border-zinc-300 dark:border-zinc-600 rounded bg-white dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-purple-500 text-right"
                                 />
                               ) : (
@@ -619,8 +640,8 @@ export default function SupplierPage({ params }: SupplierPageProps) {
                               {editingIngredient === ingredient.id
                                 ? formatCurrency(
                                     calculateUnitCost(
-                                      editData[ingredient.id]?.pack_size ?? ingredient.pack_size,
-                                      editData[ingredient.id]?.price_per_pack ?? ingredient.price_per_pack
+                                      parseFloat(editData[ingredient.id]?.pack_size ?? String(ingredient.pack_size)),
+                                      parseFloat(editData[ingredient.id]?.price_per_pack ?? String(ingredient.price_per_pack))
                                     )
                                   )
                                 : formatCurrency((ingredient.pack_size > 0 ? ingredient.price_per_pack / ingredient.pack_size : 0))}
@@ -655,7 +676,15 @@ export default function SupplierPage({ params }: SupplierPageProps) {
                                         onClick={() => {
                                           const dataToSave = editData[ingredient.id];
                                           if (dataToSave) {
-                                            handleUpdateIngredient(ingredient.id, ingredient.ingredient_id, dataToSave);
+                                            const packSize = parseFloat(dataToSave.pack_size ?? '');
+                                            const pricePerPack = parseFloat(dataToSave.price_per_pack ?? '');
+                                            handleUpdateIngredient(ingredient.id, ingredient.ingredient_id, {
+                                              sku: dataToSave.sku,
+                                              pack_size: isNaN(packSize) ? undefined : packSize,
+                                              pack_unit: dataToSave.pack_unit,
+                                              price_per_pack: isNaN(pricePerPack) ? undefined : pricePerPack,
+                                              is_preferred: dataToSave.is_preferred,
+                                            });
                                             setEditingIngredient(null);
                                             setEditData({});
                                           }
@@ -677,8 +706,8 @@ export default function SupplierPage({ params }: SupplierPageProps) {
                                           setEditData({
                                             [ingredient.id]: {
                                               sku: ingredient.sku,
-                                              pack_size: ingredient.pack_size,
-                                              price_per_pack: ingredient.price_per_pack,
+                                              pack_size: ingredient.pack_size.toString(),
+                                              price_per_pack: ingredient.price_per_pack.toString(),
                                               pack_unit: ingredient.pack_unit,
                                             },
                                           });

@@ -6,6 +6,7 @@ All notable changes to Prepper are documented here.
 
 ## Index
 
+- **[0.0.43](#0043---2026-04-22)** — Decimal Input Fix: Codebase-Wide `type="number"` → `type="text" inputMode="decimal"` with Trailing-Zero Normalisation on Blur
 - **[0.0.42](#0042---2026-04-22)** — Costing Engine Bug Fixes: Sub-Dish Unit Cost Display, Supplier/Ingredient Base-Unit Mismatch, Null Guard in Unit Conversion & Recipe List Per-Portion Cost Display
 - **[0.0.41](#0041---2026-04-22)** — Sub-Dish Search & Race Condition Fixes: Parent Recipes Surface in Search When Sub-Dish Name Matches, Canvas & Overview Race Condition Guards
 - **[0.0.40](#0040---2026-04-21)** — Costing Cache Invalidation, Canvas Sub-Recipe Autosave, Cost Display Fixes & Theme Token Cleanup
@@ -48,6 +49,34 @@ All notable changes to Prepper are documented here.
 - **[0.0.3](#003---2024-11-27)** — Database Migration: Alembic Initial Tables to Supabase + PostgreSQL JSON Compatibility Fix
 - **[0.0.2](#002---2024-11-27)** — Frontend Implementation: Next.js 15 Recipe Canvas with Drag-and-Drop, Autosave & TanStack Query
 - **[0.0.1](#001---2024-11-27)** — Backend Foundation: FastAPI + SQLModel with 17 API Endpoints, Domain Services & Unit Conversion
+---
+
+## [0.0.43] - 2026-04-22
+
+### Fixed
+
+#### Decimal Typing in All Numeric Inputs (Codebase-Wide)
+- **Root cause**: HTML `type="number"` inputs return `""` for intermediate float states (e.g. typing `"0."` mid-entry), causing React controlled inputs to either clear the field or snap to a fallback value. This made it impossible to type decimals like `0.005` or `1.25` without the field resetting.
+- **Fix**: replaced `type="number"` with `type="text" inputMode="decimal"` across every numeric input in the frontend. Removed `min`, `step`, and `max` HTML attributes from the underlying `<input>` elements (validation happens on save, not on the DOM).
+- **Trailing-zero normalisation**: all inputs now strip trailing zeros on blur (e.g. `"1.50"` → `"1.5"`, `"2.00"` → `"2"`), matching the existing behaviour of the `NumericInput` component used in the CanvasTab metadata panel.
+
+**Files changed:**
+- `components/ui/EditableCell.tsx` — maps `type="number"` prop to `type="text" inputMode="decimal"` on the underlying input; normalises value before calling `onSave` in `handleBlur`
+- `components/ui/NumericInput.tsx` — already correct; used as the reference implementation
+- `components/layout/tabs/CanvasTab.tsx` — replaced `yield_quantity` and `selling_price` `<Input type="number">` with `<NumericInput>` (Group C)
+- `components/layout/tabs/OutletsTab.tsx` — attr swap + blur normalisation on `editingPrice`
+- `components/layout/tabs/AddOutletModal.tsx` — attr swap + blur normalisation on `priceOverride`
+- `components/layout/RightPanel.tsx` — attr swap + blur normalisation on `cost`
+- `components/recipe/InstructionStepCard.tsx` — attr swap + blur normalisation on `localTemp`
+- `components/ingredients/AddIngredientModal.tsx` — attr swap + blur normalisation on `cost`, `pack_size`, `price_per_pack`
+- `components/menu/MenuBuilder.tsx` — switched both `display_price` inputs from controlled `value/onChange` to uncontrolled `defaultValue/onBlur`; normalises display value in the blur handler (Group D)
+- `app/suppliers/[id]/page.tsx` — modal inputs attr swap + blur normalisation; inline table `editData` changed from numeric to string fields (local `IngredientRowEdit` interface), parses `parseFloat` only on save
+- `app/outlets/[id]/page.tsx` — modal input attr swap + blur normalisation; inline table `editData` changed from `number | null` to `string`, parses on save
+- `app/ingredients/[id]/page.tsx` — modal inputs attr swap + blur normalisation; inline table `editData` string fields (local `SupplierRowEdit` interface), parses on save
+- `app/menu-sketch/[id]/page.tsx` — 4 uncontrolled price inputs (DishCard + DishRow sale/cost) attr swap + blur normalisation via `e.target.value = String(val)`
+
+**Verification:** `npx tsc --noEmit` passes with zero errors.
+
 ---
 
 ## [0.0.42] - 2026-04-22

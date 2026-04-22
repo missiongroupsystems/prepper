@@ -605,12 +605,12 @@ function DishCard({
         <div>
           <span className="text-muted-foreground">Sale</span>
           <input
-            type="number"
-            step="0.01"
-            min="0"
+            type="text"
+            inputMode="decimal"
             defaultValue={item.sales_price ?? ''}
             onBlur={(e) => {
               const val = e.target.value === '' ? null : parseFloat(e.target.value);
+              if (val !== null && !isNaN(val)) e.target.value = String(val);
               if (val !== item.sales_price) save({ sales_price: val });
             }}
             placeholder="0.00"
@@ -620,12 +620,12 @@ function DishCard({
         <div>
           <span className="text-muted-foreground">Cost</span>
           <input
-            type="number"
-            step="0.01"
-            min="0"
+            type="text"
+            inputMode="decimal"
             defaultValue={item.cost_price ?? ''}
             onBlur={(e) => {
               const val = e.target.value === '' ? null : parseFloat(e.target.value);
+              if (val !== null && !isNaN(val)) e.target.value = String(val);
               if (val !== item.cost_price) save({ cost_price: val });
             }}
             placeholder="0.00"
@@ -1020,12 +1020,12 @@ function DishRow({
         {/* Sale price */}
         <div className="border-r border-border px-2 py-2">
           <input
-            type="number"
-            step="0.01"
-            min="0"
+            type="text"
+            inputMode="decimal"
             defaultValue={item.sales_price ?? ''}
             onBlur={(e) => {
               const val = e.target.value === '' ? null : parseFloat(e.target.value);
+              if (val !== null && !isNaN(val)) e.target.value = String(val);
               if (val !== item.sales_price) save({ sales_price: val });
             }}
             placeholder="Sale"
@@ -1036,12 +1036,12 @@ function DishRow({
         {/* Cost price */}
         <div className="border-r border-border px-2 py-2">
           <input
-            type="number"
-            step="0.01"
-            min="0"
+            type="text"
+            inputMode="decimal"
             defaultValue={item.cost_price ?? ''}
             onBlur={(e) => {
               const val = e.target.value === '' ? null : parseFloat(e.target.value);
+              if (val !== null && !isNaN(val)) e.target.value = String(val);
               if (val !== item.cost_price) save({ cost_price: val });
             }}
             placeholder="Cost"
