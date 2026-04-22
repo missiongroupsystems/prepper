@@ -6,6 +6,7 @@ All notable changes to Prepper are documented here.
 
 ## Index
 
+- **[0.0.42](#0042---2026-04-22)** — Costing Engine Bug Fixes: Sub-Dish Unit Cost Display, Supplier/Ingredient Base-Unit Mismatch & Null Guard in Unit Conversion
 - **[0.0.41](#0041---2026-04-22)** — Sub-Dish Search & Race Condition Fixes: Parent Recipes Surface in Search When Sub-Dish Name Matches, Canvas & Overview Race Condition Guards
 - **[0.0.40](#0040---2026-04-21)** — Costing Cache Invalidation, Canvas Sub-Recipe Autosave, Cost Display Fixes & Theme Token Cleanup
 - **[0.0.39](#0039---2026-04-20)** — Sub-Recipe Portion Costing: Per-Portion Cost Hints, Expandable Ingredient Breakdown, Canvas Batch Cost Fix & Scaled Ingredient Display
@@ -47,6 +48,33 @@ All notable changes to Prepper are documented here.
 - **[0.0.3](#003---2024-11-27)** — Database Migration: Alembic Initial Tables to Supabase + PostgreSQL JSON Compatibility Fix
 - **[0.0.2](#002---2024-11-27)** — Frontend Implementation: Next.js 15 Recipe Canvas with Drag-and-Drop, Autosave & TanStack Query
 - **[0.0.1](#001---2024-11-27)** — Backend Foundation: FastAPI + SQLModel with 17 API Endpoints, Domain Services & Unit Conversion
+---
+
+## [0.0.42] - 2026-04-22
+
+### Fixed
+
+#### Costs Tab — Sub-Dish Unit Cost Column Shows Wrong Value
+- The "Cost per Unit" column in the Sub-Dishes table previously always showed `sub_recipe_portion_cost` regardless of which unit the sub-dish was linked with. For a sub-dish measured in `batch`, the displayed cost was the child recipe's cost-per-portion (wrong); for `g`/`ml` it was similarly wrong, even though the `line_cost` calculation in the backend was already correct
+- Fixed: unit cost now resolves per unit type — `portion` → `sub_recipe_portion_cost`, `batch` → `sub_recipe_batch_cost`, `g`/`ml` → derived from `line_cost / quantity` (consistent with the backend's actual calculation). The unit label updates accordingly (`/portion`, `/batch`, `/g`, `/ml`)
+- This supersedes the 0.0.40 entry that incorrectly described "always uses `sub_recipe_portion_cost`" as correct behaviour
+
+#### Costing Engine — Supplier Price Paired with Wrong Base Unit (up to 1000× error)
+- When a supplier ingredient was linked and `RecipeIngredient.base_unit` was already set to a unit that differed from `SupplierIngredient.pack_unit` (e.g. `ri.base_unit = "g"` but `si.pack_unit = "kg"`), the supplier's price-per-pack-unit was used but the quantity was converted to `ri.base_unit` — off by a factor of 1 000 for g/kg and ml/l mismatches
+- Fixed in `costing_service.py`: `base_unit` is now always set to `si.pack_unit` when supplier pricing is applied, not only when `base_unit` is `None`
+- Applies to both mass units (g/kg, oz/lb) and volume units (ml/l, tsp/tbsp/cup)
+
+#### Costing Engine — Ingredient Fallback Price Paired with Wrong Base Unit
+- When falling back to `ingredient.cost_per_base_unit` (no supplier, no manual price), `base_unit` was only set to `ingredient.base_unit` if it was `None`. If `ri.base_unit` was set to a different unit (e.g. `"l"` while `ingredient.base_unit = "ml"`), the price per `ingredient.base_unit` was combined with a quantity converted to `ri.base_unit`, producing a 1 000× error
+- Fixed: `base_unit` is now unconditionally set to `ingredient.base_unit` for this fallback path, since `ingredient.cost_per_base_unit` is definitionally per `ingredient.base_unit`
+
+#### Costing Engine — `convert_to_base_unit` Crashes on `None` Base Unit
+- `convert_to_base_unit` called `.lower()` on `to_base_unit` with no `None` guard, causing an `AttributeError` if `base_unit` was unresolvable (e.g. `ri.unit_price` set without `ri.base_unit`)
+- Fixed: function now returns `None` immediately when `to_base_unit is None`, allowing the caller's existing `None`-check to route the ingredient into `missing_costs`
+
+#### Costing Engine — Dead Code in `_calculate_sub_recipe_line_cost`
+- An intermediate `batch_fraction` computation (`quantity / (yield_quantity²)`) was immediately overwritten on the next line. Removed
+
 ---
 
 ## [0.0.41] - 2026-04-22

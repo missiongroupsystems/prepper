@@ -41,7 +41,7 @@ def get_unit_category(unit: str) -> str | None:
 
 
 def convert_to_base_unit(
-    quantity: float, from_unit: str, to_base_unit: str
+    quantity: float, from_unit: str, to_base_unit: str | None
 ) -> float | None:
     """
     Convert a quantity from one unit to the ingredient's base unit.
@@ -51,6 +51,9 @@ def convert_to_base_unit(
     Cross-category note: volume ↔ mass conversions are supported using
     density = 1 g/ml (so 1 ml = 1 g, 1 l = 1 kg).
     """
+    if to_base_unit is None:
+        return None
+
     from_unit_lower = from_unit.lower()
     to_base_lower = to_base_unit.lower()
 

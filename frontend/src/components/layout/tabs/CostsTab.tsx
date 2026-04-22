@@ -157,12 +157,24 @@ function SubRecipeCostTable({ recipeId }: { recipeId: number }) {
         </thead>
         <tbody>
           {costing.sub_recipe_breakdown.map((item) => {
-            const unitCost = item.sub_recipe_portion_cost;
-
             const childRecipe = recipeMap.get(item.recipe_id);
             const childYield = childRecipe?.yield_quantity ?? 1;
             const childYieldUnit = childRecipe?.yield_unit ?? 'portion';
             const showScaleContext = item.unit === 'portion' && childYield > 1;
+
+            // Pick the right cost-per-unit based on the unit actually used
+            let unitCost: number | null = null;
+            if (item.unit === 'portion') {
+              unitCost = item.sub_recipe_portion_cost;
+            } else if (item.unit === 'batch') {
+              unitCost = item.sub_recipe_batch_cost;
+            } else if (item.unit === 'g' || item.unit === 'ml') {
+              // cost per g/ml = line_cost / quantity (derived from backend's correct calc)
+              unitCost = item.line_cost != null && item.quantity > 0
+                ? item.line_cost / item.quantity
+                : null;
+            }
+            const unitCostLabel = item.unit === 'portion' ? `/${childYieldUnit}` : `/${item.unit}`;
 
             return (
               <tr
@@ -181,7 +193,7 @@ function SubRecipeCostTable({ recipeId }: { recipeId: number }) {
                   )}
                 </td>
                 <td className="px-4 py-3 text-right text-zinc-600 dark:text-zinc-300">
-                  {unitCost != null ? `${formatCurrency(unitCost)}/${childYieldUnit}` : '—'}
+                  {unitCost != null ? `${formatCurrency(unitCost)}${unitCostLabel}` : '—'}
                 </td>
                 <td className="py-3 pl-4 text-right font-medium text-zinc-900 dark:text-zinc-100">
                   {item.line_cost != null ? formatCurrency(item.line_cost) : '—'}
