@@ -6,6 +6,7 @@ All notable changes to Prepper are documented here.
 
 ## Index
 
+- **[0.0.41](#0041---2026-04-22)** — Sub-Dish Search & Race Condition Fixes: Parent Recipes Surface in Search When Sub-Dish Name Matches, Canvas & Overview Race Condition Guards
 - **[0.0.40](#0040---2026-04-21)** — Costing Cache Invalidation, Canvas Sub-Recipe Autosave, Cost Display Fixes & Theme Token Cleanup
 - **[0.0.39](#0039---2026-04-20)** — Sub-Recipe Portion Costing: Per-Portion Cost Hints, Expandable Ingredient Breakdown, Canvas Batch Cost Fix & Scaled Ingredient Display
 - **[0.0.38](#0038---2026-04-17)** — Buy Catalogue Import: Single-Sheet FMH XLSX Import, Template Download & Efficiency Improvements
@@ -46,6 +47,32 @@ All notable changes to Prepper are documented here.
 - **[0.0.3](#003---2024-11-27)** — Database Migration: Alembic Initial Tables to Supabase + PostgreSQL JSON Compatibility Fix
 - **[0.0.2](#002---2024-11-27)** — Frontend Implementation: Next.js 15 Recipe Canvas with Drag-and-Drop, Autosave & TanStack Query
 - **[0.0.1](#001---2024-11-27)** — Backend Foundation: FastAPI + SQLModel with 17 API Endpoints, Domain Services & Unit Conversion
+---
+
+## [0.0.41] - 2026-04-22
+
+### Added
+
+#### Recipe Search — Sub-Dish Name Matching
+- Searching the recipe list now also returns parent recipes whose sub-recipes match the search term. For example, searching "Hollandaise" surfaces both the "Hollandaise Sauce" recipe and any parent dish (e.g. "Eggs Benedict") that uses it as a sub-recipe
+- Backend: `recipe_service.list_recipes()` extended with a sub-query that matches `RecipeRecipe.parent_recipe_id` where the child recipe name matches, ORed with the existing name + category matches
+- Backend: new `GET POST /recipes/sub-recipes/batch` endpoint (`SubRecipeService.get_has_sub_recipes_batch()`) returns a `dict[recipe_id, bool]` in a single query — no N+1
+- Frontend: `getSubRecipesBatch` API call + `useSubRecipesBatch` TanStack Query hook; `RecipeManagementTab` uses the batch result to set a `matchedViaSubDish` flag per recipe
+- `RecipeCard` and `RecipeListRow` show a "Via Sub-dish" badge when the recipe was surfaced via a sub-dish match rather than a direct name match
+- Regression test: `test_list_recipes_search_by_sub_dish_name` verifies the parent recipe is returned and unrelated recipes are excluded
+
+### Fixed
+
+#### Canvas — Stale Recipe Load Race Condition
+- `CanvasTab` now guards on `selectedRecipeData` being defined before loading the canvas. Previously, if `selectedRecipeData` was still `undefined` when the load effect fired, the canvas could initialise with stale data from the previously selected recipe
+- Removed `recipes` from the canvas load effect dependency array; including the full recipe list caused spurious re-runs whenever any recipe in the list was refreshed, potentially clobbering in-progress canvas edits
+
+#### Overview Tab — AI Summary Saved to Wrong Recipe
+- Added `summaryForRecipeIdRef` to track which recipe an AI feedback summary was requested for. The `useEffect` that persists the summary now only runs if `summaryForRecipeIdRef.current === selectedRecipeId`, preventing the summary from being written to a different recipe if the user navigated away while the (potentially slow) AI call was in-flight
+
+#### Overview Tab — Stale UI State on Recipe Change
+- Recipe change now resets all transient interaction state: `isEditingName`, `isEditingDescription`, `isTagDropdownOpen`, `isFeedbacksOpen`, and `tagSearchFilter`. Previously, open dropdowns or active name-edit mode would persist after switching recipes, causing confusing UI behaviour
+
 ---
 
 ## [0.0.40] - 2026-04-21
