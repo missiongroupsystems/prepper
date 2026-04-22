@@ -1,5 +1,6 @@
 """Sub-recipe API routes for BOM hierarchy management."""
 
+from pydantic import BaseModel
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session
 
@@ -14,6 +15,21 @@ from app.models import (
 from app.domain import SubRecipeService, CycleDetectedError
 
 router = APIRouter()
+batch_router = APIRouter()
+
+
+class SubRecipesBatchRequest(BaseModel):
+    recipe_ids: list[int]
+
+
+@batch_router.post("/sub-recipes/batch", response_model=dict[int, bool])
+def get_sub_recipes_batch(
+    request: SubRecipesBatchRequest,
+    session: Session = Depends(get_session),
+):
+    """Return which recipes in the list have sub-recipes."""
+    service = SubRecipeService(session)
+    return service.get_has_sub_recipes_batch(request.recipe_ids)
 
 
 @router.get("/{recipe_id}/sub-recipes", response_model=list[RecipeRecipe])

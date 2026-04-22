@@ -16,6 +16,7 @@ interface RecipeCardProps {
   outletNames?: string[];
   categoryNames?: string[];
   allergenNames?: string[];
+  matchedViaSubDish?: boolean;
 }
 
 const STATUS_VARIANTS: Record<RecipeStatus, 'default' | 'success' | 'warning' | 'secondary'> = {
@@ -24,7 +25,7 @@ const STATUS_VARIANTS: Record<RecipeStatus, 'default' | 'success' | 'warning' | 
   archived: 'warning',
 };
 
-export const RecipeCard = memo(function RecipeCard({ recipe, costPerPortion, isOwned, href, outletNames = [], categoryNames = [], allergenNames = [] }: RecipeCardProps) {
+export const RecipeCard = memo(function RecipeCard({ recipe, costPerPortion, isOwned, href, outletNames = [], categoryNames = [], allergenNames = [], matchedViaSubDish }: RecipeCardProps) {
   return (
     <Link href={href ?? `/recipes/${recipe.id}`} className="block">
       <Card interactive className="mb-4 h-full">
@@ -61,6 +62,9 @@ export const RecipeCard = memo(function RecipeCard({ recipe, costPerPortion, isO
               </Badge>
               {recipe.is_prep_recipe && (
                 <Badge variant="default" className="text-sm">Prep</Badge>
+              )}
+              {matchedViaSubDish && (
+                <Badge variant="default" className="text-sm">Via Sub-dish</Badge>
               )}
               {isOwned && (
                 <Badge className="text-sm bg-primary text-primary-foreground">Owned</Badge>

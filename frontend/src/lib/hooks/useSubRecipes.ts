@@ -4,6 +4,14 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import * as api from '@/lib/api';
 import type { SubRecipeCreate, SubRecipeUpdate, SubRecipeReorder } from '@/types';
 
+export function useSubRecipesBatch(recipeIds: number[] | null) {
+  return useQuery({
+    queryKey: ['subRecipesBatch', recipeIds ? [...recipeIds].sort() : null],
+    queryFn: () => api.getSubRecipesBatch(recipeIds!),
+    enabled: recipeIds !== null && recipeIds.length > 0,
+  });
+}
+
 export function useSubRecipes(recipeId: number | null) {
   return useQuery({
     queryKey: ['subRecipes', recipeId],

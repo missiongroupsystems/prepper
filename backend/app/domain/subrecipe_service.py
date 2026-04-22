@@ -201,6 +201,18 @@ class SubRecipeService:
         self.session.commit()
         return self.get_sub_recipes(parent_recipe_id)
 
+    def get_has_sub_recipes_batch(self, recipe_ids: list[int]) -> dict[int, bool]:
+        """Return dict[recipe_id, bool] indicating which recipes have sub-recipes."""
+        if not recipe_ids:
+            return {}
+        rows = self.session.exec(
+            select(RecipeRecipe.parent_recipe_id)
+            .where(RecipeRecipe.parent_recipe_id.in_(recipe_ids))
+            .distinct()
+        ).all()
+        has_set = set(rows)
+        return {rid: rid in has_set for rid in recipe_ids}
+
     # --- Utility Methods ---
 
     def get_full_bom_tree(self, recipe_id: int, depth: int = 0, max_depth: int = 10) -> dict:
