@@ -6,7 +6,7 @@ All notable changes to Prepper are documented here.
 
 ## Index
 
-- **[0.0.42](#0042---2026-04-22)** — Costing Engine Bug Fixes: Sub-Dish Unit Cost Display, Supplier/Ingredient Base-Unit Mismatch & Null Guard in Unit Conversion
+- **[0.0.42](#0042---2026-04-22)** — Costing Engine Bug Fixes: Sub-Dish Unit Cost Display, Supplier/Ingredient Base-Unit Mismatch, Null Guard in Unit Conversion & Recipe List Per-Portion Cost Display
 - **[0.0.41](#0041---2026-04-22)** — Sub-Dish Search & Race Condition Fixes: Parent Recipes Surface in Search When Sub-Dish Name Matches, Canvas & Overview Race Condition Guards
 - **[0.0.40](#0040---2026-04-21)** — Costing Cache Invalidation, Canvas Sub-Recipe Autosave, Cost Display Fixes & Theme Token Cleanup
 - **[0.0.39](#0039---2026-04-20)** — Sub-Recipe Portion Costing: Per-Portion Cost Hints, Expandable Ingredient Breakdown, Canvas Batch Cost Fix & Scaled Ingredient Display
@@ -74,6 +74,10 @@ All notable changes to Prepper are documented here.
 
 #### Costing Engine — Dead Code in `_calculate_sub_recipe_line_cost`
 - An intermediate `batch_fraction` computation (`quantity / (yield_quantity²)`) was immediately overwritten on the next line. Removed
+
+#### Recipe List — Cost Per Portion Shows Batch Cost Instead of Per-Portion Cost
+- On the `/recipes` list page (both grid and list views) and the `/rnd` page, `recipe.cost_price` (the total batch cost stored by the canvas) was displayed with a `/portion` label without being divided by `yield_quantity`. The `/recipes/[id]` detail page was correct because it fetches `CostingResult.cost_per_portion` directly from the costing endpoint
+- Fixed in `RecipeCard.tsx`, `RecipeListRow.tsx`, and `rnd/page.tsx`: cost is now displayed as `cost_price / yield_quantity` when `yield_quantity > 0`, matching the per-portion value shown on the detail page
 
 ---
 

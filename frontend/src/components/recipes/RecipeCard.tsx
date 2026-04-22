@@ -120,7 +120,7 @@ export const RecipeCard = memo(function RecipeCard({ recipe, costPerPortion, isO
             <div className="text-base">
               <span className="text-zinc-500 dark:text-zinc-400">Cost: </span>
               <span className="font-medium text-zinc-900 dark:text-zinc-100">
-                {formatCurrency(costPerPortion ?? recipe.cost_price)}
+                {formatCurrency(costPerPortion ?? (recipe.cost_price != null && recipe.yield_quantity > 0 ? recipe.cost_price / recipe.yield_quantity : recipe.cost_price))}
               </span>
               <span className="text-zinc-400 dark:text-zinc-500">/portion</span>
             </div>
