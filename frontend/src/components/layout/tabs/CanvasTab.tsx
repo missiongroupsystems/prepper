@@ -1982,7 +1982,7 @@ export function CanvasTab({ outlets }: CanvasTabProps) {
     }
 
     if (loadedRecipeId === selectedRecipeId) return;
-    if (!recipeIngredients || !subRecipes) return;
+    if (!recipeIngredients || !subRecipes || !selectedRecipeData) return;
 
     // Load recipe metadata from selected recipe
     const selectedRecipe = selectedRecipeData ?? recipes?.find((r) => r.id === selectedRecipeId);
@@ -2092,7 +2092,7 @@ export function CanvasTab({ outlets }: CanvasTabProps) {
       recipeQuantities,
       metadata: loadedMetadata,
     });
-  }, [selectedRecipeId, selectedRecipeData, recipeIngredients, subRecipes, recipes, loadedRecipeId, fetchSuppliersForIngredient]);
+  }, [selectedRecipeId, selectedRecipeData, recipeIngredients, subRecipes, loadedRecipeId, fetchSuppliersForIngredient]);
 
 
   const handleDragStart = useCallback((event: DragStartEvent) => {
