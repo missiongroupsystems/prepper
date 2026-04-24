@@ -6,6 +6,7 @@ All notable changes to Prepper are documented here.
 
 ## Index
 
+- **[0.0.44](#0044---2026-04-24)** — Ingredient Line Cost in Canvas: Real-Time `qty × unit_price = cost` Display Across All Three Canvas View Modes
 - **[0.0.43](#0043---2026-04-22)** — Decimal Input Fix: Codebase-Wide `type="number"` → `type="text" inputMode="decimal"` with Trailing-Zero Normalisation on Blur
 - **[0.0.42](#0042---2026-04-22)** — Costing Engine Bug Fixes: Sub-Dish Unit Cost Display, Supplier/Ingredient Base-Unit Mismatch, Null Guard in Unit Conversion & Recipe List Per-Portion Cost Display
 - **[0.0.41](#0041---2026-04-22)** — Sub-Dish Search & Race Condition Fixes: Parent Recipes Surface in Search When Sub-Dish Name Matches, Canvas & Overview Race Condition Guards
@@ -49,6 +50,20 @@ All notable changes to Prepper are documented here.
 - **[0.0.3](#003---2024-11-27)** — Database Migration: Alembic Initial Tables to Supabase + PostgreSQL JSON Compatibility Fix
 - **[0.0.2](#002---2024-11-27)** — Frontend Implementation: Next.js 15 Recipe Canvas with Drag-and-Drop, Autosave & TanStack Query
 - **[0.0.1](#001---2024-11-27)** — Backend Foundation: FastAPI + SQLModel with 17 API Endpoints, Domain Services & Unit Conversion
+---
+
+## [0.0.44] - 2026-04-24
+
+### Added
+
+#### Ingredient Line Cost Display in Canvas (All 3 View Modes)
+- **What**: Each ingredient row in the canvas now shows the full cost calculation inline: `{qty} {unit} × ${unit_price}/{unit} = {cost}`.
+- **Why**: Chefs need to fact-check total dish cost per ingredient as they build — seeing the raw unit price alone doesn't make the actual spend visible when quantities are small (e.g. 0.016 pcs × $7.50/pcs = $0.12).
+- **Grid view** (`StagedIngredientCard`): calculation displayed in the cost row at the bottom of each ingredient card; cost is bolded for scannability.
+- **List view** (`StagedIngredientListItem`): calculation displayed inline in the ingredient metadata row, bolded cost.
+- **Table view** (`CanvasTable`): new "Cost" column added; each ingredient row shows the full formula right-aligned.
+- **Canvas editing panel** (`RecipeIngredientRow`): line cost shown beside the unit price field (`= $0.12`) in real-time, computed from local state so it updates instantly as quantity or price is typed — no wait for debounce/save.
+
 ---
 
 ## [0.0.43] - 2026-04-22

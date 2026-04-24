@@ -314,7 +314,10 @@ function StagedIngredientCard({
         {/* Cost display */}
         <div className="text-sm text-blue-200/80">
           {unitCost != null ? (
-            <span>${unitCost.toFixed(2)}/{staged.unit}</span>
+            <span>
+              {staged.quantity} {staged.unit} × ${unitCost.toFixed(2)}/{staged.unit}
+              {' '}<span className="text-blue-100 font-medium">= {formatCurrency(staged.quantity * unitCost)}</span>
+            </span>
           ) : (
             <span className="text-blue-300/50">No pricing</span>
           )}
@@ -435,7 +438,12 @@ function StagedIngredientListItem({
           )}
           <span className="text-zinc-300 dark:text-zinc-600 text-xs">·</span>
           <span className="text-xs text-zinc-400 dark:text-zinc-500">
-            {unitCost != null ? `$${unitCost.toFixed(2)}/${staged.unit}` : 'No pricing'}
+            {unitCost != null ? (
+              <>
+                {staged.quantity} {staged.unit} × ${unitCost.toFixed(2)}/{staged.unit}
+                {' '}<span className="font-medium text-zinc-600 dark:text-zinc-300">= {formatCurrency(staged.quantity * unitCost)}</span>
+              </>
+            ) : 'No pricing'}
           </span>
         </div>
       </div>
@@ -591,9 +599,14 @@ function StagedRecipeListItem({
           {recipeIngredients && recipeIngredients.length > 0 && (
             <ul className="text-xs text-zinc-500 dark:text-zinc-400 space-y-0.5">
               {recipeIngredients.map((ri) => (
-                <li key={ri.id} className="flex justify-between">
+                <li key={ri.id} className="flex justify-between gap-2">
                   <span>{ri.ingredient?.name || `#${ri.ingredient_id}`} · {ri.quantity} {ri.base_unit || ri.unit}</span>
-                  <span className="text-zinc-400 dark:text-zinc-500 tabular-nums">${ri.unit_price?.toFixed(2) ?? '—'}</span>
+                  <span className="text-zinc-400 dark:text-zinc-500 tabular-nums shrink-0">
+                    ${ri.unit_price?.toFixed(2) ?? '—'}
+                    {ri.unit_price != null && (
+                      <> = {formatCurrency(ri.quantity * ri.unit_price)}</>
+                    )}
+                  </span>
                 </li>
               ))}
             </ul>
@@ -771,6 +784,9 @@ function StagedRecipeCard({
                         <div className="text-green-200/60 flex flex-wrap gap-x-2">
                           <span>{scaledQty} {ri.base_unit || ri.unit}</span>
                           <span>@ ${ri.unit_price?.toFixed(2) ?? 'N/A'}/{ri.base_unit || ri.unit}</span>
+                          {ri.unit_price != null && (
+                            <span>= {formatCurrency(scaledQty * ri.unit_price)}</span>
+                          )}
                         </div>
                         {suppliers.length > 0 && (
                           <div className="text-green-300/50 mt-0.5">
@@ -1009,6 +1025,7 @@ function CanvasTable({
             <th className="text-left px-4 py-2 text-[11px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">Unit</th>
             <th className="text-left px-4 py-2 text-[11px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">Wastage</th>
             <th className="text-left px-4 py-2 text-[11px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">Item</th>
+            <th className="text-right px-4 py-2 text-[11px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">Cost</th>
             <th className="text-left px-4 py-2 text-[11px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500 w-12"></th>
           </tr>
         </thead>
@@ -1078,6 +1095,14 @@ function CanvasTable({
                   onRecipeSelect={(recipe) => onIngredientSelect(staged.id, recipe)}
                 />
               </td>
+              <td className="px-4 py-2.5 text-right tabular-nums text-xs text-zinc-500 dark:text-zinc-400">
+                {staged.unitPrice != null ? (
+                  <>
+                    {staged.quantity} {staged.unit} × ${staged.unitPrice.toFixed(2)}/{staged.unit}{' '}
+                    <span className="font-medium text-zinc-700 dark:text-zinc-300">= {formatCurrency(staged.quantity * staged.unitPrice)}</span>
+                  </>
+                ) : <span>—</span>}
+              </td>
               <td className="px-4 py-2.5">
                 <button
                   onClick={() => onRemoveIngredient(staged.id)}
@@ -1131,6 +1156,7 @@ function CanvasTable({
                   onIngredientSelect={(ingredient) => onRecipeSelect(staged.id, ingredient)}
                 />
               </td>
+              <td className="px-4 py-2.5 text-right text-sm text-zinc-400 dark:text-zinc-500">—</td>
               <td className="px-4 py-2.5">
                 <button
                   onClick={() => onRemoveRecipe(staged.id)}
