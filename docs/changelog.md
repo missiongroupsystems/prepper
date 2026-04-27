@@ -6,6 +6,7 @@ All notable changes to Prepper are documented here.
 
 ## Index
 
+- **[0.0.45](#0045---2026-04-27)** — Canvas UX Polish: Simplified Ingredient Cost Display & Narrowed Table Item Column
 - **[0.0.44](#0044---2026-04-24)** — Ingredient Line Cost in Canvas: Real-Time `qty × unit_price = cost` Display Across All Three Canvas View Modes
 - **[0.0.43](#0043---2026-04-22)** — Decimal Input Fix: Codebase-Wide `type="number"` → `type="text" inputMode="decimal"` with Trailing-Zero Normalisation on Blur
 - **[0.0.42](#0042---2026-04-22)** — Costing Engine Bug Fixes: Sub-Dish Unit Cost Display, Supplier/Ingredient Base-Unit Mismatch, Null Guard in Unit Conversion & Recipe List Per-Portion Cost Display
@@ -50,6 +51,26 @@ All notable changes to Prepper are documented here.
 - **[0.0.3](#003---2024-11-27)** — Database Migration: Alembic Initial Tables to Supabase + PostgreSQL JSON Compatibility Fix
 - **[0.0.2](#002---2024-11-27)** — Frontend Implementation: Next.js 15 Recipe Canvas with Drag-and-Drop, Autosave & TanStack Query
 - **[0.0.1](#001---2024-11-27)** — Backend Foundation: FastAPI + SQLModel with 17 API Endpoints, Domain Services & Unit Conversion
+---
+
+## [0.0.45] - 2026-04-27
+
+### Changed
+
+#### Simplified Ingredient Cost Display in Canvas
+- **What**: Removed the full equation preamble (`qty × $price/unit =`) from every cost display in the canvas. Each location now shows the formatted line cost (`$X.XX`) only.
+- **Why**: The breakdown notation was redundant — chefs already know the quantity and unit from the row itself. Showing just the resulting cost is faster to scan.
+- **Grid view** (`StagedIngredientCard`): cost pill shows `$X.XX` instead of `2 kg × $3.50/kg = $7.00`.
+- **List view** (`StagedIngredientListItem`): meta row shows `$X.XX` instead of the full formula.
+- **Table view** (`CanvasTable` cost column): shows `$X.XX` instead of `qty × $price/unit = $total`.
+- **Expanded recipe card — ingredient list**: shows line cost instead of `$unit_price = $line_cost`.
+- **Expanded recipe card — scaled/green breakdown**: shows `{scaledQty} {unit} $X.XX` instead of `{qty} @ $price/unit = $cost`.
+- **Ingredient edit row** (`RecipeIngredientRow`): dropped `= ` prefix from the inline line cost beside the unit price field; added `tabular-nums` for alignment.
+
+#### Table View Item Column Width
+- **What**: Added `w-48` to the Item column header in `CanvasTable`.
+- **Why**: Without a fixed width the Item column expanded to fill all remaining horizontal space, pushing Qty / Unit / Wastage controls to the far left.
+
 ---
 
 ## [0.0.44] - 2026-04-24

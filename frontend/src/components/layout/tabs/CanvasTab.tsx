@@ -315,8 +315,8 @@ function StagedIngredientCard({
         <div className="text-sm text-blue-200/80">
           {unitCost != null ? (
             <span>
-              {staged.quantity} {staged.unit} × ${unitCost.toFixed(2)}/{staged.unit}
-              {' '}<span className="text-blue-100 font-medium">= {formatCurrency(staged.quantity * unitCost)}</span>
+              <span className="text-blue-100 font-medium">{formatCurrency(staged.quantity * unitCost)}</span>
+              {' '}(${unitCost.toFixed(2)}/{staged.unit})
             </span>
           ) : (
             <span className="text-blue-300/50">No pricing</span>
@@ -440,8 +440,8 @@ function StagedIngredientListItem({
           <span className="text-xs text-zinc-400 dark:text-zinc-500">
             {unitCost != null ? (
               <>
-                {staged.quantity} {staged.unit} × ${unitCost.toFixed(2)}/{staged.unit}
-                {' '}<span className="font-medium text-zinc-600 dark:text-zinc-300">= {formatCurrency(staged.quantity * unitCost)}</span>
+                <span className="font-medium text-zinc-600 dark:text-zinc-300">{formatCurrency(staged.quantity * unitCost)}</span>
+                {' '}(${unitCost.toFixed(2)}/{staged.unit})
               </>
             ) : 'No pricing'}
           </span>
@@ -602,10 +602,9 @@ function StagedRecipeListItem({
                 <li key={ri.id} className="flex justify-between gap-2">
                   <span>{ri.ingredient?.name || `#${ri.ingredient_id}`} · {ri.quantity} {ri.base_unit || ri.unit}</span>
                   <span className="text-zinc-400 dark:text-zinc-500 tabular-nums shrink-0">
-                    ${ri.unit_price?.toFixed(2) ?? '—'}
-                    {ri.unit_price != null && (
-                      <> = {formatCurrency(ri.quantity * ri.unit_price)}</>
-                    )}
+                    {ri.unit_price != null ? (
+                      <>{formatCurrency(ri.quantity * ri.unit_price)} (${ri.unit_price.toFixed(2)})</>
+                    ) : '—'}
                   </span>
                 </li>
               ))}
@@ -783,9 +782,8 @@ function StagedRecipeCard({
                         <div className="font-medium text-green-100">{ingredient?.name || `Ingredient #${ri.ingredient_id}`}</div>
                         <div className="text-green-200/60 flex flex-wrap gap-x-2">
                           <span>{scaledQty} {ri.base_unit || ri.unit}</span>
-                          <span>@ ${ri.unit_price?.toFixed(2) ?? 'N/A'}/{ri.base_unit || ri.unit}</span>
                           {ri.unit_price != null && (
-                            <span>= {formatCurrency(scaledQty * ri.unit_price)}</span>
+                            <span className="text-green-100 font-medium">{formatCurrency(scaledQty * ri.unit_price)} (${ri.unit_price.toFixed(2)}/{ri.base_unit || ri.unit})</span>
                           )}
                         </div>
                         {suppliers.length > 0 && (
@@ -1024,7 +1022,7 @@ function CanvasTable({
             <th className="text-left px-4 py-2 text-[11px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">Qty</th>
             <th className="text-left px-4 py-2 text-[11px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">Unit</th>
             <th className="text-left px-4 py-2 text-[11px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">Wastage</th>
-            <th className="text-left px-4 py-2 text-[11px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">Item</th>
+            <th className="text-left px-4 py-2 text-[11px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500 w-48">Item</th>
             <th className="text-right px-4 py-2 text-[11px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">Cost</th>
             <th className="text-left px-4 py-2 text-[11px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500 w-12"></th>
           </tr>
@@ -1098,8 +1096,8 @@ function CanvasTable({
               <td className="px-4 py-2.5 text-right tabular-nums text-xs text-zinc-500 dark:text-zinc-400">
                 {staged.unitPrice != null ? (
                   <>
-                    {staged.quantity} {staged.unit} × ${staged.unitPrice.toFixed(2)}/{staged.unit}{' '}
-                    <span className="font-medium text-zinc-700 dark:text-zinc-300">= {formatCurrency(staged.quantity * staged.unitPrice)}</span>
+                    <span className="font-medium text-zinc-700 dark:text-zinc-300">{formatCurrency(staged.quantity * staged.unitPrice)}</span>
+                    {' '}(${staged.unitPrice.toFixed(2)}/{staged.unit})
                   </>
                 ) : <span>—</span>}
               </td>

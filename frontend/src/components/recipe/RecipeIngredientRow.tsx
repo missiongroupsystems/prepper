@@ -248,8 +248,8 @@ export const RecipeIngredientRow = memo(function RecipeIngredientRow({
         />
         <span className="text-zinc-500 dark:text-zinc-400">/{baseUnit}</span>
         {lineCost !== null && (
-          <span className="ml-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-            = {formatCurrency(lineCost)}
+          <span className="ml-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 tabular-nums">
+            {formatCurrency(lineCost)}
           </span>
         )}
       </div>
