@@ -1605,14 +1605,14 @@ export default function MenuSketchEditorPage() {
 
   if (!sketch) {
     return (
-      <div className="flex h-screen items-center justify-center">
+      <div className="flex h-full items-center justify-center">
         <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen flex-col overflow-hidden bg-background">
+    <div className="flex h-full flex-col overflow-hidden bg-background">
       {/* Top bar */}
       <div className="flex shrink-0 items-center gap-2 border-b border-border bg-card px-4 py-2">
         <button
