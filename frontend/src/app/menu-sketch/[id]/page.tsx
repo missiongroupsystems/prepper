@@ -487,7 +487,7 @@ function DishCard({
           className="w-full rounded border border-border bg-muted px-2 py-1 text-sm font-medium text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
         />
         {showSuggestions && filtered.length > 0 && (
-          <div className="absolute left-0 top-full z-10 mt-0.5 w-full rounded border border-border bg-card shadow-lg">
+          <div className="absolute left-0 top-full z-50 mt-0.5 w-full rounded border border-border bg-card shadow-lg">
             {filtered.slice(0, 5).map((r) => (
               <button
                 key={r.id}
@@ -564,7 +564,7 @@ function DishCard({
                 className="w-full rounded border border-border bg-muted px-2 py-0.5 text-[10px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
               />
               {showIngredientSuggestions && (suggestedIngredients.length > 0 || ingSearchTerm) && (
-                <div className="absolute left-0 top-full z-10 mt-0.5 max-h-40 w-full overflow-y-auto rounded border border-border bg-card shadow-lg">
+                <div className="absolute left-0 top-full z-50 mt-0.5 max-h-40 w-full overflow-y-auto rounded border border-border bg-card shadow-lg">
                   {suggestedIngredients.map((ing, idx) => (
                     <button
                       key={ing.id}
@@ -886,7 +886,7 @@ function DishRow({
 
   return (
     <div
-      className={`overflow-hidden rounded-lg border ${
+      className={`rounded-lg border ${
         isSelected ? 'border-primary/50' : 'border-border'
       } ${item.is_highlight ? 'bg-amber-50 dark:bg-amber-950/20' : 'bg-card'}`}
     >
@@ -926,7 +926,7 @@ function DishRow({
             className="w-full bg-transparent font-medium text-foreground placeholder:text-muted-foreground focus:outline-none"
           />
           {showSuggestions && filtered.length > 0 && (
-            <div className="absolute left-0 top-full z-10 mt-0.5 w-56 rounded border border-border bg-card shadow-lg">
+            <div className="absolute left-0 top-full z-50 mt-0.5 w-56 rounded border border-border bg-card shadow-lg">
               {filtered.slice(0, 5).map((r) => (
                 <button
                   key={r.id}
@@ -980,7 +980,7 @@ function DishRow({
                 className="w-full bg-transparent text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none"
               />
               {showIngredientSuggestions && (suggestedIngredients.length > 0 || ingSearchTerm) && (
-                <div className="absolute left-0 top-full z-10 mt-0.5 max-h-40 w-full overflow-y-auto rounded border border-border bg-card shadow-lg">
+                <div className="absolute left-0 top-full z-50 mt-0.5 max-h-40 w-full overflow-y-auto rounded border border-border bg-card shadow-lg">
                   {suggestedIngredients.map((ing, idx) => (
                     <button
                       key={ing.id}
@@ -1416,7 +1416,7 @@ function SectionCard({
               </button>
             </div>
             {showDishSuggestions && dishSuggestions.length > 0 && (
-              <div className="absolute left-0 top-full z-10 mt-0.5 w-full rounded border border-border bg-card shadow-lg">
+              <div className="absolute left-0 top-full z-50 mt-0.5 w-full rounded border border-border bg-card shadow-lg">
                 {newDishName.trim() && (
                   <button
                     type="button"
@@ -1679,7 +1679,7 @@ export default function MenuSketchEditorPage() {
                 Display
               </button>
               {showDisplayMenu && (
-                <div className="absolute right-0 top-full z-20 mt-1 w-44 rounded-lg border border-border bg-card p-2 shadow-xl">
+                <div className="absolute right-0 top-full z-50 mt-1 w-44 rounded-lg border border-border bg-card p-2 shadow-xl">
                   {(Object.keys(displayOptions) as (keyof DisplayOptions)[]).map((key) => (
                     <label key={key} className="flex cursor-pointer items-center gap-2 rounded px-2 py-1 hover:bg-muted">
                       <input
@@ -1746,10 +1746,10 @@ export default function MenuSketchEditorPage() {
       </div>
 
       {/* Body */}
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 min-h-0 overflow-hidden">
         {/* Main area */}
-        <div className="flex flex-1 flex-col overflow-hidden">
-          <div className="flex-1 overflow-y-auto p-4">
+        <div className="flex flex-1 min-h-0 flex-col overflow-hidden">
+          <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-4">
             {previewMode ? (
               <MenuSketchPreview
                 name={name}

@@ -45,9 +45,9 @@ export default function RootLayout({
         className={`${manrope.variable} ${geistMono.variable} antialiased`}
       >
         <Providers>
-          <div className="flex h-screen flex-col">
+          <div className="flex h-dvh flex-col">
             <TopNav />
-            <main className="flex-1 overflow-hidden">
+            <main className="flex-1 min-h-0 overflow-hidden">
               {children}
             </main>
           </div>
