@@ -1,11 +1,12 @@
 """Add sequence column to recipe_tastings for dish reordering
 
-Revision ID: a7b8c9d0e1f2
-Revises: z6a7b8c9d0e1
+Revision ID: b8c9d0e1f2g3
+Revises: 31b321f97368, i1j2k3l4m5n6
 Create Date: 2026-05-20
 
-- Add nullable integer `sequence` column to recipe_tastings
-- Existing rows default to NULL (insertion-order behaviour preserved)
+Merges the two existing heads and adds nullable integer `sequence` column
+to recipe_tastings. Existing rows default to NULL (insertion-order behaviour
+preserved when no sequence numbers are set).
 """
 from typing import Sequence, Union
 
@@ -14,8 +15,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'a7b8c9d0e1f2'
-down_revision: Union[str, None] = 'z6a7b8c9d0e1'
+revision: str = 'b8c9d0e1f2g3'
+down_revision: Union[str, Sequence[str], None] = ('31b321f97368', 'i1j2k3l4m5n6')
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
