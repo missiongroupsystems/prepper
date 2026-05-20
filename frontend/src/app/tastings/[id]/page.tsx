@@ -278,7 +278,7 @@ function SessionRecipesSection({
 
       {!isLoading && sessionRecipes.length > 0 && (
         <div className="space-y-2">
-          {[...sessionRecipes].sort((a, b) => (a.recipe_name || '').localeCompare(b.recipe_name || '')).map((sr) => {
+          {sessionRecipes.map((sr) => {
             return (
               <div
                 key={sr.id}
@@ -844,11 +844,14 @@ export default function TastingSessionDetailPage() {
                   username: p.username,
                 })) as User[]}
                 onChange={(participants) => handleUpdateSession({ participant_ids: participants.map((p) => p.id) })}
+                creatorId={session.creator_id || ''}
               />
             ) : (
               <div className="flex flex-wrap gap-2">
                 {(session.participants || []).map((p) => (
-                  <Badge key={p.user_id} variant="secondary">{p.username || p.email}</Badge>
+                  <Badge key={p.user_id} variant="secondary">
+                    {p.username || p.email}{p.user_id === session.creator_id && <span className="opacity-60"> (Organiser)</span>}
+                  </Badge>
                 ))}
               </div>
             )}

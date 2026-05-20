@@ -6,6 +6,7 @@ All notable changes to Prepper are documented here.
 
 ## Index
 
+- **[0.0.46](#0046---2026-05-20)** — Tasting Session UX: Creator Auto-Enrolled as Participant, Insertion-Order Dishes & Organiser Badge
 - **[0.0.45](#0045---2026-04-27)** — Canvas UX Polish: Simplified Ingredient Cost Display & Narrowed Table Item Column
 - **[0.0.44](#0044---2026-04-24)** — Ingredient Line Cost in Canvas: Real-Time `qty × unit_price = cost` Display Across All Three Canvas View Modes
 - **[0.0.43](#0043---2026-04-22)** — Decimal Input Fix: Codebase-Wide `type="number"` → `type="text" inputMode="decimal"` with Trailing-Zero Normalisation on Blur
@@ -51,6 +52,25 @@ All notable changes to Prepper are documented here.
 - **[0.0.3](#003---2024-11-27)** — Database Migration: Alembic Initial Tables to Supabase + PostgreSQL JSON Compatibility Fix
 - **[0.0.2](#002---2024-11-27)** — Frontend Implementation: Next.js 15 Recipe Canvas with Drag-and-Drop, Autosave & TanStack Query
 - **[0.0.1](#001---2024-11-27)** — Backend Foundation: FastAPI + SQLModel with 17 API Endpoints, Domain Services & Unit Conversion
+---
+
+## [0.0.46] - 2026-05-20
+
+### Changed
+
+#### Creator Auto-Enrolled as Participant on Session Creation
+
+- **Backend** (`tasting_session_service.py` → `create()`): when a new tasting session is created the `creator_id` is now automatically prepended to the participants list before `_add_participants` is called. If the creator was already included in `participant_ids` from the request body, deduplication in `_add_participants` prevents a duplicate row. Creators will therefore always appear in their own participant list with full access rights.
+
+#### Dishes Ordered by Insertion, Not Alphabetically
+
+- **Frontend** (`tastings/[id]/page.tsx`): removed the client-side `.sort((a, b) => localeCompare)` that was reordering dishes alphabetically. Dishes now render in the order returned by the backend, which orders by `RecipeTasting.id` (insertion order). No model or API changes required.
+
+#### Creator Cannot Be Removed from Participants; Organiser Badge
+
+- **`ParticipantPicker.tsx`**: added `creatorId?: string` prop. The creator's participant chip no longer renders an X button, preventing accidental self-removal. The creator's chip also displays an `(Organiser)` suffix at reduced opacity.
+- **`tastings/[id]/page.tsx`**: passes `creatorId={session.creator_id}` to `ParticipantPicker`. The read-only participant badge view (shown to non-creator participants and admins) also appends `(Organiser)` to the creator's name.
+
 ---
 
 ## [0.0.45] - 2026-04-27
