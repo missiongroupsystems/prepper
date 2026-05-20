@@ -6,6 +6,7 @@ All notable changes to Prepper are documented here.
 
 ## Index
 
+- **[0.0.47](#0047---2026-05-20)** — Tasting Session Dish Reordering: Drag-and-Drop Sequence Control for Session Creators
 - **[0.0.46](#0046---2026-05-20)** — Tasting Session UX: Creator Auto-Enrolled as Participant, Insertion-Order Dishes & Organiser Badge
 - **[0.0.45](#0045---2026-04-27)** — Canvas UX Polish: Simplified Ingredient Cost Display & Narrowed Table Item Column
 - **[0.0.44](#0044---2026-04-24)** — Ingredient Line Cost in Canvas: Real-Time `qty × unit_price = cost` Display Across All Three Canvas View Modes
@@ -52,6 +53,22 @@ All notable changes to Prepper are documented here.
 - **[0.0.3](#003---2024-11-27)** — Database Migration: Alembic Initial Tables to Supabase + PostgreSQL JSON Compatibility Fix
 - **[0.0.2](#002---2024-11-27)** — Frontend Implementation: Next.js 15 Recipe Canvas with Drag-and-Drop, Autosave & TanStack Query
 - **[0.0.1](#001---2024-11-27)** — Backend Foundation: FastAPI + SQLModel with 17 API Endpoints, Domain Services & Unit Conversion
+---
+
+## [0.0.47] - 2026-05-20
+
+### Added
+
+#### Drag-and-Drop Dish Reordering in Tasting Sessions
+
+- **Backend** (`recipe_tasting.py`): added `sequence: Optional[int]` column to `RecipeTasting`. Added `RecipeTastingReorderItem` (id + sequence) and `RecipeTastingReorderRequest` (list of items) schemas. `RecipeTastingRead` now exposes the `sequence` field.
+- **Backend** (`recipe_tasting_service.py`): added `reorder_session_dishes(session_id, items)` method that validates all provided IDs belong to the session then bulk-updates their `sequence` values in a single transaction. Returns `False` if any ID is foreign to the session. Default dish listing now orders by `sequence ASC NULLS LAST, id` so newly-ordered dishes render predictably.
+- **Backend** (`recipe_tastings.py`): new `PATCH /{session_id}/recipes/reorder` endpoint (204 No Content). Creator-only; returns 400 if any dish ID does not belong to the session.
+- **Frontend** (`types/index.ts`): added `ReorderSessionDishItem` and `ReorderSessionDishesRequest` interfaces; added `sequence?: number | null` to `RecipeTasting`.
+- **Frontend** (`api.ts`): added `reorderSessionDishes(sessionId, data)` typed fetch call.
+- **Frontend** (`useTastings.ts`): added `useReorderSessionDishes` mutation hook; on success invalidates `['tasting-session', sessionId, 'recipes']`.
+- **Frontend** (`tastings/[id]/page.tsx`): extracted `SortableDishItem` component with a `GripVertical` drag handle (creator-only, `touch-none`). `SessionRecipesSection` now wraps the dish list in `DndContext` + `SortableContext` from `@dnd-kit/sortable`. Drag end debounces the `onReorderDishes` call by 2 s so the server write is deferred while the UI stays responsive. Local optimistic state (`localDishes`) syncs back from the server whenever `sessionRecipes` changes (add/remove).
+
 ---
 
 ## [0.0.46] - 2026-05-20
