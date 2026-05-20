@@ -271,12 +271,13 @@ export async function POST(request: Request) {
     const twilioSends: Promise<unknown>[] = [];
 
     const twilioAccountSid = process.env.TWILIO_ACCOUNT_SID;
+    const twilioApiKey = process.env.TWILIO_API_KEY;
     const twilioAuthToken = process.env.TWILIO_AUTH_TOKEN;
     const twilioFromNumber = process.env.TWILIO_FROM_NUMBER;
 
-    if (twilioAccountSid && twilioAuthToken && twilioFromNumber && smsRecipients.length > 0) {
+    if (twilioAccountSid && twilioApiKey && twilioAuthToken && twilioFromNumber && smsRecipients.length > 0) {
       try {
-        const twilioClient = twilio(twilioAccountSid, twilioAuthToken);
+        const twilioClient = twilio(twilioApiKey, twilioAuthToken, { accountSid: twilioAccountSid });
         smsRecipients.forEach((recipient) => {
           if (recipient.phone_number) {
             twilioSends.push(

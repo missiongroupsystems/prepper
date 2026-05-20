@@ -115,7 +115,7 @@ export default function OutletPage({ params }: OutletPageProps) {
   const [showAddModal, setShowAddModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [editingRecipe, setEditingRecipe] = useState<number | null>(null);
-  const [editData, setEditData] = useState<Record<number, { price_override: number | null }>>({});
+  const [editData, setEditData] = useState<Record<number, { price_override: string }>>({});
   const [formData, setFormData] = useState({
     recipe_id: '',
     price_override: '',
@@ -199,12 +199,13 @@ export default function OutletPage({ params }: OutletPageProps) {
   const handleUpdateRecipe = (recipeId: number) => {
     const dataToSave = editData[recipeId];
     if (dataToSave !== undefined) {
+      const v = parseFloat(dataToSave.price_override);
       updateRecipeOutletMutation.mutate(
         {
           recipeId,
           outletId,
           data: {
-            price_override: dataToSave.price_override,
+            price_override: isNaN(v) ? null : v,
           },
         },
         {
@@ -454,14 +455,17 @@ export default function OutletPage({ params }: OutletPageProps) {
                         Price Override (Optional)
                       </label>
                       <Input
-                        type="number"
-                        step="0.01"
-                        min="0"
+                        type="text"
+                        inputMode="decimal"
                         placeholder="Leave blank to use default"
                         value={formData.price_override}
                         onChange={(e) =>
                           setFormData((prev) => ({ ...prev, price_override: e.target.value }))
                         }
+                        onBlur={() => {
+                          const n = parseFloat(formData.price_override);
+                          if (!isNaN(n)) setFormData((prev) => ({ ...prev, price_override: String(n) }));
+                        }}
                       />
                     </div>
 
@@ -522,18 +526,22 @@ export default function OutletPage({ params }: OutletPageProps) {
                               <td className="py-3 px-2 text-right text-zinc-900 dark:text-zinc-100">
                                 {editingRecipe === recipeOutlet.recipe_id ? (
                                   <input
-                                    type="number"
-                                    step="0.01"
-                                    min="0"
-                                    value={editData[recipeOutlet.recipe_id]?.price_override ?? recipeOutlet.price_override ?? ''}
+                                    type="text"
+                                    inputMode="decimal"
+                                    value={editData[recipeOutlet.recipe_id]?.price_override ?? recipeOutlet.price_override?.toString() ?? ''}
                                     onChange={(e) =>
                                       setEditData({
                                         ...editData,
                                         [recipeOutlet.recipe_id]: {
-                                          price_override: e.target.value ? parseFloat(e.target.value) : null,
+                                          price_override: e.target.value,
                                         },
                                       })
                                     }
+                                    onBlur={() => {
+                                      const raw = editData[recipeOutlet.recipe_id]?.price_override ?? '';
+                                      const n = parseFloat(raw);
+                                      if (!isNaN(n)) setEditData({ ...editData, [recipeOutlet.recipe_id]: { price_override: String(n) } });
+                                    }}
                                     className="w-full px-2 py-1 text-sm border border-zinc-300 dark:border-zinc-600 rounded bg-white dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-purple-500 text-right"
                                   />
                                 ) : (
@@ -582,7 +590,7 @@ export default function OutletPage({ params }: OutletPageProps) {
                                             setEditingRecipe(recipeOutlet.recipe_id);
                                             setEditData({
                                               [recipeOutlet.recipe_id]: {
-                                                price_override: recipeOutlet.price_override,
+                                                price_override: recipeOutlet.price_override?.toString() ?? '',
                                               },
                                             });
                                           }}

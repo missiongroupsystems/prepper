@@ -280,13 +280,13 @@ export function NewIngredientForm({ onClose }: { onClose: () => void }) {
           className="flex-1"
         />
         <Input
-          type="number"
+          type="text"
+          inputMode="decimal"
           value={cost}
           onChange={(e) => setCost(e.target.value)}
+          onBlur={() => { const n = parseFloat(cost); if (!isNaN(n)) setCost(String(n)); }}
           placeholder="Cost"
           className="w-24"
-          min={0}
-          step={0.01}
         />
       </div>
       <div className="flex gap-2">

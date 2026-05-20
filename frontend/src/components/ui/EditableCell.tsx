@@ -36,8 +36,13 @@ export function EditableCell({
 
   const handleBlur = () => {
     setIsEditing(false);
-    if (editValue !== value) {
-      onSave(editValue);
+    let finalValue = editValue;
+    if (type === 'number') {
+      const n = parseFloat(editValue);
+      if (!isNaN(n)) finalValue = String(n);
+    }
+    if (finalValue !== value) {
+      onSave(finalValue);
     }
   };
 
@@ -54,12 +59,12 @@ export function EditableCell({
     return (
       <input
         ref={inputRef}
-        type={type}
+        type={type === 'number' ? 'text' : type}
+        inputMode={type === 'number' ? 'decimal' : undefined}
         value={editValue}
         onChange={(e) => setEditValue(e.target.value)}
         onBlur={handleBlur}
         onKeyDown={handleKeyDown}
-        step={type === 'number' ? '0.01' : undefined}
         placeholder={placeholder}
         className={`w-full px-1 py-0.5 text-sm border border-purple-400 rounded focus:outline-none focus:ring-1 focus:ring-purple-500 bg-white dark:bg-zinc-800 ${className}`}
       />

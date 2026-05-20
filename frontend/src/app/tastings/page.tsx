@@ -10,8 +10,13 @@ import { Pagination } from '@/components/ui/Pagination';
 import { useAppState } from '@/lib/store';
 import type { TastingSession } from '@/types';
 
+function toUtcDate(dateString: string): Date {
+  const hasOffset = dateString.endsWith('Z') || /[+-]\d{2}:\d{2}$/.test(dateString);
+  return new Date(hasOffset ? dateString : dateString + 'Z');
+}
+
 function formatDate(dateString: string): string {
-  return new Date(dateString).toLocaleDateString('en-GB', {
+  return toUtcDate(dateString).toLocaleDateString('en-GB', {
     day: 'numeric',
     month: 'short',
     year: 'numeric',
@@ -19,7 +24,7 @@ function formatDate(dateString: string): string {
 }
 
 function isSessionExpired(dateString: string): boolean {
-  const sessionDate = new Date(dateString);
+  const sessionDate = toUtcDate(dateString);
   const today = new Date();
   // Set both to start of day for comparison
   sessionDate.setHours(0, 0, 0, 0);
@@ -124,9 +129,9 @@ export default function TastingsPage() {
     });
 
     // Sort ongoing by date ascending (nearest first)
-    ongoing.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    ongoing.sort((a, b) => toUtcDate(a.date).getTime() - toUtcDate(b.date).getTime());
     // Sort expired by date descending (most recent first)
-    expired.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    expired.sort((a, b) => toUtcDate(b.date).getTime() - toUtcDate(a.date).getTime());
 
     return { ongoingSessions: ongoing, expiredSessions: expired };
   }, [sessions]);

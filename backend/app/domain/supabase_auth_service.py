@@ -9,8 +9,12 @@ Supports local JWT verification to eliminate network round-trips on every auth c
 
 from functools import lru_cache
 
+import jwt as _pyjwt
+from jwt.exceptions import InvalidTokenError as _JwtInvalidTokenError
+
 from ebb_flow_tech_auth import (
     AuthError as _EbbAuthError,
+    JwksUnavailableError as _EbbJwksUnavailableError,
     TokenExpiredError as _EbbTokenExpiredError,
     TokenInvalidError as _EbbTokenInvalidError,
 )
@@ -196,14 +200,53 @@ class SupabaseAuthService:
         Returns:
             User ID if token is valid, None if invalid or expired
         """
+        import logging
+        logger = logging.getLogger(__name__)
+
         settings = get_settings()
+        logger.debug("verify_token: supabase_url=%s token_prefix=%s", settings.supabase_url, token[:20] if token else None)
         try:
             identity = _ebb_verify_token(
                 token,
                 supabase_url=settings.supabase_url,
             )
+            logger.debug("verify_token: success user_id=%s", identity.user_id)
             return identity.user_id
-        except (_EbbTokenExpiredError, _EbbTokenInvalidError, _EbbAuthError):
+        except (_EbbTokenExpiredError, _EbbTokenInvalidError):
+            return None
+        except _EbbJwksUnavailableError:
+            # Supabase project uses HS256 — JWKS has no public keys.
+            # Fall back to symmetric verification with the JWT secret.
+            return self._verify_hs256(token, settings.supabase_url, logger)
+        except _EbbAuthError as e:
+            logger.warning("verify_token: rejected token type=%s msg=%s", type(e).__name__, e)
+            return None
+        except Exception as e:
+            logger.error("verify_token: unexpected error type=%s msg=%s", type(e).__name__, e, exc_info=True)
+            return None
+
+    def _verify_hs256(self, token: str, supabase_url: str | None, logger) -> str | None:
+        """Verify a Supabase HS256 JWT using the project's JWT secret."""
+        import logging
+        if not self._jwt_secret or not supabase_url:
+            logging.getLogger(__name__).error(
+                "verify_token: JWKS unavailable and SUPABASE_JWT_SECRET not configured"
+            )
+            return None
+        issuer = f"{supabase_url.rstrip('/')}/auth/v1"
+        try:
+            claims = _pyjwt.decode(
+                token,
+                key=self._jwt_secret,
+                algorithms=["HS256"],
+                audience="authenticated",
+                issuer=issuer,
+                options={"require": ["exp", "iat", "sub"]},
+            )
+            logger.debug("verify_token HS256 fallback: success user_id=%s", claims["sub"])
+            return claims["sub"]
+        except _JwtInvalidTokenError as e:
+            logger.warning("verify_token HS256 fallback: rejected token msg=%s", e)
             return None
 
 

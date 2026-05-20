@@ -62,6 +62,7 @@ export function OverviewTab() {
   const [isTagDropdownOpen, setIsTagDropdownOpen] = useState(false);
   const [tagSearchFilter, setTagSearchFilter] = useState('');
   const tagDropdownRef = useRef<HTMLDivElement>(null);
+  const summaryForRecipeIdRef = useRef<number | null>(null);
 
   const { data: recipe, isLoading: recipeLoading, error: recipeError } = useRecipe(selectedRecipeId);
   const { data: ingredients, isLoading: ingredientsLoading } = useRecipeIngredients(selectedRecipeId);
@@ -85,9 +86,15 @@ export function OverviewTab() {
 
   const isLoading = recipeLoading || ingredientsLoading || costingLoading || subRecipesLoading || tastingLoading;
 
-  // Save feedback summary to recipe when it's generated
+  // Save feedback summary to recipe when it's generated.
+  // Guard against saving to the wrong recipe if the user navigated away while the AI call was in-flight.
   useEffect(() => {
-    if (feedbackSummary?.summary && feedbackSummary.success && selectedRecipeId) {
+    if (
+      feedbackSummary?.summary &&
+      feedbackSummary.success &&
+      selectedRecipeId &&
+      summaryForRecipeIdRef.current === selectedRecipeId
+    ) {
       updateRecipe(
         { id: selectedRecipeId, data: { summary_feedback: feedbackSummary.summary } },
         {
@@ -101,11 +108,16 @@ export function OverviewTab() {
 
   const canEditRecipe = userId !== null && recipe?.owner_id === userId;
 
-  // Initialize description value when recipe loads
+  // Reset field values and UI interaction state on recipe change
   useEffect(() => {
     if (recipe) {
       setDescriptionValue(recipe.description || '');
       setNameValue(recipe.name || '');
+      setIsEditingName(false);
+      setIsEditingDescription(false);
+      setIsTagDropdownOpen(false);
+      setIsFeedbacksOpen(false);
+      setTagSearchFilter('');
     }
   }, [recipe?.id]);
 
@@ -716,7 +728,7 @@ export function OverviewTab() {
                         <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Feedback Summary</p>
                         {(canEditRecipe || userType === 'admin') && (
                           <button
-                            onClick={() => summarizeFeedback(selectedRecipeId!)}
+                            onClick={() => { summaryForRecipeIdRef.current = selectedRecipeId; summarizeFeedback(selectedRecipeId!); }}
                             disabled={isSummarizingFeedback}
                             className="flex items-center gap-2 px-2 py-1 rounded bg-[hsl(var(--primary))] hover:opacity-90 disabled:opacity-50 text-black text-xs font-medium transition-colors disabled:cursor-not-allowed"
                           >

@@ -6,7 +6,13 @@ All notable changes to Prepper are documented here.
 
 ## Index
 
-- **[0.0.40](#0040---2026-04-21)** — Google Sign-In Bridge: OAuth Auto-Provisioning, Supabase Session → `prepper_auth` Store Bridge & Hatchling Build Fix
+- **[0.0.46](#0046---2026-05-20)** — Tasting Session UX: Creator Auto-Enrolled as Participant, Insertion-Order Dishes & Organiser Badge
+- **[0.0.45](#0045---2026-04-27)** — Canvas UX Polish: Simplified Ingredient Cost Display & Narrowed Table Item Column
+- **[0.0.44](#0044---2026-04-24)** — Ingredient Line Cost in Canvas: Real-Time `qty × unit_price = cost` Display Across All Three Canvas View Modes
+- **[0.0.43](#0043---2026-04-22)** — Decimal Input Fix: Codebase-Wide `type="number"` → `type="text" inputMode="decimal"` with Trailing-Zero Normalisation on Blur
+- **[0.0.42](#0042---2026-04-22)** — Costing Engine Bug Fixes: Sub-Dish Unit Cost Display, Supplier/Ingredient Base-Unit Mismatch, Null Guard in Unit Conversion & Recipe List Per-Portion Cost Display
+- **[0.0.41](#0041---2026-04-22)** — Sub-Dish Search & Race Condition Fixes: Parent Recipes Surface in Search When Sub-Dish Name Matches, Canvas & Overview Race Condition Guards
+- **[0.0.40](#0040---2026-04-21)** — Costing Cache Invalidation, Canvas Sub-Recipe Autosave, Cost Display Fixes & Theme Token Cleanup
 - **[0.0.39](#0039---2026-04-20)** — Sub-Recipe Portion Costing: Per-Portion Cost Hints, Expandable Ingredient Breakdown, Canvas Batch Cost Fix & Scaled Ingredient Display
 - **[0.0.38](#0038---2026-04-17)** — Buy Catalogue Import: Single-Sheet FMH XLSX Import, Template Download & Efficiency Improvements
 - **[0.0.37](#0037---2026-04-17)** — Ingredient Library UX: Supplier Names on Draggable Cards, Token-Based AND Search, Paginated Category Filter & Menu Archives Toggle
@@ -48,31 +54,173 @@ All notable changes to Prepper are documented here.
 - **[0.0.1](#001---2024-11-27)** — Backend Foundation: FastAPI + SQLModel with 17 API Endpoints, Domain Services & Unit Conversion
 ---
 
-## [0.0.40] - 2026-04-21
+## [0.0.46] - 2026-05-20
+
+### Changed
+
+#### Creator Auto-Enrolled as Participant on Session Creation
+
+- **Backend** (`tasting_session_service.py` → `create()`): when a new tasting session is created the `creator_id` is now automatically prepended to the participants list before `_add_participants` is called. If the creator was already included in `participant_ids` from the request body, deduplication in `_add_participants` prevents a duplicate row. Creators will therefore always appear in their own participant list with full access rights.
+
+#### Dishes Ordered by Insertion, Not Alphabetically
+
+- **Frontend** (`tastings/[id]/page.tsx`): removed the client-side `.sort((a, b) => localeCompare)` that was reordering dishes alphabetically. Dishes now render in the order returned by the backend, which orders by `RecipeTasting.id` (insertion order). No model or API changes required.
+
+#### Creator Cannot Be Removed from Participants; Organiser Badge
+
+- **`ParticipantPicker.tsx`**: added `creatorId?: string` prop. The creator's participant chip no longer renders an X button, preventing accidental self-removal. The creator's chip also displays an `(Organiser)` suffix at reduced opacity.
+- **`tastings/[id]/page.tsx`**: passes `creatorId={session.creator_id}` to `ParticipantPicker`. The read-only participant badge view (shown to non-creator participants and admins) also appends `(Organiser)` to the creator's name.
+
+---
+
+## [0.0.45] - 2026-04-27
+
+### Changed
+
+#### Simplified Ingredient Cost Display in Canvas
+- **What**: Removed the full equation preamble (`qty × $price/unit =`) from every cost display in the canvas. Each location now shows the formatted line cost (`$X.XX`) only.
+- **Why**: The breakdown notation was redundant — chefs already know the quantity and unit from the row itself. Showing just the resulting cost is faster to scan.
+- **Grid view** (`StagedIngredientCard`): cost pill shows `$X.XX` instead of `2 kg × $3.50/kg = $7.00`.
+- **List view** (`StagedIngredientListItem`): meta row shows `$X.XX` instead of the full formula.
+- **Table view** (`CanvasTable` cost column): shows `$X.XX` instead of `qty × $price/unit = $total`.
+- **Expanded recipe card — ingredient list**: shows line cost instead of `$unit_price = $line_cost`.
+- **Expanded recipe card — scaled/green breakdown**: shows `{scaledQty} {unit} $X.XX` instead of `{qty} @ $price/unit = $cost`.
+- **Ingredient edit row** (`RecipeIngredientRow`): dropped `= ` prefix from the inline line cost beside the unit price field; added `tabular-nums` for alignment.
+
+#### Table View Item Column Width
+- **What**: Added `w-48` to the Item column header in `CanvasTable`.
+- **Why**: Without a fixed width the Item column expanded to fill all remaining horizontal space, pushing Qty / Unit / Wastage controls to the far left.
+
+---
+
+## [0.0.44] - 2026-04-24
 
 ### Added
 
-#### Google Sign-In Bridge
-- New `POST /api/v1/auth/oauth-complete` endpoint (`backend/app/api/auth.py`): verifies a Supabase access token and returns the local `users` row, auto-provisioning one on first sign-in
-- Provisioning defaults for new OAuth users: `user_type=normal`, `is_manager=false`, `outlet_id=null`; `username` seeded from `user_metadata.full_name` → `user_metadata.name` → email local-part
-- New `SupabaseAuthService.get_user_info(access_token)` method (`backend/app/domain/supabase_auth_service.py`) — reads `email` + `user_metadata` (Google full_name / name / avatar_url) via the Supabase access token
-- Email-collision guard: a Supabase user whose email already maps to a different local row → `409 Conflict`
-- Client-side bridge page at `frontend/src/app/auth/callback/page.tsx` replaces the previous server route — runs `supabase.auth.exchangeCodeForSession(code)`, calls `/auth/oauth-complete`, then `useAppState().login(...)` so `prepper_auth` localStorage is populated and `AuthGuard` sees the session. On failure, signs the Supabase session out so users aren't left in a half-auth state
-- `AuthGuard` whitelist: `/auth/callback` added to `VALID_ROUTE_PATTERNS` and `PASSTHROUGH_ROUTE_PATTERNS` so the guard doesn't blank the bridge page before the code exchange runs
-- `completeOAuth(accessToken)` helper in `frontend/src/lib/api.ts`
+#### Ingredient Line Cost Display in Canvas (All 3 View Modes)
+- **What**: Each ingredient row in the canvas now shows the full cost calculation inline: `{qty} {unit} × ${unit_price}/{unit} = {cost}`.
+- **Why**: Chefs need to fact-check total dish cost per ingredient as they build — seeing the raw unit price alone doesn't make the actual spend visible when quantities are small (e.g. 0.016 pcs × $7.50/pcs = $0.12).
+- **Grid view** (`StagedIngredientCard`): calculation displayed in the cost row at the bottom of each ingredient card; cost is bolded for scannability.
+- **List view** (`StagedIngredientListItem`): calculation displayed inline in the ingredient metadata row, bolded cost.
+- **Table view** (`CanvasTable`): new "Cost" column added; each ingredient row shows the full formula right-aligned.
+- **Canvas editing panel** (`RecipeIngredientRow`): line cost shown beside the unit price field (`= $0.12`) in real-time, computed from local state so it updates instantly as quantity or price is typed — no wait for debounce/save.
+
+---
+
+## [0.0.43] - 2026-04-22
 
 ### Fixed
 
-#### Google Sign-In Immediate Logout
-- After a successful Google OAuth flow users were kicked back to `/login`: the server-side callback only set the Supabase session cookie, never populated the app's `prepper_auth` store. `AuthGuard` reads `userId` from `useAppState` (backed by `prepper_auth`), so the guard saw an unauthenticated user and redirected. The new client-side bridge page now populates both
+#### Decimal Typing in All Numeric Inputs (Codebase-Wide)
+- **Root cause**: HTML `type="number"` inputs return `""` for intermediate float states (e.g. typing `"0."` mid-entry), causing React controlled inputs to either clear the field or snap to a fallback value. This made it impossible to type decimals like `0.005` or `1.25` without the field resetting.
+- **Fix**: replaced `type="number"` with `type="text" inputMode="decimal"` across every numeric input in the frontend. Removed `min`, `step`, and `max` HTML attributes from the underlying `<input>` elements (validation happens on save, not on the DOM).
+- **Trailing-zero normalisation**: all inputs now strip trailing zeros on blur (e.g. `"1.50"` → `"1.5"`, `"2.00"` → `"2"`), matching the existing behaviour of the `NumericInput` component used in the CanvasTab metadata panel.
 
-#### Docker Image Build — Hatchling Direct References
-- `backend/pyproject.toml` gained `[tool.hatch.metadata] allow-direct-references = true`. Hatchling refuses to build metadata for projects declaring direct URL deps (`ebb-flow-tech-auth @ git+https://...`) unless explicitly opted in — this was failing the Docker image build at stage-0 5/8 with `Dependency #11 of field project.dependencies cannot be a direct reference`
+**Files changed:**
+- `components/ui/EditableCell.tsx` — maps `type="number"` prop to `type="text" inputMode="decimal"` on the underlying input; normalises value before calling `onSave` in `handleBlur`
+- `components/ui/NumericInput.tsx` — already correct; used as the reference implementation
+- `components/layout/tabs/CanvasTab.tsx` — replaced `yield_quantity` and `selling_price` `<Input type="number">` with `<NumericInput>` (Group C)
+- `components/layout/tabs/OutletsTab.tsx` — attr swap + blur normalisation on `editingPrice`
+- `components/layout/tabs/AddOutletModal.tsx` — attr swap + blur normalisation on `priceOverride`
+- `components/layout/RightPanel.tsx` — attr swap + blur normalisation on `cost`
+- `components/recipe/InstructionStepCard.tsx` — attr swap + blur normalisation on `localTemp`
+- `components/ingredients/AddIngredientModal.tsx` — attr swap + blur normalisation on `cost`, `pack_size`, `price_per_pack`
+- `components/menu/MenuBuilder.tsx` — switched both `display_price` inputs from controlled `value/onChange` to uncontrolled `defaultValue/onBlur`; normalises display value in the blur handler (Group D)
+- `app/suppliers/[id]/page.tsx` — modal inputs attr swap + blur normalisation; inline table `editData` changed from numeric to string fields (local `IngredientRowEdit` interface), parses `parseFloat` only on save
+- `app/outlets/[id]/page.tsx` — modal input attr swap + blur normalisation; inline table `editData` changed from `number | null` to `string`, parses on save
+- `app/ingredients/[id]/page.tsx` — modal inputs attr swap + blur normalisation; inline table `editData` string fields (local `SupplierRowEdit` interface), parses on save
+- `app/menu-sketch/[id]/page.tsx` — 4 uncontrolled price inputs (DishCard + DishRow sale/cost) attr swap + blur normalisation via `e.target.value = String(val)`
 
-### Tests
+**Verification:** `npx tsc --noEmit` passes with zero errors.
 
-- Extended `backend/tests/test_auth.py` mock to return `user_metadata` on `get_user` and to bypass `ebb_flow_tech_auth.verify_token` with a token→user_id table
-- New cases: existing-user passthrough (`test_oauth_complete_existing_user`), Google `full_name` → username (`test_oauth_complete_provisions_new_user_with_google_metadata`), email-local-part fallback (`test_oauth_complete_falls_back_to_email_local_part`), email conflict → 409 (`test_oauth_complete_email_conflict_returns_409`), missing/invalid token → 401
+---
+
+## [0.0.42] - 2026-04-22
+
+### Fixed
+
+#### Costs Tab — Sub-Dish Unit Cost Column Shows Wrong Value
+- The "Cost per Unit" column in the Sub-Dishes table previously always showed `sub_recipe_portion_cost` regardless of which unit the sub-dish was linked with. For a sub-dish measured in `batch`, the displayed cost was the child recipe's cost-per-portion (wrong); for `g`/`ml` it was similarly wrong, even though the `line_cost` calculation in the backend was already correct
+- Fixed: unit cost now resolves per unit type — `portion` → `sub_recipe_portion_cost`, `batch` → `sub_recipe_batch_cost`, `g`/`ml` → derived from `line_cost / quantity` (consistent with the backend's actual calculation). The unit label updates accordingly (`/portion`, `/batch`, `/g`, `/ml`)
+- This supersedes the 0.0.40 entry that incorrectly described "always uses `sub_recipe_portion_cost`" as correct behaviour
+
+#### Costing Engine — Supplier Price Paired with Wrong Base Unit (up to 1000× error)
+- When a supplier ingredient was linked and `RecipeIngredient.base_unit` was already set to a unit that differed from `SupplierIngredient.pack_unit` (e.g. `ri.base_unit = "g"` but `si.pack_unit = "kg"`), the supplier's price-per-pack-unit was used but the quantity was converted to `ri.base_unit` — off by a factor of 1 000 for g/kg and ml/l mismatches
+- Fixed in `costing_service.py`: `base_unit` is now always set to `si.pack_unit` when supplier pricing is applied, not only when `base_unit` is `None`
+- Applies to both mass units (g/kg, oz/lb) and volume units (ml/l, tsp/tbsp/cup)
+
+#### Costing Engine — Ingredient Fallback Price Paired with Wrong Base Unit
+- When falling back to `ingredient.cost_per_base_unit` (no supplier, no manual price), `base_unit` was only set to `ingredient.base_unit` if it was `None`. If `ri.base_unit` was set to a different unit (e.g. `"l"` while `ingredient.base_unit = "ml"`), the price per `ingredient.base_unit` was combined with a quantity converted to `ri.base_unit`, producing a 1 000× error
+- Fixed: `base_unit` is now unconditionally set to `ingredient.base_unit` for this fallback path, since `ingredient.cost_per_base_unit` is definitionally per `ingredient.base_unit`
+
+#### Costing Engine — `convert_to_base_unit` Crashes on `None` Base Unit
+- `convert_to_base_unit` called `.lower()` on `to_base_unit` with no `None` guard, causing an `AttributeError` if `base_unit` was unresolvable (e.g. `ri.unit_price` set without `ri.base_unit`)
+- Fixed: function now returns `None` immediately when `to_base_unit is None`, allowing the caller's existing `None`-check to route the ingredient into `missing_costs`
+
+#### Costing Engine — Dead Code in `_calculate_sub_recipe_line_cost`
+- An intermediate `batch_fraction` computation (`quantity / (yield_quantity²)`) was immediately overwritten on the next line. Removed
+
+#### Recipe List — Cost Per Portion Shows Batch Cost Instead of Per-Portion Cost
+- On the `/recipes` list page (both grid and list views) and the `/rnd` page, `recipe.cost_price` (the total batch cost stored by the canvas) was displayed with a `/portion` label without being divided by `yield_quantity`. The `/recipes/[id]` detail page was correct because it fetches `CostingResult.cost_per_portion` directly from the costing endpoint
+- Fixed in `RecipeCard.tsx`, `RecipeListRow.tsx`, and `rnd/page.tsx`: cost is now displayed as `cost_price / yield_quantity` when `yield_quantity > 0`, matching the per-portion value shown on the detail page
+
+---
+
+## [0.0.41] - 2026-04-22
+
+### Added
+
+#### Recipe Search — Sub-Dish Name Matching
+- Searching the recipe list now also returns parent recipes whose sub-recipes match the search term. For example, searching "Hollandaise" surfaces both the "Hollandaise Sauce" recipe and any parent dish (e.g. "Eggs Benedict") that uses it as a sub-recipe
+- Backend: `recipe_service.list_recipes()` extended with a sub-query that matches `RecipeRecipe.parent_recipe_id` where the child recipe name matches, ORed with the existing name + category matches
+- Backend: new `GET POST /recipes/sub-recipes/batch` endpoint (`SubRecipeService.get_has_sub_recipes_batch()`) returns a `dict[recipe_id, bool]` in a single query — no N+1
+- Frontend: `getSubRecipesBatch` API call + `useSubRecipesBatch` TanStack Query hook; `RecipeManagementTab` uses the batch result to set a `matchedViaSubDish` flag per recipe
+- `RecipeCard` and `RecipeListRow` show a "Via Sub-dish" badge when the recipe was surfaced via a sub-dish match rather than a direct name match
+- Regression test: `test_list_recipes_search_by_sub_dish_name` verifies the parent recipe is returned and unrelated recipes are excluded
+
+### Fixed
+
+#### Canvas — Stale Recipe Load Race Condition
+- `CanvasTab` now guards on `selectedRecipeData` being defined before loading the canvas. Previously, if `selectedRecipeData` was still `undefined` when the load effect fired, the canvas could initialise with stale data from the previously selected recipe
+- Removed `recipes` from the canvas load effect dependency array; including the full recipe list caused spurious re-runs whenever any recipe in the list was refreshed, potentially clobbering in-progress canvas edits
+
+#### Overview Tab — AI Summary Saved to Wrong Recipe
+- Added `summaryForRecipeIdRef` to track which recipe an AI feedback summary was requested for. The `useEffect` that persists the summary now only runs if `summaryForRecipeIdRef.current === selectedRecipeId`, preventing the summary from being written to a different recipe if the user navigated away while the (potentially slow) AI call was in-flight
+
+#### Overview Tab — Stale UI State on Recipe Change
+- Recipe change now resets all transient interaction state: `isEditingName`, `isEditingDescription`, `isTagDropdownOpen`, `isFeedbacksOpen`, and `tagSearchFilter`. Previously, open dropdowns or active name-edit mode would persist after switching recipes, causing confusing UI behaviour
+
+---
+
+## [0.0.40] - 2026-04-21
+
+### Fixed
+
+#### Canvas Builder — Sub-Recipe Cost Calculation
+- `calculateCanvasCost()` in `CanvasTab` no longer double-divides by `yield_quantity`. `recipe.cost_price` is already stored as cost-per-portion by the backend's `persist_cost_snapshot`; the previous `/yieldQty` division caused sub-recipe costs to be understated by a factor of the yield
+
+#### Canvas Builder — Sub-Recipe Quantity Autosave
+- Changing the quantity of an existing staged sub-recipe card now persists to the backend via a debounced (500 ms) `updateSubRecipe` mutation. Previously, quantity edits were canvas-local only and lost on navigation. Implemented with a per-item timer ref (`subRecipeUpdateTimers`) to avoid flooding the API on rapid slider/input changes
+
+#### Costs Tab — Sub-Recipe Unit Cost Display
+- Unit cost column now always uses `sub_recipe_portion_cost` regardless of the link's `unit` field, matching the per-portion semantics used everywhere else in costing
+- Unit label next to the cost now shows the child recipe's yield unit (e.g. `portion`, `kg`) instead of the raw `item.unit` string from the costing payload
+- "Sub-Recipe Costs" section heading renamed to "Sub-Dishes Costs" for consistency with the rest of the UI
+
+#### Backend — Costing Cache Invalidation on Sub-Recipe Mutations
+- `add_sub_recipe`, `update_sub_recipe`, and `remove_sub_recipe` endpoints now call `evict_costing_cache(recipe_id)` after a successful mutation, ensuring the next `GET /{recipe_id}/costing` recomputes fresh instead of returning a stale cached value
+- Added `evict_costing_cache()` helper on the costing router (used by the sub-recipes router) to keep cache management co-located with the cache definition
+
+### Changed
+
+#### Theme Token Cleanup
+- Active canvas tab indicator changed from hardcoded `bg-zinc-900 text-white / dark:bg-zinc-100 dark:text-zinc-900` to `bg-primary text-primary-foreground`, picking up the design-system colour token in both light and dark modes
+- "Owned" badge on `RecipeCard` migrated from `bg-black text-white / dark:bg-white dark:text-black` to `bg-primary text-primary-foreground` for the same reason
+
+### Fixed (Tests)
+
+#### Auth Test Suite — `_ebb_verify_token` Mock
+- `mock_supabase_client` fixture in `test_auth.py` now also patches `app.domain.supabase_auth_service._ebb_verify_token` so `verify_token()` works without a live Supabase/JWT service. A small `MockIdentity` class and a token→user-id lookup table cover the four tokens used across the auth test suite
 
 ---
 

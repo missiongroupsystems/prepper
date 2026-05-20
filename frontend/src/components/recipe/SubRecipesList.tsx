@@ -139,9 +139,8 @@ function SubRecipeRow({
 
       <div className="flex items-center gap-2">
         <Input
-          type="number"
-          min="0.01"
-          step="0.01"
+          type="text"
+          inputMode="decimal"
           value={localQuantity}
           onChange={(e) => setLocalQuantity(e.target.value)}
           onBlur={handleQuantityBlur}
@@ -271,9 +270,8 @@ function AddSubRecipeForm({ recipeId, existingChildIds, recipes, userId, userTyp
       <div className="w-24">
         <label className="mb-1 block text-xs font-medium text-zinc-500">Quantity</label>
         <Input
-          type="number"
-          min="0.01"
-          step="0.01"
+          type="text"
+          inputMode="decimal"
           value={quantity}
           onChange={(e) => setQuantity(e.target.value)}
           className="w-full"

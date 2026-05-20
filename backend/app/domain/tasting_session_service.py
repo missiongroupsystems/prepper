@@ -115,8 +115,11 @@ class TastingSessionService:
         self.session.commit()
         self.session.refresh(tasting_session)
 
-        if data.participant_ids:
-            self._add_participants(tasting_session.id, data.participant_ids)
+        participant_ids: list[str] = list(data.participant_ids or [])
+        if creator_id and creator_id not in participant_ids:
+            participant_ids.insert(0, creator_id)
+        if participant_ids:
+            self._add_participants(tasting_session.id, participant_ids)
             self.session.commit()
 
         return self._build_read(tasting_session)

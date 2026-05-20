@@ -11,12 +11,14 @@ interface ParticipantPickerProps {
   selectedUsers: User[];
   onChange: (users: User[]) => void;
   disabled?: boolean;
+  creatorId?: string;
 }
 
 export function ParticipantPicker({
   selectedUsers,
   onChange,
   disabled = false,
+  creatorId,
 }: ParticipantPickerProps) {
   const { data: allUsers = [] } = useUsers();
   const [query, setQuery] = useState('');
@@ -45,24 +47,27 @@ export function ParticipantPicker({
     <div className="space-y-2">
       {/* Selected chips */}
       <div className="flex flex-wrap gap-1">
-        {selectedUsers.map((user) => (
-          <Badge
-            key={user.id}
-            variant="default"
-            className="flex items-center gap-1 pr-1"
-          >
-            {user.username}
-            {!disabled && (
-              <button
-                type="button"
-                onClick={() => removeUser(user.id)}
-                className="ml-1 hover:opacity-70"
-              >
-                <X className="h-3 w-3" />
-              </button>
-            )}
-          </Badge>
-        ))}
+        {selectedUsers.map((user) => {
+          const isCreator = user.id === creatorId;
+          return (
+            <Badge
+              key={user.id}
+              variant="default"
+              className="flex items-center gap-1 pr-1"
+            >
+              {user.username}{isCreator && <span className="opacity-60">(Organiser)</span>}
+              {!disabled && !isCreator && (
+                <button
+                  type="button"
+                  onClick={() => removeUser(user.id)}
+                  className="ml-1 hover:opacity-70"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              )}
+            </Badge>
+          );
+        })}
       </div>
 
       {/* Search input + dropdown */}

@@ -430,12 +430,14 @@ function DraggableItem({
               Price
             </p>
             <Input
-              type="number"
-              step="0.01"
-              value={item.display_price || ''}
-              onChange={(e) =>
-                onUpdate('display_price', parseFloat(e.target.value) || null)
-              }
+              type="text"
+              inputMode="decimal"
+              defaultValue={item.display_price?.toString() ?? ''}
+              onBlur={(e) => {
+                const v = parseFloat(e.target.value);
+                if (!isNaN(v)) e.target.value = String(v);
+                onUpdate('display_price', isNaN(v) ? null : v);
+              }}
               placeholder="Enter price"
               className="w-full"
             />
@@ -547,12 +549,14 @@ function DraggableItem({
             />
           </div>
           <Input
-            type="number"
-            step="0.01"
-            value={item.display_price || ''}
-            onChange={(e) =>
-              onUpdate('display_price', parseFloat(e.target.value) || null)
-            }
+            type="text"
+            inputMode="decimal"
+            defaultValue={item.display_price?.toString() ?? ''}
+            onBlur={(e) => {
+              const v = parseFloat(e.target.value);
+              if (!isNaN(v)) e.target.value = String(v);
+              onUpdate('display_price', isNaN(v) ? null : v);
+            }}
             placeholder="Price"
             className="w-full sm:w-20"
           />

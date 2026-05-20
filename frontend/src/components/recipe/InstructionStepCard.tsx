@@ -134,9 +134,11 @@ export function InstructionStepCard({
               <Thermometer className="h-4 w-4 text-zinc-400" />
               <div className="flex items-center gap-1">
                 <Input
-                  type="number"
+                  type="text"
+                  inputMode="decimal"
                   value={localTemp}
                   onChange={(e) => handleTempChange(e.target.value)}
+                  onBlur={() => { const n = parseFloat(localTemp); if (!isNaN(n)) setLocalTemp(String(n)); }}
                   placeholder="180"
                   className="w-20"
                   disabled={!canEdit}

@@ -139,7 +139,7 @@ def insert_user(
     conn,
     user_id: str,
     *,
-    user_type: str = "normal",
+    user_type: str = "NORMAL",
     is_manager: bool = False,
 ) -> None:
     conn.execute(
@@ -264,7 +264,7 @@ class TestRecipeRLS:
     def test_admin_sees_any_private_recipe(self, conn):
         owner, admin = uid(), uid()
         insert_user(conn, owner)
-        insert_user(conn, admin, user_type="admin")
+        insert_user(conn, admin, user_type="ADMIN")
         rid = insert_recipe(conn, owner, is_public=False)
 
         with as_user(conn, admin):
@@ -323,7 +323,7 @@ class TestRecipeRLS:
     def test_admin_can_update_any_recipe(self, conn):
         owner, admin = uid(), uid()
         insert_user(conn, owner)
-        insert_user(conn, admin, user_type="admin")
+        insert_user(conn, admin, user_type="ADMIN")
         rid = insert_recipe(conn, owner, is_public=False)
 
         with as_user(conn, admin):
@@ -390,7 +390,7 @@ class TestIngredientRLS:
 
     def test_admin_can_insert_ingredient(self, conn):
         admin = uid()
-        insert_user(conn, admin, user_type="admin")
+        insert_user(conn, admin, user_type="ADMIN")
 
         with as_user(conn, admin):
             row = conn.execute(
@@ -483,7 +483,7 @@ class TestTastingSessionRLS:
     def test_admin_sees_any_session(self, conn):
         creator, admin = uid(), uid()
         insert_user(conn, creator)
-        insert_user(conn, admin, user_type="admin")
+        insert_user(conn, admin, user_type="ADMIN")
         sid = insert_tasting_session(conn, creator)
 
         with as_user(conn, admin):

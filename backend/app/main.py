@@ -77,6 +77,11 @@ def create_app() -> FastAPI:
         tags=["sub-recipes"],
     )
     app.include_router(
+        sub_recipes.batch_router,
+        prefix=f"{settings.api_v1_prefix}/recipes",
+        tags=["sub-recipes"],
+    )
+    app.include_router(
         outlets.router,
         prefix=f"{settings.api_v1_prefix}/outlets",
         tags=["outlets"],

@@ -45,8 +45,14 @@ import { useAppState } from '@/lib/store';
 import { ApiError } from '@/lib/api';
 import { toast } from 'sonner';
 
+// Ensure bare datetime strings (no timezone suffix) are treated as UTC
+function toUtcDate(dateString: string): Date {
+  const hasOffset = dateString.endsWith('Z') || /[+-]\d{2}:\d{2}$/.test(dateString);
+  return new Date(hasOffset ? dateString : dateString + 'Z');
+}
+
 function formatDate(dateString: string): string {
-  return new Date(dateString).toLocaleDateString('en-GB', {
+  return toUtcDate(dateString).toLocaleDateString('en-GB', {
     weekday: 'long',
     day: 'numeric',
     month: 'long',
@@ -278,7 +284,7 @@ function SessionRecipesSection({
 
       {!isLoading && sessionRecipes.length > 0 && (
         <div className="space-y-2">
-          {[...sessionRecipes].sort((a, b) => (a.recipe_name || '').localeCompare(b.recipe_name || '')).map((sr) => {
+          {sessionRecipes.map((sr) => {
             return (
               <div
                 key={sr.id}
@@ -401,7 +407,7 @@ function SessionIngredientsSection({
 
 // Helper to parse datetime string into components
 function parseDateTimeComponents(dateString: string) {
-  const date = new Date(dateString);
+  const date = toUtcDate(dateString);
   let hour = date.getHours();
   const minute = date.getMinutes();
   const period: 'AM' | 'PM' = hour >= 12 ? 'PM' : 'AM';
@@ -844,11 +850,14 @@ export default function TastingSessionDetailPage() {
                   username: p.username,
                 })) as User[]}
                 onChange={(participants) => handleUpdateSession({ participant_ids: participants.map((p) => p.id) })}
+                creatorId={session.creator_id || ''}
               />
             ) : (
               <div className="flex flex-wrap gap-2">
                 {(session.participants || []).map((p) => (
-                  <Badge key={p.user_id} variant="secondary">{p.username || p.email}</Badge>
+                  <Badge key={p.user_id} variant="secondary">
+                    {p.username || p.email}{p.user_id === session.creator_id && <span className="opacity-60"> (Organiser)</span>}
+                  </Badge>
                 ))}
               </div>
             )}

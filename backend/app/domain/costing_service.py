@@ -60,14 +60,7 @@ class CostingService:
         elif unit == "batch":
             return quantity * child_batch_cost
         elif unit in ("g", "ml"):
-            # For weight/volume, we need to know what the recipe yields per portion
-            # Assume yield_quantity is in the same unit family as the sub-recipe unit
-            # E.g., if recipe yields 500ml and we need 50ml, that's 50/500 = 0.1 batches
             if child_recipe.yield_quantity > 0:
-                # Calculate what fraction of a batch we're using
-                batch_fraction = quantity / (child_recipe.yield_quantity * child_recipe.yield_quantity)
-                # Simplified: assume yield_quantity represents total output
-                # More accurate: yield_quantity * yield_unit should be convertible
                 batch_fraction = quantity / child_recipe.yield_quantity
                 return batch_fraction * child_batch_cost
             return None
@@ -153,12 +146,14 @@ class CostingService:
                     si = si_map.get((ri.ingredient_id, ri.supplier_id))
                     if si and si.pack_size > 0:
                         unit_price = si.price_per_pack / si.pack_size
-                        if not base_unit:
-                            base_unit = si.pack_unit
+                        base_unit = si.pack_unit  # always use supplier's unit — price is per pack_unit
 
-                # Fall back to ingredient.cost_per_base_unit if still no price
+                # Fall back to ingredient.cost_per_base_unit if still no price.
+                # The price is per ingredient.base_unit by definition, so always
+                # use ingredient.base_unit as the conversion target.
                 if unit_price is None:
                     unit_price = ingredient.cost_per_base_unit
+                    base_unit = ingredient.base_unit
 
                 # Convert quantity to base unit
                 quantity_in_base = convert_to_base_unit(

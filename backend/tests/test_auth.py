@@ -193,30 +193,28 @@ def mock_supabase_client(monkeypatch):
         lambda url, key: MockSupabaseClient(url, key),
     )
 
-    # Map our mock tokens to user_ids, bypassing the real JWT verify library.
-    _token_to_user = {
+    # Mock _ebb_verify_token so verify_token() works without a real JWT
+    from ebb_flow_tech_auth import TokenInvalidError as _EbbTokenInvalidError
+
+    class MockIdentity:
+        def __init__(self, user_id: str):
+            self.user_id = user_id
+
+    _valid_tokens = {
         "valid_token_admin": "user-admin-001",
         "valid_token_chef": "user-chef-002",
         "valid_token_new": "user-new-003",
         "new_access_token": "user-admin-001",
-        "google_token_new": "user-google-010",
-        "google_token_no_name": "user-google-011",
-        "google_token_conflict": "user-google-012",
     }
 
-    def _fake_verify_token(token, supabase_url=None):
-        user_id = _token_to_user.get(token)
-        if not user_id:
-            # Mirror ebb_flow_tech_auth.TokenInvalidError → verify_token returns None
-            from ebb_flow_tech_auth import TokenInvalidError
-            raise TokenInvalidError("Invalid token")
-        identity = MagicMock()
-        identity.user_id = user_id
-        return identity
+    def mock_ebb_verify_token(token, **kwargs):
+        if token in _valid_tokens:
+            return MockIdentity(_valid_tokens[token])
+        raise _EbbTokenInvalidError("invalid token")
 
     monkeypatch.setattr(
         "app.domain.supabase_auth_service._ebb_verify_token",
-        _fake_verify_token,
+        mock_ebb_verify_token,
     )
 
     # Clear singleton caches so mocks take effect

@@ -14,6 +14,7 @@ interface RecipeListRowProps {
   href?: string;
   allergenNames?: string[];
   categoryNames?: string[];
+  matchedViaSubDish?: boolean;
 }
 
 const STATUS_VARIANTS: Record<RecipeStatus, 'default' | 'success' | 'warning' | 'secondary'> = {
@@ -22,7 +23,7 @@ const STATUS_VARIANTS: Record<RecipeStatus, 'default' | 'success' | 'warning' | 
   archived: 'warning',
 };
 
-export const RecipeListRow = memo(function RecipeListRow({ recipe, costPerPortion, isOwned, href, allergenNames = [], categoryNames = [] }: RecipeListRowProps) {
+export const RecipeListRow = memo(function RecipeListRow({ recipe, costPerPortion, isOwned, href, allergenNames = [], categoryNames = [], matchedViaSubDish }: RecipeListRowProps) {
   return (
     <Link href={href ?? `/recipes/${recipe.id}`} className="block">
       <Card interactive className="mb-2">
@@ -45,6 +46,9 @@ export const RecipeListRow = memo(function RecipeListRow({ recipe, costPerPortio
                 {recipe.is_prep_recipe && (
                   <Badge variant="default" className="text-xs">Prep</Badge>
                 )}
+                {matchedViaSubDish && (
+                  <Badge variant="default" className="text-xs">Via Sub-dish</Badge>
+                )}
                 {isOwned && (
                   <Badge className="text-xs bg-black text-white dark:bg-white dark:text-black">Owned</Badge>
                 )}
@@ -59,7 +63,7 @@ export const RecipeListRow = memo(function RecipeListRow({ recipe, costPerPortio
               <div className="text-right">
                 <p className="text-sm text-zinc-600 dark:text-zinc-400">
                   <span className="font-medium text-zinc-900 dark:text-zinc-100">
-                    {formatCurrency(costPerPortion ?? recipe.cost_price)}
+                    {formatCurrency(costPerPortion ?? (recipe.cost_price != null && recipe.yield_quantity > 0 ? recipe.cost_price / recipe.yield_quantity : recipe.cost_price))}
                   </span>
                   <span className="text-zinc-500 dark:text-zinc-500">/portion</span>
                 </p>

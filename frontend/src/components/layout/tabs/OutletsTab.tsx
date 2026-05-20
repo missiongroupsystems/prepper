@@ -182,12 +182,12 @@ export function OutletsTab({ outlets = [] }: OutletsTabProps) {
                           <td className="px-4 py-3 text-right">
                             {editingOutletId === recipeOutlet.outlet_id ? (
                               <input
-                                type="number"
+                                type="text"
+                                inputMode="decimal"
                                 value={editingPrice}
                                 onChange={(e) => setEditingPrice(e.target.value)}
+                                onBlur={() => { const n = parseFloat(editingPrice); if (!isNaN(n)) setEditingPrice(String(n)); }}
                                 placeholder="0.00"
-                                step="0.01"
-                                min="0"
                                 className="w-24 rounded-md border border-zinc-300 bg-white px-2 py-1 text-sm text-zinc-900 placeholder-zinc-400 focus:border-zinc-500 focus:outline-none dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100"
                               />
                             ) : (

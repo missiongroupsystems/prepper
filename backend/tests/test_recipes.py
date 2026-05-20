@@ -1520,6 +1520,41 @@ def test_get_recipe_brand_user_cannot_access_location_only_recipe(client: TestCl
 # -------------------------------------------------------------------------
 
 
+def test_list_recipes_search_by_sub_dish_name(client: TestClient):
+    """Searching by a sub-dish name should also return the parent dish."""
+    # Create a child (sub-dish) recipe
+    child = client.post(
+        "/api/v1/recipes",
+        json={"name": "Hollandaise Sauce", "yield_quantity": 1, "yield_unit": "batch"},
+    ).json()
+
+    # Create a parent recipe that uses the child as a sub-dish
+    parent = client.post(
+        "/api/v1/recipes",
+        json={"name": "Eggs Benedict", "yield_quantity": 4, "yield_unit": "portion"},
+    ).json()
+
+    # Link child as sub-recipe of parent
+    client.post(
+        f"/api/v1/recipes/{parent['id']}/sub-recipes",
+        json={"child_recipe_id": child["id"], "quantity": 0.5, "unit": "batch"},
+    )
+
+    # Create an unrelated recipe to verify it is excluded
+    client.post(
+        "/api/v1/recipes",
+        json={"name": "Caesar Salad", "yield_quantity": 1, "yield_unit": "portion"},
+    )
+
+    # Searching by the sub-dish name should return both the child AND the parent
+    resp = client.get("/api/v1/recipes?search=Hollandaise")
+    data = resp.json()
+    names = {item["name"] for item in data["items"]}
+    assert "Hollandaise Sauce" in names, "Child dish should appear in results"
+    assert "Eggs Benedict" in names, "Parent dish containing the sub-dish should appear in results"
+    assert "Caesar Salad" not in names, "Unrelated dish should be excluded"
+
+
 def test_list_recipes_filter_by_category_ids(client: TestClient):
     """Test filtering recipes by category_ids."""
     # Create recipe categories

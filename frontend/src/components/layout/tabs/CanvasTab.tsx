@@ -33,7 +33,7 @@ import {
   useAllRecipeRecipeCategories,
   useRecipeOutletsBatch,
 } from '@/lib/hooks';
-import { Button, Input, Select, ConfirmModal, Modal, Checkbox } from '@/components/ui';
+import { Button, Input, Select, ConfirmModal, Modal, Checkbox, NumericInput } from '@/components/ui';
 import { toast } from 'sonner';
 import type { RecipeStatus, Outlet, SupplierIngredient } from '@/types';
 import { RightPanel } from '../RightPanel';
@@ -285,17 +285,12 @@ function StagedIngredientCard({
             >
               <Minus className="h-4 w-4" />
             </button>
-            <input
-              type="number"
+            <NumericInput
               value={staged.quantity}
-              onChange={(e) => {
-                e.stopPropagation();
-                onQuantityChange(parseFloat(e.target.value) || 0.001);
-              }}
+              onChange={onQuantityChange}
               onClick={(e) => e.stopPropagation()}
               className="w-16 rounded bg-black/30 border border-blue-400/30 px-2 py-1 text-base text-white text-center focus:border-blue-400 focus:outline-none"
-              min="0.01"
-              step="0.1"
+              min={0.001}
             />
             <select
               value={staged.unit}
@@ -319,7 +314,10 @@ function StagedIngredientCard({
         {/* Cost display */}
         <div className="text-sm text-blue-200/80">
           {unitCost != null ? (
-            <span>${unitCost.toFixed(2)}/{staged.unit}</span>
+            <span>
+              <span className="text-blue-100 font-medium">{formatCurrency(staged.quantity * unitCost)}</span>
+              {' '}(${unitCost.toFixed(2)}/{staged.unit})
+            </span>
           ) : (
             <span className="text-blue-300/50">No pricing</span>
           )}
@@ -356,19 +354,13 @@ function StagedIngredientCard({
             <div>
               <label className="text-blue-300/60 flex items-center justify-between">
                 <span>Wastage %</span>
-                <input
-                  type="number"
-                  min="0"
-                  max="100"
-                  step="0.1"
+                <NumericInput
                   value={staged.wastage_percentage}
-                  onChange={(e) => {
-                    e.stopPropagation();
-                    const value = parseFloat(e.target.value) || 0;
-                    onWastageChange(Math.min(100, Math.max(0, value)));
-                  }}
+                  onChange={(v) => onWastageChange(v)}
                   onClick={(e) => e.stopPropagation()}
                   className="w-16 rounded bg-black/30 border border-blue-400/30 px-2 py-1 text-sm text-white text-center focus:border-blue-400 focus:outline-none"
+                  min={0}
+                  max={100}
                 />
               </label>
             </div>
@@ -446,7 +438,12 @@ function StagedIngredientListItem({
           )}
           <span className="text-zinc-300 dark:text-zinc-600 text-xs">·</span>
           <span className="text-xs text-zinc-400 dark:text-zinc-500">
-            {unitCost != null ? `$${unitCost.toFixed(2)}/${staged.unit}` : 'No pricing'}
+            {unitCost != null ? (
+              <>
+                <span className="font-medium text-zinc-600 dark:text-zinc-300">{formatCurrency(staged.quantity * unitCost)}</span>
+                {' '}(${unitCost.toFixed(2)}/{staged.unit})
+              </>
+            ) : 'No pricing'}
           </span>
         </div>
       </div>
@@ -476,14 +473,12 @@ function StagedIngredientListItem({
         >
           <Minus className="h-3.5 w-3.5" />
         </button>
-        <input
-          type="number"
+        <NumericInput
           value={staged.quantity}
-          onChange={(e) => { e.stopPropagation(); onQuantityChange(parseFloat(e.target.value) || 0.001); }}
+          onChange={onQuantityChange}
           onClick={(e) => e.stopPropagation()}
           className="w-14 rounded-md border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 px-2 py-1 text-sm text-center tabular-nums text-zinc-900 dark:text-white focus:border-blue-400 focus:outline-none"
-          min="0.01"
-          step="0.1"
+          min={0.001}
         />
         <select
           value={staged.unit}
@@ -499,12 +494,13 @@ function StagedIngredientListItem({
 
       {/* Wastage */}
       <div className="flex items-center gap-1 shrink-0">
-        <input
-          type="number" min="0" max="100" step="0.1"
+        <NumericInput
           value={staged.wastage_percentage}
-          onChange={(e) => { e.stopPropagation(); onWastageChange(Math.min(100, Math.max(0, parseFloat(e.target.value) || 0))); }}
+          onChange={(v) => onWastageChange(v)}
           onClick={(e) => e.stopPropagation()}
           className="w-12 rounded-md border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 px-1.5 py-1 text-sm text-center tabular-nums text-zinc-900 dark:text-white focus:border-blue-400 focus:outline-none"
+          min={0}
+          max={100}
         />
         <span className="text-xs text-zinc-400">%w</span>
       </div>
@@ -566,14 +562,12 @@ function StagedRecipeListItem({
           >
             <Minus className="h-3.5 w-3.5" />
           </button>
-          <input
-            type="number"
+          <NumericInput
             value={staged.quantity}
-            onChange={(e) => { e.stopPropagation(); onQuantityChange(parseFloat(e.target.value) || 0.001); }}
+            onChange={onQuantityChange}
             onClick={(e) => e.stopPropagation()}
             className="w-14 rounded-md border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 px-2 py-1 text-sm text-center tabular-nums text-zinc-900 dark:text-white focus:border-green-400 focus:outline-none"
-            min="0.01"
-            step="0.1"
+            min={0.001}
           />
           <span className="text-xs text-zinc-400">portion</span>
         </div>
@@ -605,9 +599,13 @@ function StagedRecipeListItem({
           {recipeIngredients && recipeIngredients.length > 0 && (
             <ul className="text-xs text-zinc-500 dark:text-zinc-400 space-y-0.5">
               {recipeIngredients.map((ri) => (
-                <li key={ri.id} className="flex justify-between">
+                <li key={ri.id} className="flex justify-between gap-2">
                   <span>{ri.ingredient?.name || `#${ri.ingredient_id}`} · {ri.quantity} {ri.base_unit || ri.unit}</span>
-                  <span className="text-zinc-400 dark:text-zinc-500 tabular-nums">${ri.unit_price?.toFixed(2) ?? '—'}</span>
+                  <span className="text-zinc-400 dark:text-zinc-500 tabular-nums shrink-0">
+                    {ri.unit_price != null ? (
+                      <>{formatCurrency(ri.quantity * ri.unit_price)} (${ri.unit_price.toFixed(2)})</>
+                    ) : '—'}
+                  </span>
                 </li>
               ))}
             </ul>
@@ -725,17 +723,12 @@ function StagedRecipeCard({
             >
               <Minus className="h-4 w-4" />
             </button>
-            <input
-              type="number"
+            <NumericInput
               value={staged.quantity}
-              onChange={(e) => {
-                e.stopPropagation();
-                onQuantityChange(parseFloat(e.target.value) || 0.001);
-              }}
+              onChange={onQuantityChange}
               onClick={(e) => e.stopPropagation()}
               className="w-16 rounded bg-black/30 border border-green-400/30 px-2 py-1 text-base text-white text-center focus:border-green-400 focus:outline-none"
-              min="0.01"
-              step="0.1"
+              min={0.001}
             />
             <span className="game-card-stat game-card-stat-recipe">portion</span>
           </div>
@@ -789,7 +782,9 @@ function StagedRecipeCard({
                         <div className="font-medium text-green-100">{ingredient?.name || `Ingredient #${ri.ingredient_id}`}</div>
                         <div className="text-green-200/60 flex flex-wrap gap-x-2">
                           <span>{scaledQty} {ri.base_unit || ri.unit}</span>
-                          <span>@ ${ri.unit_price?.toFixed(2) ?? 'N/A'}/{ri.base_unit || ri.unit}</span>
+                          {ri.unit_price != null && (
+                            <span className="text-green-100 font-medium">{formatCurrency(scaledQty * ri.unit_price)} (${ri.unit_price.toFixed(2)}/{ri.base_unit || ri.unit})</span>
+                          )}
                         </div>
                         {suppliers.length > 0 && (
                           <div className="text-green-300/50 mt-0.5">
@@ -1027,7 +1022,8 @@ function CanvasTable({
             <th className="text-left px-4 py-2 text-[11px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">Qty</th>
             <th className="text-left px-4 py-2 text-[11px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">Unit</th>
             <th className="text-left px-4 py-2 text-[11px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">Wastage</th>
-            <th className="text-left px-4 py-2 text-[11px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">Item</th>
+            <th className="text-left px-4 py-2 text-[11px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500 w-48">Item</th>
+            <th className="text-right px-4 py-2 text-[11px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">Cost</th>
             <th className="text-left px-4 py-2 text-[11px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500 w-12"></th>
           </tr>
         </thead>
@@ -1043,14 +1039,12 @@ function CanvasTable({
                   >
                     <Minus className="h-3 w-3" />
                   </button>
-                  <input
-                    type="number"
+                  <NumericInput
                     value={staged.quantity}
-                    onChange={(e) => { e.stopPropagation(); onIngredientQuantityChange(staged.id, parseFloat(e.target.value) || 0.1); }}
+                    onChange={(v) => onIngredientQuantityChange(staged.id, v)}
                     onClick={(e) => e.stopPropagation()}
                     className="w-14 rounded-md border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 px-2 py-1 text-sm text-center tabular-nums text-zinc-900 dark:text-white focus:border-blue-400 focus:outline-none"
-                    min="0.01"
-                    step="0.1"
+                    min={0.001}
                   />
                   <button
                     onClick={() => onIngredientQuantityChange(staged.id, parseFloat((staged.quantity + 1).toFixed(1)))}
@@ -1074,12 +1068,13 @@ function CanvasTable({
               </td>
               <td className="px-4 py-2.5">
                 <div className="flex items-center gap-1">
-                  <input
-                    type="number" min="0" max="100" step="0.1"
+                  <NumericInput
                     value={staged.wastage_percentage}
-                    onChange={(e) => { e.stopPropagation(); onIngredientWastageChange(staged.id, Math.min(100, Math.max(0, parseFloat(e.target.value) || 0))); }}
+                    onChange={(v) => onIngredientWastageChange(staged.id, v)}
                     onClick={(e) => e.stopPropagation()}
                     className="w-14 rounded-md border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 px-2 py-1 text-sm text-center tabular-nums text-zinc-900 dark:text-white focus:border-blue-400 focus:outline-none"
+                    min={0}
+                    max={100}
                   />
                   <span className="text-xs text-zinc-400">%</span>
                 </div>
@@ -1097,6 +1092,14 @@ function CanvasTable({
                   onIngredientSelect={(ingredient) => onIngredientSelect(staged.id, ingredient)}
                   onRecipeSelect={(recipe) => onIngredientSelect(staged.id, recipe)}
                 />
+              </td>
+              <td className="px-4 py-2.5 text-right tabular-nums text-xs text-zinc-500 dark:text-zinc-400">
+                {staged.unitPrice != null ? (
+                  <>
+                    <span className="font-medium text-zinc-700 dark:text-zinc-300">{formatCurrency(staged.quantity * staged.unitPrice)}</span>
+                    {' '}(${staged.unitPrice.toFixed(2)}/{staged.unit})
+                  </>
+                ) : <span>—</span>}
               </td>
               <td className="px-4 py-2.5">
                 <button
@@ -1120,14 +1123,12 @@ function CanvasTable({
                   >
                     <Minus className="h-3 w-3" />
                   </button>
-                  <input
-                    type="number"
+                  <NumericInput
                     value={staged.quantity}
-                    onChange={(e) => { e.stopPropagation(); onRecipeQuantityChange(staged.id, parseFloat(e.target.value) || 0.1); }}
+                    onChange={(v) => onRecipeQuantityChange(staged.id, v)}
                     onClick={(e) => e.stopPropagation()}
                     className="w-14 rounded-md border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 px-2 py-1 text-sm text-center tabular-nums text-zinc-900 dark:text-white focus:border-green-400 focus:outline-none"
-                    min="0.01"
-                    step="0.1"
+                    min={0.001}
                   />
                   <button
                     onClick={() => onRecipeQuantityChange(staged.id, parseFloat((staged.quantity + 1).toFixed(1)))}
@@ -1153,6 +1154,7 @@ function CanvasTable({
                   onIngredientSelect={(ingredient) => onRecipeSelect(staged.id, ingredient)}
                 />
               </td>
+              <td className="px-4 py-2.5 text-right text-sm text-zinc-400 dark:text-zinc-500">—</td>
               <td className="px-4 py-2.5">
                 <button
                   onClick={() => onRemoveRecipe(staged.id)}
@@ -1478,15 +1480,11 @@ function CanvasContent({
             <div className="flex flex-col gap-1">
               <label className="text-[11px] font-medium uppercase tracking-wide text-zinc-400 dark:text-zinc-500">Yield</label>
               <div className="flex items-center gap-1.5">
-                <Input
-                  type="number"
+                <NumericInput
                   value={metadata.yield_quantity}
-                  onChange={(e) =>
-                    onMetadataChange({ yield_quantity: parseFloat(e.target.value) || 0 })
-                  }
+                  onChange={(v) => onMetadataChange({ yield_quantity: v })}
                   className="w-16 h-8 text-sm"
-                  min="0"
-                  step="1"
+                  min={0}
                 />
                 <Input
                   value={metadata.yield_unit}
@@ -1513,15 +1511,11 @@ function CanvasContent({
               <label className="text-[11px] font-medium uppercase tracking-wide text-zinc-400 dark:text-zinc-500">Selling Price</label>
               <div className="flex items-center gap-1">
                 <span className="text-xs text-zinc-400">$</span>
-                <Input
-                  type="number"
+                <NumericInput
                   value={metadata.selling_price}
-                  onChange={(e) =>
-                    onMetadataChange({ selling_price: Math.max(0, parseFloat(e.target.value) || 0) })
-                  }
+                  onChange={(v) => onMetadataChange({ selling_price: v })}
                   className="w-20 h-8 text-sm"
-                  min="0"
-                  step="0.01"
+                  min={0}
                 />
               </div>
             </div>
@@ -1717,9 +1711,8 @@ function calculateCanvasCost(
   for (const staged of stagedRecipes) {
     const recipe = allRecipes?.find((r) => r.id === staged.recipe.id);
     if (recipe?.cost_price != null) {
-      const yieldQty = (recipe.yield_quantity ?? 1) > 0 ? (recipe.yield_quantity ?? 1) : 1;
-      const costPerPortion = recipe.cost_price / yieldQty;
-      totalCost += staged.quantity * costPerPortion;
+      // cost_price is already cost_per_portion (set by persist_cost_snapshot on the backend)
+      totalCost += staged.quantity * recipe.cost_price;
     }
   }
 
@@ -1814,6 +1807,7 @@ export function CanvasTab({ outlets }: CanvasTabProps) {
   const removeSubRecipe = useRemoveSubRecipe();
 
   const canvasRef = useRef<HTMLDivElement | null>(null);
+  const subRecipeUpdateTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
   const [stagedIngredients, setStagedIngredients] = useState<StagedIngredient[]>([]);
   const [stagedRecipes, setStagedRecipes] = useState<StagedRecipe[]>([]);
   const [activeDragItem, setActiveDragItem] = useState<DragItem | null>(null);
@@ -1982,7 +1976,7 @@ export function CanvasTab({ outlets }: CanvasTabProps) {
     }
 
     if (loadedRecipeId === selectedRecipeId) return;
-    if (!recipeIngredients || !subRecipes) return;
+    if (!recipeIngredients || !subRecipes || !selectedRecipeData) return;
 
     // Load recipe metadata from selected recipe
     const selectedRecipe = selectedRecipeData ?? recipes?.find((r) => r.id === selectedRecipeId);
@@ -2092,7 +2086,7 @@ export function CanvasTab({ outlets }: CanvasTabProps) {
       recipeQuantities,
       metadata: loadedMetadata,
     });
-  }, [selectedRecipeId, selectedRecipeData, recipeIngredients, subRecipes, recipes, loadedRecipeId, fetchSuppliersForIngredient]);
+  }, [selectedRecipeId, selectedRecipeData, recipeIngredients, subRecipes, loadedRecipeId, fetchSuppliersForIngredient]);
 
 
   const handleDragStart = useCallback((event: DragStartEvent) => {
@@ -2282,7 +2276,21 @@ export function CanvasTab({ outlets }: CanvasTabProps) {
     setStagedRecipes((prev) =>
       prev.map((item) => (item.id === id ? { ...item, quantity } : item))
     );
-  }, []);
+
+    // Autosave for existing sub-recipe links (id encoded as 'existing-rec-{linkId}')
+    if (selectedRecipeId && id.startsWith('existing-rec-')) {
+      const linkId = parseInt(id.replace('existing-rec-', ''), 10);
+      clearTimeout(subRecipeUpdateTimers.current[id]);
+      subRecipeUpdateTimers.current[id] = setTimeout(() => {
+        updateSubRecipeHook.mutate({
+          recipeId: selectedRecipeId,
+          linkId,
+          data: { quantity },
+        });
+        delete subRecipeUpdateTimers.current[id];
+      }, 500);
+    }
+  }, [selectedRecipeId, updateSubRecipeHook]);
 
   const handleIngredientSelect = useCallback((id: string, ingredientOrRecipe: Ingredient | Recipe): void => {
     // Check if this is actually a recipe (has yield_quantity property)

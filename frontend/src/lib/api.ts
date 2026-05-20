@@ -946,6 +946,14 @@ export async function reorderSubRecipes(
   });
 }
 
+export async function getSubRecipesBatch(recipeIds: number[]): Promise<Record<number, boolean>> {
+  if (recipeIds.length === 0) return {};
+  return fetchApi<Record<number, boolean>>('/recipes/sub-recipes/batch', {
+    method: 'POST',
+    body: JSON.stringify({ recipe_ids: recipeIds }),
+  });
+}
+
 // ============ Categories ============
 
 export async function getCategories(activeOnly: boolean = true): Promise<Category[]> {

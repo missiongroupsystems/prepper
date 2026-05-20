@@ -165,10 +165,12 @@ export const RecipeIngredientRow = memo(function RecipeIngredientRow({
     transition,
   };
 
-  // Calculate line cost using ingredient.unit_price
+  // Calculate line cost in real-time using local state values
+  const localQuantityNum = parseFloat(localQuantity);
+  const unitPriceNum = parseFloat(unitPrice);
   const lineCost =
-    ingredient.unit_price !== null && ingredient.unit_price !== undefined
-      ? ingredient.quantity * ingredient.unit_price
+    !isNaN(localQuantityNum) && localQuantityNum > 0 && !isNaN(unitPriceNum) && unitPriceNum >= 0
+      ? localQuantityNum * unitPriceNum
       : null;
 
   return (
@@ -217,12 +219,11 @@ export const RecipeIngredientRow = memo(function RecipeIngredientRow({
       />
 
       <Input
-        type="number"
+        type="text"
+        inputMode="decimal"
         value={localQuantity}
         onChange={(e) => handleQuantityChange(e.target.value)}
         className="w-20"
-        min={0}
-        step={0.1}
         disabled={!canEdit}
       />
 
@@ -234,20 +235,23 @@ export const RecipeIngredientRow = memo(function RecipeIngredientRow({
         disabled={!canEdit}
       />
 
-      $
-      <Input
-        type="number"
-        value={unitPrice}
-        onChange={(e) => handleUnitPriceChange(e.target.value)}
-        placeholder="Unit $"
-        className="w-20"
-        min={0}
-        step={0.01}
-        disabled={!canEdit}
-      />/{baseUnit}
-
-      <div className="w-20 text-right text-sm text-zinc-500">
-        {lineCost !== null ? formatCurrency(lineCost) : '—'}
+      <div className="flex items-center gap-1">
+        $
+        <Input
+          type="text"
+          inputMode="decimal"
+          value={unitPrice}
+          onChange={(e) => handleUnitPriceChange(e.target.value)}
+          placeholder="Unit $"
+          className="w-20"
+          disabled={!canEdit}
+        />
+        <span className="text-zinc-500 dark:text-zinc-400">/{baseUnit}</span>
+        {lineCost !== null && (
+          <span className="ml-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 tabular-nums">
+            {formatCurrency(lineCost)}
+          </span>
+        )}
       </div>
 
       {canEdit && (

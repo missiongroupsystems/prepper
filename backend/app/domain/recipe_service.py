@@ -116,8 +116,21 @@ class RecipeService:
                 .where(RCat.name.ilike(f"%{search}%"), RecipeRecipeCategory.is_active == True)
                 .distinct()
             )
+            sub_match = (
+                select(RecipeRecipe.parent_recipe_id)
+                .where(
+                    RecipeRecipe.child_recipe_id.in_(
+                        select(Recipe.id).where(Recipe.name.ilike(f"%{search}%"))
+                    )
+                )
+                .distinct()
+            )
             statement = statement.where(
-                sql_or(Recipe.name.ilike(f"%{search}%"), Recipe.id.in_(cat_match))
+                sql_or(
+                    Recipe.name.ilike(f"%{search}%"),
+                    Recipe.id.in_(cat_match),
+                    Recipe.id.in_(sub_match),
+                )
             )
         if category_ids:
             from app.models.recipe_recipe_category import RecipeRecipeCategory

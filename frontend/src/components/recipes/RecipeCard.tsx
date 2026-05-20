@@ -16,6 +16,7 @@ interface RecipeCardProps {
   outletNames?: string[];
   categoryNames?: string[];
   allergenNames?: string[];
+  matchedViaSubDish?: boolean;
 }
 
 const STATUS_VARIANTS: Record<RecipeStatus, 'default' | 'success' | 'warning' | 'secondary'> = {
@@ -24,7 +25,7 @@ const STATUS_VARIANTS: Record<RecipeStatus, 'default' | 'success' | 'warning' | 
   archived: 'warning',
 };
 
-export const RecipeCard = memo(function RecipeCard({ recipe, costPerPortion, isOwned, href, outletNames = [], categoryNames = [], allergenNames = [] }: RecipeCardProps) {
+export const RecipeCard = memo(function RecipeCard({ recipe, costPerPortion, isOwned, href, outletNames = [], categoryNames = [], allergenNames = [], matchedViaSubDish }: RecipeCardProps) {
   return (
     <Link href={href ?? `/recipes/${recipe.id}`} className="block">
       <Card interactive className="mb-4 h-full">
@@ -62,8 +63,11 @@ export const RecipeCard = memo(function RecipeCard({ recipe, costPerPortion, isO
               {recipe.is_prep_recipe && (
                 <Badge variant="default" className="text-sm">Prep</Badge>
               )}
+              {matchedViaSubDish && (
+                <Badge variant="default" className="text-sm">Via Sub-dish</Badge>
+              )}
               {isOwned && (
-                <Badge className="text-sm bg-black text-white dark:bg-white dark:text-black">Owned</Badge>
+                <Badge className="text-sm bg-primary text-primary-foreground">Owned</Badge>
               )}
             </div>
 
@@ -116,7 +120,7 @@ export const RecipeCard = memo(function RecipeCard({ recipe, costPerPortion, isO
             <div className="text-base">
               <span className="text-zinc-500 dark:text-zinc-400">Cost: </span>
               <span className="font-medium text-zinc-900 dark:text-zinc-100">
-                {formatCurrency(costPerPortion ?? recipe.cost_price)}
+                {formatCurrency(costPerPortion ?? (recipe.cost_price != null && recipe.yield_quantity > 0 ? recipe.cost_price / recipe.yield_quantity : recipe.cost_price))}
               </span>
               <span className="text-zinc-400 dark:text-zinc-500">/portion</span>
             </div>

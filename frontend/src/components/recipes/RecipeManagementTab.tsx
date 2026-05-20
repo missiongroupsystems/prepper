@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Plus } from 'lucide-react';
-import { useRecipes, useRecipeCategories, useAllRecipeRecipeCategories, useOutlets, useRecipeOutletsBatch, useRecipeAllergensBatch, useDebouncedValue } from '@/lib/hooks';
+import { useRecipes, useRecipeCategories, useAllRecipeRecipeCategories, useOutlets, useRecipeOutletsBatch, useRecipeAllergensBatch, useSubRecipesBatch, useDebouncedValue } from '@/lib/hooks';
 import { RecipeCard } from './RecipeCard';
 import { RecipeListRow } from './RecipeListRow';
 import { RecipeCategoryFilterButtons } from './RecipeCategoryFilterButtons';
@@ -157,6 +157,16 @@ export function RecipeManagementTab() {
 
   // Fetch allergens for all recipes (with TanStack Query caching)
   const { data: recipeAllergens = new Map() } = useRecipeAllergensBatch(recipeIds);
+
+  // Fetch sub-dish presence for all recipes (with TanStack Query caching)
+  const { data: recipeSubDishMap = {} } = useSubRecipesBatch(recipeIds);
+  // Only flag a dish as "matched via sub-dish" when a search is active and
+  // the dish name doesn't directly match (meaning it was surfaced via a sub-dish).
+  const matchedViaSubDish = (recipe: Recipe): boolean => {
+    if (!debouncedSearch) return false;
+    if (!recipeSubDishMap[recipe.id]) return false;
+    return !recipe.name.toLowerCase().includes(debouncedSearch.toLowerCase());
+  };
 
   // Build a map of recipe_id -> category_ids[] for efficient filtering
   const recipeCategoryMap = useMemo(() => {
@@ -335,6 +345,7 @@ export function RecipeManagementTab() {
                       outletNames={getOutletNamesForRecipe(recipe.id)}
                       categoryNames={getCategoryNamesForRecipe(recipe.id)}
                       allergenNames={getAllergenNamesForRecipe(recipe.id)}
+                      matchedViaSubDish={matchedViaSubDish(recipe)}
                     />
                   ))}
                 </GroupSection>
@@ -347,6 +358,7 @@ export function RecipeManagementTab() {
                       isOwned={userId !== null && recipe.owner_id === userId}
                       categoryNames={getCategoryNamesForRecipe(recipe.id)}
                       allergenNames={getAllergenNamesForRecipe(recipe.id)}
+                      matchedViaSubDish={matchedViaSubDish(recipe)}
                     />
                   ))}
                 </ListSection>
