@@ -45,8 +45,14 @@ import { useAppState } from '@/lib/store';
 import { ApiError } from '@/lib/api';
 import { toast } from 'sonner';
 
+// Ensure bare datetime strings (no timezone suffix) are treated as UTC
+function toUtcDate(dateString: string): Date {
+  const hasOffset = dateString.endsWith('Z') || /[+-]\d{2}:\d{2}$/.test(dateString);
+  return new Date(hasOffset ? dateString : dateString + 'Z');
+}
+
 function formatDate(dateString: string): string {
-  return new Date(dateString).toLocaleDateString('en-GB', {
+  return toUtcDate(dateString).toLocaleDateString('en-GB', {
     weekday: 'long',
     day: 'numeric',
     month: 'long',
@@ -401,7 +407,7 @@ function SessionIngredientsSection({
 
 // Helper to parse datetime string into components
 function parseDateTimeComponents(dateString: string) {
-  const date = new Date(dateString);
+  const date = toUtcDate(dateString);
   let hour = date.getHours();
   const minute = date.getMinutes();
   const period: 'AM' | 'PM' = hour >= 12 ? 'PM' : 'AM';
