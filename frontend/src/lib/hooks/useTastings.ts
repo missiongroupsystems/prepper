@@ -9,6 +9,7 @@ import type {
   UpdateTastingNoteRequest,
   AddRecipeToSessionRequest,
   AddRecipesToSessionRequest,
+  ReorderSessionDishesRequest,
 } from '@/types';
 import type { ListParams } from '@/lib/api';
 
@@ -266,6 +267,20 @@ export function useRemoveRecipeFromSession() {
       });
       queryClient.invalidateQueries({
         queryKey: ['tasting-session', variables.sessionId, 'stats'],
+      });
+    },
+  });
+}
+
+export function useReorderSessionDishes() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ sessionId, data }: { sessionId: number; data: ReorderSessionDishesRequest }) =>
+      api.reorderSessionDishes(sessionId, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ['tasting-session', variables.sessionId, 'recipes'],
       });
     },
   });

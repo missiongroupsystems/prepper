@@ -19,6 +19,7 @@ class RecipeTasting(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     recipe_id: int = Field(foreign_key="recipes.id", index=True)
     tasting_session_id: int = Field(foreign_key="tasting_sessions.id", index=True)
+    sequence: Optional[int] = Field(default=None)
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
 
@@ -39,6 +40,7 @@ class RecipeTastingRead(SQLModel):
     tasting_session_id: int
     recipe_name: Optional[str] = None
     ingredients: list[RecipeTastingIngredient] = []
+    sequence: Optional[int] = None
     created_at: datetime
 
 
@@ -59,3 +61,16 @@ class RecipeTastingBatchResult(SQLModel):
 
     added: list[int]
     skipped: list[int]
+
+
+class RecipeTastingReorderItem(SQLModel):
+    """A single dish with its new sequence number."""
+
+    id: int
+    sequence: int
+
+
+class RecipeTastingReorderRequest(SQLModel):
+    """Request body for reordering dishes in a tasting session."""
+
+    items: list[RecipeTastingReorderItem]

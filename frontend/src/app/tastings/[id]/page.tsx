@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -14,10 +14,28 @@ import {
   Copy,
   Check,
   CheckCircle,
+  GripVertical,
 } from 'lucide-react';
 import { DayPicker } from 'react-day-picker';
 import { format } from 'date-fns';
 import 'react-day-picker/style.css';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import type { DragEndEvent } from '@dnd-kit/core';
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable,
+  arrayMove,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import {
   useTastingSession,
   useUpdateTastingSession,
@@ -25,6 +43,7 @@ import {
   useSessionRecipes,
   useAddRecipesToSession,
   useRemoveRecipeFromSession,
+  useReorderSessionDishes,
   useInfiniteRecipes,
   useSessionNotes,
   useCreateRecipe,
@@ -40,7 +59,7 @@ import {
 } from '@/components/ui';
 import { ParticipantPicker } from '@/components/tasting/ParticipantPicker';
 import { RecipeFeedbackModal } from '@/components/tasting/RecipeFeedbackModal';
-import type { Recipe, RecipeTasting, RecipeTastingIngredient, User, UpdateTastingSessionRequest } from '@/types';
+import type { Recipe, RecipeTasting, RecipeTastingIngredient, User, UpdateTastingSessionRequest, ReorderSessionDishItem } from '@/types';
 import { useAppState } from '@/lib/store';
 import { ApiError } from '@/lib/api';
 import { toast } from 'sonner';
@@ -61,6 +80,71 @@ function formatDate(dateString: string): string {
 }
 
 
+function SortableDishItem({
+  sr,
+  isCreator,
+  reviewedRecipeIds,
+  onRecipeClick,
+  onRemoveRecipe,
+}: {
+  sr: RecipeTasting;
+  isCreator: boolean;
+  reviewedRecipeIds: Set<number>;
+  onRecipeClick: (recipeId: number) => void;
+  onRemoveRecipe: (recipeId: number) => void;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: sr.id,
+  });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.4 : 1,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="flex items-center gap-1 p-3 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg"
+    >
+      {isCreator && (
+        <button
+          type="button"
+          {...attributes}
+          {...listeners}
+          className="p-1 text-zinc-300 dark:text-zinc-600 hover:text-zinc-500 dark:hover:text-zinc-400 cursor-grab active:cursor-grabbing touch-none shrink-0"
+          title="Drag to reorder"
+        >
+          <GripVertical className="h-4 w-4" />
+        </button>
+      )}
+      <button
+        type="button"
+        onClick={() => onRecipeClick(sr.recipe_id)}
+        className="flex items-center gap-2 font-medium text-zinc-900 dark:text-zinc-100 hover:text-purple-600 dark:hover:text-purple-400 text-left flex-1 min-w-0"
+      >
+        {reviewedRecipeIds.has(sr.recipe_id) ? (
+          <CheckCircle className="h-4 w-4 text-green-500 shrink-0" />
+        ) : (
+          <div className="h-4 w-4 rounded-full border-2 border-zinc-300 dark:border-zinc-600 shrink-0" />
+        )}
+        <span className="truncate">{sr.recipe_name || `Dish #${sr.recipe_id}`}</span>
+      </button>
+      {isCreator && (
+        <button
+          onClick={() => onRemoveRecipe(sr.recipe_id)}
+          className="p-1.5 rounded-md hover:bg-red-100 dark:hover:bg-red-900/30 text-zinc-400 hover:text-red-600 shrink-0"
+          title="Remove from session"
+        >
+          <X className="h-4 w-4" />
+        </button>
+      )}
+    </div>
+  );
+}
+
 interface SessionRecipesSectionProps {
   sessionId: number;
   sessionRecipes: RecipeTasting[];
@@ -69,6 +153,7 @@ interface SessionRecipesSectionProps {
   isCreator: boolean;
   onAddRecipes: (recipeIds: number[]) => void;
   onRemoveRecipe: (recipeId: number) => void;
+  onReorderDishes: (items: ReorderSessionDishItem[]) => void;
   hasMoreRecipes: boolean;
   onLoadMoreRecipes: () => void;
   isLoadingMoreRecipes: boolean;
@@ -88,6 +173,7 @@ function SessionRecipesSection({
   isCreator,
   onAddRecipes,
   onRemoveRecipe,
+  onReorderDishes,
   hasMoreRecipes,
   onLoadMoreRecipes,
   isLoadingMoreRecipes,
@@ -101,6 +187,33 @@ function SessionRecipesSection({
   const [showAddRecipe, setShowAddRecipe] = useState(false);
   const [selectedRecipeIds, setSelectedRecipeIds] = useState<Set<number>>(new Set());
   const [isCreatingRecipe, setIsCreatingRecipe] = useState(false);
+  const [localDishes, setLocalDishes] = useState<RecipeTasting[]>(sessionRecipes);
+  const reorderTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Sync from server when session recipes change (e.g. after add/remove)
+  useEffect(() => {
+    setLocalDishes(sessionRecipes);
+  }, [sessionRecipes]);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = localDishes.findIndex((d) => d.id === active.id);
+    const newIndex = localDishes.findIndex((d) => d.id === over.id);
+    const newDishes = arrayMove(localDishes, oldIndex, newIndex);
+    setLocalDishes(newDishes);
+
+    if (reorderTimerRef.current) clearTimeout(reorderTimerRef.current);
+    reorderTimerRef.current = setTimeout(() => {
+      onReorderDishes(newDishes.map((d, i) => ({ id: d.id, sequence: i + 1 })));
+    }, 2000);
+  };
 
   const linkedRecipeIds = new Set(sessionRecipes.map((sr) => sr.recipe_id));
 
@@ -272,7 +385,7 @@ function SessionRecipesSection({
         </div>
       )}
 
-      {!isLoading && sessionRecipes.length === 0 && !showAddRecipe && (
+      {!isLoading && localDishes.length === 0 && !showAddRecipe && (
         <div className="text-center py-8 border border-dashed border-zinc-200 dark:border-zinc-700 rounded-lg">
           <ChefHat className="h-8 w-8 mx-auto text-zinc-300 dark:text-zinc-600 mb-2" />
           <p className="text-zinc-500 dark:text-zinc-400">No dishes added to this session</p>
@@ -282,39 +395,30 @@ function SessionRecipesSection({
         </div>
       )}
 
-      {!isLoading && sessionRecipes.length > 0 && (
-        <div className="space-y-2">
-          {sessionRecipes.map((sr) => {
-            return (
-              <div
-                key={sr.id}
-                className="flex items-center justify-between p-3 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg"
-              >
-                <button
-                  type="button"
-                  onClick={() => onRecipeClick(sr.recipe_id)}
-                  className="flex items-center gap-2 font-medium text-zinc-900 dark:text-zinc-100 hover:text-purple-600 dark:hover:text-purple-400 text-left"
-                >
-                  {reviewedRecipeIds.has(sr.recipe_id) ? (
-                    <CheckCircle className="h-4 w-4 text-green-500 shrink-0" />
-                  ) : (
-                    <div className="h-4 w-4 rounded-full border-2 border-zinc-300 dark:border-zinc-600 shrink-0" />
-                  )}
-                  {sr.recipe_name || `Dish #${sr.recipe_id}`}
-                </button>
-                {isCreator && (
-                  <button
-                    onClick={() => onRemoveRecipe(sr.recipe_id)}
-                    className="p-1.5 rounded-md hover:bg-red-100 dark:hover:bg-red-900/30 text-zinc-400 hover:text-red-600"
-                    title="Remove from session"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                )}
-              </div>
-            );
-          })}
-        </div>
+      {!isLoading && localDishes.length > 0 && (
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext
+            items={localDishes.map((d) => d.id)}
+            strategy={verticalListSortingStrategy}
+          >
+            <div className="space-y-2">
+              {localDishes.map((sr) => (
+                <SortableDishItem
+                  key={sr.id}
+                  sr={sr}
+                  isCreator={isCreator}
+                  reviewedRecipeIds={reviewedRecipeIds}
+                  onRecipeClick={onRecipeClick}
+                  onRemoveRecipe={onRemoveRecipe}
+                />
+              ))}
+            </div>
+          </SortableContext>
+        </DndContext>
       )}
     </div>
   );
@@ -499,6 +603,7 @@ export default function TastingSessionDetailPage() {
   const updateSession = useUpdateTastingSession();
   const addRecipesToSession = useAddRecipesToSession();
   const removeRecipeFromSession = useRemoveRecipeFromSession();
+  const reorderSessionDishes = useReorderSessionDishes();
   const createRecipe = useCreateRecipe();
 
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -613,6 +718,11 @@ export default function TastingSessionDetailPage() {
     } catch (error) {
       console.error('Failed to remove recipes from session:', error);
     }
+  };
+
+  const handleReorderDishes = (items: ReorderSessionDishItem[]) => {
+    if (!sessionId) return;
+    reorderSessionDishes.mutate({ sessionId, data: { items } });
   };
 
 
@@ -904,6 +1014,7 @@ export default function TastingSessionDetailPage() {
             isCreator={isCreator}
             onAddRecipes={handleAddRecipesToSession}
             onRemoveRecipe={handleRemoveRecipeFromSession}
+            onReorderDishes={handleReorderDishes}
             hasMoreRecipes={!!hasMoreRecipes}
             onLoadMoreRecipes={() => fetchNextRecipesPage()}
             isLoadingMoreRecipes={isLoadingMoreRecipes}

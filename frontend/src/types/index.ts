@@ -364,6 +364,7 @@ export interface RecipeTasting {
   tasting_session_id: number;
   recipe_name?: string | null;
   ingredients: RecipeTastingIngredient[];
+  sequence?: number | null;
   created_at: string;
 }
 
@@ -378,6 +379,15 @@ export interface AddRecipesToSessionRequest {
 export interface BatchAddResult {
   added: number[];
   skipped: number[];
+}
+
+export interface ReorderSessionDishItem {
+  id: number;
+  sequence: number;
+}
+
+export interface ReorderSessionDishesRequest {
+  items: ReorderSessionDishItem[];
 }
 
 // ============ Ingredient-Tasting Session Types ============

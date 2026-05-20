@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session, select
 
 from app.api.deps import get_session, get_current_user
-from app.models import Recipe, RecipeTasting, RecipeTastingRead, RecipeTastingCreate, RecipeTastingBatchCreate, RecipeTastingBatchResult, User
+from app.models import Recipe, RecipeTasting, RecipeTastingRead, RecipeTastingCreate, RecipeTastingBatchCreate, RecipeTastingBatchResult, RecipeTastingReorderRequest, User
 from app.domain import RecipeTastingService, TastingSessionService
 from app.api.tastings import _check_creator_only
 
@@ -96,6 +96,33 @@ def add_recipes_to_session_batch(
     if result is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Tasting session not found")
     return result
+
+
+@router.patch(
+    "/{session_id}/recipes/reorder",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+def reorder_session_recipes(
+    session_id: int,
+    data: RecipeTastingReorderRequest,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
+):
+    """Reorder dishes in a tasting session by updating their sequence numbers. Creator-only."""
+    tasting_service = TastingSessionService(session)
+    tasting_session = tasting_service.get(session_id)
+    if not tasting_session:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Tasting session not found")
+    _check_creator_only(tasting_session, current_user)
+
+    service = RecipeTastingService(session)
+    success = service.reorder_session_dishes(session_id, data.items)
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Could not reorder dishes. Some dish IDs may not belong to this session.",
+        )
+    return None
 
 
 @router.delete(

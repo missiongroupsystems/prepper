@@ -14,6 +14,7 @@ from app.models import (
     RecipeTastingCreate,
     RecipeTastingBatchCreate,
     RecipeTastingBatchResult,
+    RecipeTastingReorderItem,
     TastingSession,
 )
 
@@ -128,7 +129,7 @@ class RecipeTastingService:
             select(RecipeTasting, Recipe.name)
             .join(Recipe, RecipeTasting.recipe_id == Recipe.id)
             .where(RecipeTasting.tasting_session_id == session_id)
-            .order_by(RecipeTasting.id)
+            .order_by(RecipeTasting.sequence.asc().nulls_last(), RecipeTasting.id)
         )
         results = self.session.exec(statement).all()
 
@@ -158,7 +159,34 @@ class RecipeTastingService:
                 tasting_session_id=rt.tasting_session_id,
                 recipe_name=name,
                 ingredients=recipe_ingredients.get(rt.recipe_id, []),
+                sequence=rt.sequence,
                 created_at=rt.created_at,
             )
             for rt, name in results
         ]
+
+    def reorder_session_dishes(
+        self, session_id: int, items: list[RecipeTastingReorderItem]
+    ) -> bool:
+        """Update sequence numbers for dishes in a session.
+
+        Returns False if any of the provided IDs do not belong to this session.
+        """
+        item_ids = [item.id for item in items]
+        existing = self.session.exec(
+            select(RecipeTasting).where(
+                RecipeTasting.tasting_session_id == session_id,
+                RecipeTasting.id.in_(item_ids),
+            )
+        ).all()
+
+        if len(existing) != len(item_ids):
+            return False
+
+        id_to_sequence = {item.id: item.sequence for item in items}
+        for rt in existing:
+            rt.sequence = id_to_sequence[rt.id]
+            self.session.add(rt)
+
+        self.session.commit()
+        return True

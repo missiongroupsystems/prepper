@@ -28,6 +28,7 @@ import type {
   AddRecipeToSessionRequest,
   AddRecipesToSessionRequest,
   BatchAddResult,
+  ReorderSessionDishesRequest,
   IngredientTasting,
   IngredientTastingNote,
   IngredientTastingNoteWithDetails,
@@ -684,6 +685,16 @@ export async function removeRecipeFromSession(
 ): Promise<void> {
   return fetchApi<void>(`/tasting-sessions/${sessionId}/recipes/${recipeId}`, {
     method: 'DELETE',
+  });
+}
+
+export async function reorderSessionDishes(
+  sessionId: number,
+  data: ReorderSessionDishesRequest
+): Promise<void> {
+  return fetchApi<void>(`/tasting-sessions/${sessionId}/recipes/reorder`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
   });
 }
 

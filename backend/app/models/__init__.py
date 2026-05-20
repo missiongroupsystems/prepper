@@ -86,6 +86,8 @@ from app.models.recipe_tasting import (
     RecipeTastingCreate,
     RecipeTastingBatchCreate,
     RecipeTastingBatchResult,
+    RecipeTastingReorderItem,
+    RecipeTastingReorderRequest,
 )
 from app.models.ingredient_tasting import (
     IngredientTasting,
@@ -255,6 +257,8 @@ __all__ = [
     "RecipeTastingBatchCreate",
     "RecipeTastingIngredient",
     "RecipeTastingBatchResult",
+    "RecipeTastingReorderItem",
+    "RecipeTastingReorderRequest",
     # IngredientTasting
     "IngredientTasting",
     "IngredientTastingCreate",
