@@ -15,6 +15,7 @@ import {
   Check,
   CheckCircle,
   GripVertical,
+  ChevronDown,
 } from 'lucide-react';
 import { DayPicker } from 'react-day-picker';
 import { format } from 'date-fns';
@@ -58,8 +59,8 @@ import {
   Badge,
 } from '@/components/ui';
 import { ParticipantPicker } from '@/components/tasting/ParticipantPicker';
-import { RecipeFeedbackModal } from '@/components/tasting/RecipeFeedbackModal';
-import type { Recipe, RecipeTasting, RecipeTastingIngredient, User, UpdateTastingSessionRequest, ReorderSessionDishItem } from '@/types';
+import { DishFeedbackPanel } from '@/components/tasting/DishFeedbackPanel';
+import type { Recipe, RecipeTasting, User, UpdateTastingSessionRequest, ReorderSessionDishItem } from '@/types';
 import { useAppState } from '@/lib/store';
 import { ApiError } from '@/lib/api';
 import { toast } from 'sonner';
@@ -84,14 +85,22 @@ function SortableDishItem({
   sr,
   isCreator,
   reviewedRecipeIds,
-  onRecipeClick,
   onRemoveRecipe,
+  sessionId,
+  currentUserId,
+  isParticipant,
+  isExpanded,
+  onToggle,
 }: {
   sr: RecipeTasting;
   isCreator: boolean;
   reviewedRecipeIds: Set<number>;
-  onRecipeClick: (recipeId: number) => void;
   onRemoveRecipe: (recipeId: number) => void;
+  sessionId: number;
+  currentUserId: string | null;
+  isParticipant: boolean;
+  isExpanded: boolean;
+  onToggle: () => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: sr.id,
@@ -107,39 +116,53 @@ function SortableDishItem({
     <div
       ref={setNodeRef}
       style={style}
-      className="flex items-center gap-1 p-3 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg"
+      className="bg-zinc-50 dark:bg-zinc-800/50 rounded-lg"
     >
-      {isCreator && (
+      <div className="flex items-center gap-1 p-3">
+        {isCreator && (
+          <button
+            type="button"
+            {...attributes}
+            {...listeners}
+            className="p-1 text-zinc-300 dark:text-zinc-600 hover:text-zinc-500 dark:hover:text-zinc-400 cursor-grab active:cursor-grabbing touch-none shrink-0"
+            title="Drag to reorder"
+          >
+            <GripVertical className="h-4 w-4" />
+          </button>
+        )}
+        <div className="flex items-center gap-2 font-medium text-zinc-900 dark:text-zinc-100 flex-1 min-w-0">
+          {reviewedRecipeIds.has(sr.recipe_id) ? (
+            <CheckCircle className="h-4 w-4 text-green-500 shrink-0" />
+          ) : (
+            <div className="h-4 w-4 rounded-full border-2 border-zinc-300 dark:border-zinc-600 shrink-0" />
+          )}
+          <span className="truncate">{sr.recipe_name || `Dish #${sr.recipe_id}`}</span>
+        </div>
         <button
           type="button"
-          {...attributes}
-          {...listeners}
-          className="p-1 text-zinc-300 dark:text-zinc-600 hover:text-zinc-500 dark:hover:text-zinc-400 cursor-grab active:cursor-grabbing touch-none shrink-0"
-          title="Drag to reorder"
+          onClick={onToggle}
+          className="flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 shrink-0"
         >
-          <GripVertical className="h-4 w-4" />
+          <ChevronDown className={`h-3.5 w-3.5 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+          Feedback
         </button>
-      )}
-      <button
-        type="button"
-        onClick={() => onRecipeClick(sr.recipe_id)}
-        className="flex items-center gap-2 font-medium text-zinc-900 dark:text-zinc-100 hover:text-purple-600 dark:hover:text-purple-400 text-left flex-1 min-w-0"
-      >
-        {reviewedRecipeIds.has(sr.recipe_id) ? (
-          <CheckCircle className="h-4 w-4 text-green-500 shrink-0" />
-        ) : (
-          <div className="h-4 w-4 rounded-full border-2 border-zinc-300 dark:border-zinc-600 shrink-0" />
+        {isCreator && (
+          <button
+            onClick={() => onRemoveRecipe(sr.recipe_id)}
+            className="p-1.5 rounded-md hover:bg-red-100 dark:hover:bg-red-900/30 text-zinc-400 hover:text-red-600 shrink-0"
+            title="Remove from session"
+          >
+            <X className="h-4 w-4" />
+          </button>
         )}
-        <span className="truncate">{sr.recipe_name || `Dish #${sr.recipe_id}`}</span>
-      </button>
-      {isCreator && (
-        <button
-          onClick={() => onRemoveRecipe(sr.recipe_id)}
-          className="p-1.5 rounded-md hover:bg-red-100 dark:hover:bg-red-900/30 text-zinc-400 hover:text-red-600 shrink-0"
-          title="Remove from session"
-        >
-          <X className="h-4 w-4" />
-        </button>
+      </div>
+      {isExpanded && (
+        <DishFeedbackPanel
+          recipeId={sr.recipe_id}
+          sessionId={sessionId}
+          currentUserId={currentUserId}
+          isParticipant={isParticipant}
+        />
       )}
     </div>
   );
@@ -160,13 +183,14 @@ interface SessionRecipesSectionProps {
   searchQuery: string;
   onSearchChange: (query: string) => void;
   reviewedRecipeIds: Set<number>;
-  onRecipeClick: (recipeId: number) => void;
   onCreateRecipe: (name: string) => Promise<number>;
   onRemoveRecipes: (recipeIds: number[]) => void;
+  isParticipant: boolean;
+  currentUserId: string | null;
 }
 
 function SessionRecipesSection({
-  sessionId: _sessionId,
+  sessionId,
   sessionRecipes,
   availableRecipes,
   isLoading,
@@ -180,11 +204,13 @@ function SessionRecipesSection({
   searchQuery,
   onSearchChange,
   reviewedRecipeIds,
-  onRecipeClick,
   onCreateRecipe,
   onRemoveRecipes,
+  isParticipant,
+  currentUserId,
 }: SessionRecipesSectionProps) {
   const [showAddRecipe, setShowAddRecipe] = useState(false);
+  const [expandedDishId, setExpandedDishId] = useState<number | null>(null);
   const [selectedRecipeIds, setSelectedRecipeIds] = useState<Set<number>>(new Set());
   const [isCreatingRecipe, setIsCreatingRecipe] = useState(false);
   const [localDishes, setLocalDishes] = useState<RecipeTasting[]>(sessionRecipes);
@@ -412,8 +438,12 @@ function SessionRecipesSection({
                   sr={sr}
                   isCreator={isCreator}
                   reviewedRecipeIds={reviewedRecipeIds}
-                  onRecipeClick={onRecipeClick}
                   onRemoveRecipe={onRemoveRecipe}
+                  sessionId={sessionId}
+                  currentUserId={currentUserId}
+                  isParticipant={isParticipant}
+                  isExpanded={expandedDishId === sr.recipe_id}
+                  onToggle={() => setExpandedDishId(expandedDishId === sr.recipe_id ? null : sr.recipe_id)}
                 />
               ))}
             </div>
@@ -608,7 +638,6 @@ export default function TastingSessionDetailPage() {
 
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [showCalendar, setShowCalendar] = useState(false);
-  const [selectedRecipeIdForModal, setSelectedRecipeIdForModal] = useState<number | null>(null);
 
   // Access control check
   const isInvited = userType === 'admin' ||
@@ -1021,9 +1050,10 @@ export default function TastingSessionDetailPage() {
             searchQuery={recipeSearch}
             onSearchChange={setRecipeSearch}
             reviewedRecipeIds={reviewedRecipeIds}
-            onRecipeClick={setSelectedRecipeIdForModal}
             onCreateRecipe={handleCreateRecipe}
             onRemoveRecipes={handleBatchRemoveRecipes}
+            isParticipant={isInvited}
+            currentUserId={userId}
           />
         )}
 
@@ -1063,17 +1093,6 @@ export default function TastingSessionDetailPage() {
         )}
       </div>
 
-      {/* Recipe Feedback Modal */}
-      {sessionId && session && selectedRecipeIdForModal && (
-        <RecipeFeedbackModal
-          isOpen={!!selectedRecipeIdForModal}
-          onClose={() => setSelectedRecipeIdForModal(null)}
-          sessionId={sessionId}
-          recipeId={selectedRecipeIdForModal}
-          session={session}
-          ingredients={sessionRecipes?.find((sr) => sr.recipe_id === selectedRecipeIdForModal)?.ingredients || []}
-        />
-      )}
     </div>
   );
 }

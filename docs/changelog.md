@@ -6,6 +6,7 @@ All notable changes to Prepper are documented here.
 
 ## Index
 
+- **[0.0.48](#0048---2026-05-22)** — Tasting Session Inline Feedback: Collapsible Per-Dish Feedback Panel Replaces Modal
 - **[0.0.47](#0047---2026-05-20)** — Tasting Session Dish Reordering: Drag-and-Drop Sequence Control for Session Creators
 - **[0.0.46](#0046---2026-05-20)** — Tasting Session UX: Creator Auto-Enrolled as Participant, Insertion-Order Dishes & Organiser Badge
 - **[0.0.45](#0045---2026-04-27)** — Canvas UX Polish: Simplified Ingredient Cost Display & Narrowed Table Item Column
@@ -53,6 +54,20 @@ All notable changes to Prepper are documented here.
 - **[0.0.3](#003---2024-11-27)** — Database Migration: Alembic Initial Tables to Supabase + PostgreSQL JSON Compatibility Fix
 - **[0.0.2](#002---2024-11-27)** — Frontend Implementation: Next.js 15 Recipe Canvas with Drag-and-Drop, Autosave & TanStack Query
 - **[0.0.1](#001---2024-11-27)** — Backend Foundation: FastAPI + SQLModel with 17 API Endpoints, Domain Services & Unit Conversion
+---
+
+## [0.0.48] - 2026-05-22
+
+### Changed
+
+#### Inline Collapsible Feedback Panel Replaces Recipe Feedback Modal
+
+Dish feedback in tasting sessions is now surfaced inline, directly under each dish row, instead of opening a separate full-screen modal.
+
+- **`DishFeedbackPanel.tsx`** (new): self-contained collapsible body rendered below each dish row. Calls `useSessionNotes(sessionId)` — shares the same TanStack Query cache key already fetched at the page level, so no extra request is made. Filters notes by `recipe_id` and renders a `FeedbackNoteCard` per note with full edit/delete support. Participants see a collapsible "Add Feedback" section at the bottom (chevron toggle) that expands a full `FeedbackForm` with image support inline. Non-participants see notes read-only with no add section.
+- **`tastings/[id]/page.tsx`**: each `SortableDishItem` now has a chevron "Feedback" toggle button on the right of the dish row. `SessionRecipesSection` holds `expandedDishId` accordion state (one dish open at a time) and passes `isExpanded` / `onToggle` / `sessionId` / `currentUserId` / `isParticipant` down to each item. Removed `selectedRecipeIdForModal` state and the `RecipeFeedbackModal` render block. Removed `onRecipeClick` prop from `SessionRecipesSectionProps`.
+- **`RecipeFeedbackModal.tsx`** (deleted): fully removed; all feedback surfaces now use the inline panel.
+
 ---
 
 ## [0.0.47] - 2026-05-20
