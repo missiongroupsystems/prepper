@@ -6,6 +6,7 @@ All notable changes to Prepper are documented here.
 
 ## Index
 
+- **[0.0.49](#0049---2026-06-16)** — Recipe Canvas Polish: Design-Token Migration (266 Hardcoded `zinc-*` Pairs Removed), Terracotta Active/Drop States, Reduced-Motion Support & Cost-Pill Contrast Fix
 - **[0.0.48](#0048---2026-05-22)** — Tasting Session Inline Feedback: Collapsible Per-Dish Feedback Panel Replaces Modal
 - **[0.0.47](#0047---2026-05-20)** — Tasting Session Dish Reordering: Drag-and-Drop Sequence Control for Session Creators
 - **[0.0.46](#0046---2026-05-20)** — Tasting Session UX: Creator Auto-Enrolled as Participant, Insertion-Order Dishes & Organiser Badge
@@ -54,6 +55,38 @@ All notable changes to Prepper are documented here.
 - **[0.0.3](#003---2024-11-27)** — Database Migration: Alembic Initial Tables to Supabase + PostgreSQL JSON Compatibility Fix
 - **[0.0.2](#002---2024-11-27)** — Frontend Implementation: Next.js 15 Recipe Canvas with Drag-and-Drop, Autosave & TanStack Query
 - **[0.0.1](#001---2024-11-27)** — Backend Foundation: FastAPI + SQLModel with 17 API Endpoints, Domain Services & Unit Conversion
+---
+
+## [0.0.49] - 2026-06-16
+
+### Changed
+
+#### Recipe Canvas — Design-Token Migration
+
+The recipe canvas (`CanvasTab.tsx`) was built with hardcoded `zinc-*` light/dark Tailwind pairs instead of the project's HSL design-system tokens. The cold neutral greys fought the warm terracotta/parchment brand and made the canvas read as a generic dashboard. Migrated the full surface to semantic tokens — no behaviour change.
+
+- **`CanvasTab.tsx`**: replaced 266 hardcoded `zinc-*` usages across all three view modes (grid/list/table), the header, metadata panel, and bottom bar. Surfaces → `bg-background` / `bg-card` / `bg-secondary`; borders → `border-border` / `border-input`; text → `text-foreground` / `text-muted-foreground`; inputs → `bg-secondary border-input`. Zero hardcoded neutral classes remain. The add-ingredients textarea's stray `focus:ring-blue-500` now uses `ring` (terracotta).
+- **`CanvasLayout.tsx`**: tokenised the back-link chrome bar (`border-border/60`, `bg-background`, `text-muted-foreground`).
+
+#### Recipe Canvas — Warm Active & Drop States
+
+- View-mode toggle active state changed from cold `bg-blue-100 … text-blue-600` to `bg-primary/15 text-primary` (terracotta), matching the active-state convention introduced in 0.0.40.
+- Drop-zone hover highlight changed from `border-blue-400 bg-blue-50/50` to `border-primary bg-primary/5`, so the primary tactile drag interaction now gives on-brand feedback. Added `duration-200` for a smoother transition.
+
+The intentional `game-card` aesthetic (blue ingredient / green recipe "rarity") and colour type-coding (pips, category tags, profit/loss, unsaved-amber) were deliberately left unchanged.
+
+### Fixed
+
+#### Accessibility — Reduced Motion & Cost-Pill Contrast
+
+- **`globals.css`**: added a `@media (prefers-reduced-motion: reduce)` reset (none existed app-wide) that neutralises transitions, animations, and smooth scroll. Covers the canvas `game-card` hover-lift, drop transitions, and `flow-ui` utilities.
+- **`CanvasTab.tsx`**: the header cost-summary pills (Batch / per-portion / Sell / profit) were `text-muted-foreground` on `bg-secondary` (~2.9–3.5:1, below WCAG AA at 12 px). Strengthened to `text-foreground/80` so the cost figures finance relies on are legible.
+
+**Files changed:**
+- `frontend/src/components/layout/tabs/CanvasTab.tsx`
+- `frontend/src/components/layout/CanvasLayout.tsx`
+- `frontend/src/app/globals.css`
+
 ---
 
 ## [0.0.48] - 2026-05-22

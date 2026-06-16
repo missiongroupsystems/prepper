@@ -58,10 +58,10 @@ export function CanvasLayout({ showBackLink = false, showTabs = true }: CanvasLa
   return (
     <div className="flex h-full flex-col">
       {showBackLink && (
-        <div className="shrink-0 border-b border-zinc-100 dark:border-zinc-800 bg-white dark:bg-zinc-950 px-4 py-1.5">
+        <div className="shrink-0 border-b border-border/60 bg-background px-4 py-1.5">
           <Link
             href="/recipes"
-            className="inline-flex items-center gap-1.5 text-xs text-zinc-400 hover:text-zinc-600 dark:text-zinc-500 dark:hover:text-zinc-300 transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
           >
             <ArrowLeft className="h-3 w-3" />
             Recipes

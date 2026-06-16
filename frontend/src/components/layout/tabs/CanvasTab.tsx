@@ -421,26 +421,26 @@ function StagedIngredientListItem({
   const categoryName = staged.ingredient.category_id ? categoryMap[staged.ingredient.category_id] : null;
 
   return (
-    <div className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg px-4 py-3 flex items-center gap-4 hover:border-zinc-300 dark:hover:border-zinc-600 transition-colors group">
+    <div className="w-full bg-card border border-border rounded-lg px-4 py-3 flex items-center gap-4 hover:border-foreground/20 transition-colors group">
       {/* Left accent pip */}
       <div className="w-0.5 h-8 rounded-full bg-blue-400 dark:bg-blue-500 shrink-0" />
 
       {/* Name + meta */}
       <div className="flex-1 min-w-0">
-        <h4 className="font-medium text-sm text-zinc-900 dark:text-white truncate">{staged.ingredient.name}</h4>
+        <h4 className="font-medium text-sm text-foreground truncate">{staged.ingredient.name}</h4>
         <div className="flex items-center gap-1.5 mt-0.5">
-          <span className="text-xs text-zinc-500 dark:text-zinc-400">{staged.unit}</span>
+          <span className="text-xs text-muted-foreground">{staged.unit}</span>
           {categoryName && (
             <>
-              <span className="text-zinc-300 dark:text-zinc-600 text-xs">·</span>
-              <span className="text-xs text-zinc-500 dark:text-zinc-400 truncate">{categoryName}</span>
+              <span className="text-muted-foreground/50 text-xs">·</span>
+              <span className="text-xs text-muted-foreground truncate">{categoryName}</span>
             </>
           )}
-          <span className="text-zinc-300 dark:text-zinc-600 text-xs">·</span>
-          <span className="text-xs text-zinc-400 dark:text-zinc-500">
+          <span className="text-muted-foreground/50 text-xs">·</span>
+          <span className="text-xs text-muted-foreground">
             {unitCost != null ? (
               <>
-                <span className="font-medium text-zinc-600 dark:text-zinc-300">{formatCurrency(staged.quantity * unitCost)}</span>
+                <span className="font-medium text-foreground/80">{formatCurrency(staged.quantity * unitCost)}</span>
                 {' '}(${unitCost.toFixed(2)}/{staged.unit})
               </>
             ) : 'No pricing'}
@@ -454,7 +454,7 @@ function StagedIngredientListItem({
           value={staged.selectedSupplierId ?? ''}
           onChange={(e) => onSupplierSelect(e.target.value ? parseInt(e.target.value, 10) : null)}
           onClick={(e) => e.stopPropagation()}
-          className="shrink-0 w-32 rounded-md border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 px-1.5 py-1 text-xs text-zinc-700 dark:text-zinc-300 focus:border-blue-400 focus:outline-none"
+          className="shrink-0 w-32 rounded-md border border-border bg-secondary px-1.5 py-1 text-xs text-foreground/80 focus:border-blue-400 focus:outline-none"
         >
           <option value="">Median</option>
           {suppliers.map((s) => (
@@ -469,7 +469,7 @@ function StagedIngredientListItem({
       <div className="flex items-center gap-1 shrink-0">
         <button
           onClick={() => onQuantityChange(parseFloat(Math.max(1, staged.quantity - 1).toFixed(1)))}
-          className="rounded p-0.5 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+          className="rounded p-0.5 text-muted-foreground hover:text-foreground"
         >
           <Minus className="h-3.5 w-3.5" />
         </button>
@@ -477,14 +477,14 @@ function StagedIngredientListItem({
           value={staged.quantity}
           onChange={onQuantityChange}
           onClick={(e) => e.stopPropagation()}
-          className="w-14 rounded-md border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 px-2 py-1 text-sm text-center tabular-nums text-zinc-900 dark:text-white focus:border-blue-400 focus:outline-none"
+          className="w-14 rounded-md border border-border bg-secondary px-2 py-1 text-sm text-center tabular-nums text-foreground focus:border-blue-400 focus:outline-none"
           min={0.001}
         />
         <select
           value={staged.unit}
           onChange={(e) => { e.stopPropagation(); onUnitChange(e.target.value); }}
           onClick={(e) => e.stopPropagation()}
-          className="w-14 rounded-md border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 px-1 py-1 text-xs text-zinc-700 dark:text-zinc-300 focus:border-blue-400 focus:outline-none"
+          className="w-14 rounded-md border border-border bg-secondary px-1 py-1 text-xs text-foreground/80 focus:border-blue-400 focus:outline-none"
         >
           {getCompatibleUnits(staged.unit).map((u) => (
             <option key={u} value={u}>{u}</option>
@@ -498,17 +498,17 @@ function StagedIngredientListItem({
           value={staged.wastage_percentage}
           onChange={(v) => onWastageChange(v)}
           onClick={(e) => e.stopPropagation()}
-          className="w-12 rounded-md border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 px-1.5 py-1 text-sm text-center tabular-nums text-zinc-900 dark:text-white focus:border-blue-400 focus:outline-none"
+          className="w-12 rounded-md border border-border bg-secondary px-1.5 py-1 text-sm text-center tabular-nums text-foreground focus:border-blue-400 focus:outline-none"
           min={0}
           max={100}
         />
-        <span className="text-xs text-zinc-400">%w</span>
+        <span className="text-xs text-muted-foreground">%w</span>
       </div>
 
       {/* Remove */}
       <button
         onClick={onRemove}
-        className="shrink-0 rounded p-1 text-zinc-300 dark:text-zinc-600 opacity-0 group-hover:opacity-100 hover:text-red-500 dark:hover:text-red-400 transition-all"
+        className="shrink-0 rounded p-1 text-muted-foreground/50 opacity-0 group-hover:opacity-100 hover:text-red-500 dark:hover:text-red-400 transition-all"
       >
         <X className="h-4 w-4" />
       </button>
@@ -535,20 +535,20 @@ function StagedRecipeListItem({
   const { data: subRecipes } = useSubRecipes(staged.recipe.id);
 
   return (
-    <div className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg px-4 py-3 hover:border-zinc-300 dark:hover:border-zinc-600 transition-colors group">
+    <div className="w-full bg-card border border-border rounded-lg px-4 py-3 hover:border-foreground/20 transition-colors group">
       <div className="flex items-center gap-4">
         {/* Left accent pip */}
         <div className="w-0.5 h-8 rounded-full bg-green-400 dark:bg-green-500 shrink-0" />
 
         {/* Name + meta */}
         <div className="flex-1 min-w-0">
-          <h4 className="font-medium text-sm text-zinc-900 dark:text-white truncate">{staged.recipe.name}</h4>
+          <h4 className="font-medium text-sm text-foreground truncate">{staged.recipe.name}</h4>
           <div className="flex items-center gap-1.5 mt-0.5">
-            <span className="text-xs text-zinc-500 dark:text-zinc-400">{staged.recipe.yield_quantity} {staged.recipe.yield_unit}</span>
+            <span className="text-xs text-muted-foreground">{staged.recipe.yield_quantity} {staged.recipe.yield_unit}</span>
             {outletNames.length > 0 && (
               <>
-                <span className="text-zinc-300 dark:text-zinc-600 text-xs">·</span>
-                <span className="text-xs text-zinc-400 dark:text-zinc-500 truncate">{outletNames.join(', ')}</span>
+                <span className="text-muted-foreground/50 text-xs">·</span>
+                <span className="text-xs text-muted-foreground truncate">{outletNames.join(', ')}</span>
               </>
             )}
           </div>
@@ -558,7 +558,7 @@ function StagedRecipeListItem({
         <div className="flex items-center gap-1 shrink-0">
           <button
             onClick={() => onQuantityChange(parseFloat(Math.max(1, staged.quantity - 1).toFixed(1)))}
-            className="rounded p-0.5 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+            className="rounded p-0.5 text-muted-foreground hover:text-foreground"
           >
             <Minus className="h-3.5 w-3.5" />
           </button>
@@ -566,16 +566,16 @@ function StagedRecipeListItem({
             value={staged.quantity}
             onChange={onQuantityChange}
             onClick={(e) => e.stopPropagation()}
-            className="w-14 rounded-md border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 px-2 py-1 text-sm text-center tabular-nums text-zinc-900 dark:text-white focus:border-green-400 focus:outline-none"
+            className="w-14 rounded-md border border-border bg-secondary px-2 py-1 text-sm text-center tabular-nums text-foreground focus:border-green-400 focus:outline-none"
             min={0.001}
           />
-          <span className="text-xs text-zinc-400">portion</span>
+          <span className="text-xs text-muted-foreground">portion</span>
         </div>
 
         {/* Remove */}
         <button
           onClick={onRemove}
-          className="shrink-0 rounded p-1 text-zinc-300 dark:text-zinc-600 opacity-0 group-hover:opacity-100 hover:text-red-500 dark:hover:text-red-400 transition-all"
+          className="shrink-0 rounded p-1 text-muted-foreground/50 opacity-0 group-hover:opacity-100 hover:text-red-500 dark:hover:text-red-400 transition-all"
         >
           <X className="h-4 w-4" />
         </button>
@@ -583,7 +583,7 @@ function StagedRecipeListItem({
 
       {/* Expandable detail: ingredients + sub-recipes + tags */}
       {((recipeIngredients && recipeIngredients.length > 0) || (subRecipes && subRecipes.length > 0) || categoryNames.length > 0) && (
-        <div className="mt-2 pt-2 border-t border-zinc-100 dark:border-zinc-800 ml-6 space-y-1.5">
+        <div className="mt-2 pt-2 border-t border-border/60 ml-6 space-y-1.5">
           {/* Tags */}
           {categoryNames.length > 0 && (
             <div className="flex flex-wrap gap-1">
@@ -597,11 +597,11 @@ function StagedRecipeListItem({
 
           {/* Ingredients */}
           {recipeIngredients && recipeIngredients.length > 0 && (
-            <ul className="text-xs text-zinc-500 dark:text-zinc-400 space-y-0.5">
+            <ul className="text-xs text-muted-foreground space-y-0.5">
               {recipeIngredients.map((ri) => (
                 <li key={ri.id} className="flex justify-between gap-2">
                   <span>{ri.ingredient?.name || `#${ri.ingredient_id}`} · {ri.quantity} {ri.base_unit || ri.unit}</span>
-                  <span className="text-zinc-400 dark:text-zinc-500 tabular-nums shrink-0">
+                  <span className="text-muted-foreground tabular-nums shrink-0">
                     {ri.unit_price != null ? (
                       <>{formatCurrency(ri.quantity * ri.unit_price)} (${ri.unit_price.toFixed(2)})</>
                     ) : '—'}
@@ -613,7 +613,7 @@ function StagedRecipeListItem({
 
           {/* Sub-recipes */}
           {subRecipes && subRecipes.length > 0 && (
-            <ul className="text-xs text-zinc-500 dark:text-zinc-400 space-y-0.5">
+            <ul className="text-xs text-muted-foreground space-y-0.5">
               {subRecipes.map((sr) => {
                 const childRecipe = allRecipes?.find((r) => r.id === sr.child_recipe_id);
                 return (
@@ -871,14 +871,14 @@ function TableItemDropdown({
     <div className="relative">
       <button
         onClick={() => setOpenDropdown(isOpen ? null : dropdownId)}
-        className="w-full text-left px-3 py-2 rounded border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-900 text-sm text-zinc-900 dark:text-white hover:border-zinc-400 dark:hover:border-zinc-500 flex items-center justify-between"
+        className="w-full text-left px-3 py-2 rounded border border-input bg-card text-sm text-foreground hover:border-foreground/30 flex items-center justify-between"
       >
         <span className="truncate">{displayName}</span>
         <ChevronDown className={`h-4 w-4 transition-transform flex-shrink-0 ml-2 ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-600 rounded shadow-lg z-50 flex flex-col max-h-72">
+        <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-input rounded shadow-lg z-50 flex flex-col max-h-72">
           {/* Search Input */}
           <input
             type="text"
@@ -886,20 +886,20 @@ function TableItemDropdown({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onClick={(e) => e.stopPropagation()}
-            className="px-3 py-2 border-b border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none sticky top-0"
+            className="px-3 py-2 border-b border-border bg-card text-sm text-foreground placeholder:text-muted-foreground focus:outline-none sticky top-0"
           />
 
           {/* Results List */}
           <div className="overflow-y-auto flex-1">
             {filteredIngredients.length === 0 && filteredRecipes.length === 0 ? (
-              <div className="px-3 py-2 text-sm text-zinc-500 dark:text-zinc-400">No results found</div>
+              <div className="px-3 py-2 text-sm text-muted-foreground">No results found</div>
             ) : (
               <>
                 {/* Ingredients Section */}
                 {filteredIngredients.length > 0 && (
                   <>
                     {filteredRecipes.length > 0 && (
-                      <div className="px-3 py-1.5 text-xs font-semibold text-zinc-600 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-900/50 sticky top-0">
+                      <div className="px-3 py-1.5 text-xs font-semibold text-muted-foreground bg-secondary/50 sticky top-0">
                         Ingredients
                       </div>
                     )}
@@ -911,11 +911,11 @@ function TableItemDropdown({
                           setOpenDropdown(null);
                           setSearchQuery('');
                         }}
-                        className="w-full text-left px-3 py-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 border-b border-zinc-200 dark:border-zinc-700 last:border-b-0"
+                        className="w-full text-left px-3 py-2 hover:bg-secondary border-b border-border last:border-b-0"
                       >
                         <div className="flex items-center justify-between gap-2">
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-zinc-900 dark:text-white truncate">{ing.name}</p>
+                            <p className="text-sm font-medium text-foreground truncate">{ing.name}</p>
                             <div className="flex gap-1 flex-wrap mt-1">
                               <span className="text-xs bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 px-2 py-0.5 rounded flex-shrink-0">
                                 Ingredient
@@ -925,7 +925,7 @@ function TableItemDropdown({
                                   {categoryMap[ing.category_id || 0]}
                                 </span>
                               )}
-                              <span className="text-xs text-zinc-500 dark:text-zinc-400">{ing.base_unit}</span>
+                              <span className="text-xs text-muted-foreground">{ing.base_unit}</span>
                             </div>
                           </div>
                           {ing.id === selectedIngredientId && (
@@ -941,7 +941,7 @@ function TableItemDropdown({
                 {filteredRecipes.length > 0 && (
                   <>
                     {filteredIngredients.length > 0 && (
-                      <div className="px-3 py-1.5 text-xs font-semibold text-zinc-600 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-900/50 sticky top-0">
+                      <div className="px-3 py-1.5 text-xs font-semibold text-muted-foreground bg-secondary/50 sticky top-0">
                         Recipes
                       </div>
                     )}
@@ -953,16 +953,16 @@ function TableItemDropdown({
                           setOpenDropdown(null);
                           setSearchQuery('');
                         }}
-                        className="w-full text-left px-3 py-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 border-b border-zinc-200 dark:border-zinc-700 last:border-b-0"
+                        className="w-full text-left px-3 py-2 hover:bg-secondary border-b border-border last:border-b-0"
                       >
                         <div className="flex items-center justify-between gap-2">
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-zinc-900 dark:text-white truncate">{recipe.name}</p>
+                            <p className="text-sm font-medium text-foreground truncate">{recipe.name}</p>
                             <div className="flex gap-1 flex-wrap mt-1">
                               <span className="text-xs bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300 px-2 py-0.5 rounded flex-shrink-0">
                                 Recipe
                               </span>
-                              <span className="text-xs text-zinc-500 dark:text-zinc-400 flex-shrink-0">
+                              <span className="text-xs text-muted-foreground flex-shrink-0">
                                 Yield: {recipe.yield_quantity} {recipe.yield_unit}
                               </span>
                             </div>
@@ -1018,24 +1018,24 @@ function CanvasTable({
     <div className="w-full h-full overflow-auto flex flex-col">
       <table className="w-full border-collapse">
         <thead>
-          <tr className="border-b border-zinc-200 dark:border-zinc-700 bg-zinc-50/50 dark:bg-zinc-900/50">
-            <th className="text-left px-4 py-2 text-[11px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">Qty</th>
-            <th className="text-left px-4 py-2 text-[11px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">Unit</th>
-            <th className="text-left px-4 py-2 text-[11px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">Wastage</th>
-            <th className="text-left px-4 py-2 text-[11px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500 w-48">Item</th>
-            <th className="text-right px-4 py-2 text-[11px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">Cost</th>
-            <th className="text-left px-4 py-2 text-[11px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500 w-12"></th>
+          <tr className="border-b border-border bg-secondary/50">
+            <th className="text-left px-4 py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Qty</th>
+            <th className="text-left px-4 py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Unit</th>
+            <th className="text-left px-4 py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Wastage</th>
+            <th className="text-left px-4 py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground w-48">Item</th>
+            <th className="text-right px-4 py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Cost</th>
+            <th className="text-left px-4 py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground w-12"></th>
           </tr>
         </thead>
         <tbody>
           {/* Ingredients */}
           {stagedIngredients.map((staged) => (
-            <tr key={staged.id} className="border-b border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30 transition-colors group">
+            <tr key={staged.id} className="border-b border-border/60 hover:bg-secondary/50 transition-colors group">
               <td className="px-4 py-2.5">
                 <div className="flex items-center gap-1">
                   <button
                     onClick={() => onIngredientQuantityChange(staged.id, parseFloat(Math.max(1, staged.quantity - 1).toFixed(1)))}
-                    className="rounded p-0.5 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+                    className="rounded p-0.5 text-muted-foreground hover:text-foreground"
                   >
                     <Minus className="h-3 w-3" />
                   </button>
@@ -1043,12 +1043,12 @@ function CanvasTable({
                     value={staged.quantity}
                     onChange={(v) => onIngredientQuantityChange(staged.id, v)}
                     onClick={(e) => e.stopPropagation()}
-                    className="w-14 rounded-md border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 px-2 py-1 text-sm text-center tabular-nums text-zinc-900 dark:text-white focus:border-blue-400 focus:outline-none"
+                    className="w-14 rounded-md border border-border bg-secondary px-2 py-1 text-sm text-center tabular-nums text-foreground focus:border-blue-400 focus:outline-none"
                     min={0.001}
                   />
                   <button
                     onClick={() => onIngredientQuantityChange(staged.id, parseFloat((staged.quantity + 1).toFixed(1)))}
-                    className="rounded p-0.5 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+                    className="rounded p-0.5 text-muted-foreground hover:text-foreground"
                   >
                     <Plus className="h-3 w-3" />
                   </button>
@@ -1059,7 +1059,7 @@ function CanvasTable({
                   value={staged.unit}
                   onChange={(e) => { e.stopPropagation(); onIngredientUnitChange(staged.id, e.target.value); }}
                   onClick={(e) => e.stopPropagation()}
-                  className="rounded-md border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 px-1.5 py-1 text-sm text-zinc-700 dark:text-zinc-300 focus:border-blue-400 focus:outline-none"
+                  className="rounded-md border border-border bg-secondary px-1.5 py-1 text-sm text-foreground/80 focus:border-blue-400 focus:outline-none"
                 >
                   {getCompatibleUnits(staged.unit).map((u) => (
                     <option key={u} value={u}>{u}</option>
@@ -1072,11 +1072,11 @@ function CanvasTable({
                     value={staged.wastage_percentage}
                     onChange={(v) => onIngredientWastageChange(staged.id, v)}
                     onClick={(e) => e.stopPropagation()}
-                    className="w-14 rounded-md border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 px-2 py-1 text-sm text-center tabular-nums text-zinc-900 dark:text-white focus:border-blue-400 focus:outline-none"
+                    className="w-14 rounded-md border border-border bg-secondary px-2 py-1 text-sm text-center tabular-nums text-foreground focus:border-blue-400 focus:outline-none"
                     min={0}
                     max={100}
                   />
-                  <span className="text-xs text-zinc-400">%</span>
+                  <span className="text-xs text-muted-foreground">%</span>
                 </div>
               </td>
               <td className="px-4 py-3 relative">
@@ -1093,10 +1093,10 @@ function CanvasTable({
                   onRecipeSelect={(recipe) => onIngredientSelect(staged.id, recipe)}
                 />
               </td>
-              <td className="px-4 py-2.5 text-right tabular-nums text-xs text-zinc-500 dark:text-zinc-400">
+              <td className="px-4 py-2.5 text-right tabular-nums text-xs text-muted-foreground">
                 {staged.unitPrice != null ? (
                   <>
-                    <span className="font-medium text-zinc-700 dark:text-zinc-300">{formatCurrency(staged.quantity * staged.unitPrice)}</span>
+                    <span className="font-medium text-foreground/80">{formatCurrency(staged.quantity * staged.unitPrice)}</span>
                     {' '}(${staged.unitPrice.toFixed(2)}/{staged.unit})
                   </>
                 ) : <span>—</span>}
@@ -1104,7 +1104,7 @@ function CanvasTable({
               <td className="px-4 py-2.5">
                 <button
                   onClick={() => onRemoveIngredient(staged.id)}
-                  className="rounded p-1 text-zinc-300 dark:text-zinc-600 opacity-0 group-hover:opacity-100 hover:text-red-500 dark:hover:text-red-400 transition-all"
+                  className="rounded p-1 text-muted-foreground/50 opacity-0 group-hover:opacity-100 hover:text-red-500 dark:hover:text-red-400 transition-all"
                 >
                   <X className="h-3.5 w-3.5" />
                 </button>
@@ -1114,12 +1114,12 @@ function CanvasTable({
 
           {/* Recipes */}
           {stagedRecipes.map((staged) => (
-            <tr key={staged.id} className="border-b border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30 transition-colors group">
+            <tr key={staged.id} className="border-b border-border/60 hover:bg-secondary/50 transition-colors group">
               <td className="px-4 py-2.5">
                 <div className="flex items-center gap-1">
                   <button
                     onClick={() => onRecipeQuantityChange(staged.id, parseFloat(Math.max(1, staged.quantity - 1).toFixed(1)))}
-                    className="rounded p-0.5 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+                    className="rounded p-0.5 text-muted-foreground hover:text-foreground"
                   >
                     <Minus className="h-3 w-3" />
                   </button>
@@ -1127,19 +1127,19 @@ function CanvasTable({
                     value={staged.quantity}
                     onChange={(v) => onRecipeQuantityChange(staged.id, v)}
                     onClick={(e) => e.stopPropagation()}
-                    className="w-14 rounded-md border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 px-2 py-1 text-sm text-center tabular-nums text-zinc-900 dark:text-white focus:border-green-400 focus:outline-none"
+                    className="w-14 rounded-md border border-border bg-secondary px-2 py-1 text-sm text-center tabular-nums text-foreground focus:border-green-400 focus:outline-none"
                     min={0.001}
                   />
                   <button
                     onClick={() => onRecipeQuantityChange(staged.id, parseFloat((staged.quantity + 1).toFixed(1)))}
-                    className="rounded p-0.5 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+                    className="rounded p-0.5 text-muted-foreground hover:text-foreground"
                   >
                     <Plus className="h-3 w-3" />
                   </button>
                 </div>
               </td>
-              <td className="px-4 py-2.5 text-sm text-zinc-600 dark:text-zinc-400">portion</td>
-              <td className="px-4 py-2.5 text-sm text-zinc-400 dark:text-zinc-500">—</td>
+              <td className="px-4 py-2.5 text-sm text-muted-foreground">portion</td>
+              <td className="px-4 py-2.5 text-sm text-muted-foreground">—</td>
               <td className="px-4 py-3 relative">
                 <TableItemDropdown
                   staged={staged}
@@ -1154,11 +1154,11 @@ function CanvasTable({
                   onIngredientSelect={(ingredient) => onRecipeSelect(staged.id, ingredient)}
                 />
               </td>
-              <td className="px-4 py-2.5 text-right text-sm text-zinc-400 dark:text-zinc-500">—</td>
+              <td className="px-4 py-2.5 text-right text-sm text-muted-foreground">—</td>
               <td className="px-4 py-2.5">
                 <button
                   onClick={() => onRemoveRecipe(staged.id)}
-                  className="rounded p-1 text-zinc-300 dark:text-zinc-600 opacity-0 group-hover:opacity-100 hover:text-red-500 dark:hover:text-red-400 transition-all"
+                  className="rounded p-1 text-muted-foreground/50 opacity-0 group-hover:opacity-100 hover:text-red-500 dark:hover:text-red-400 transition-all"
                 >
                   <X className="h-3.5 w-3.5" />
                 </button>
@@ -1226,9 +1226,9 @@ function CanvasDropZone({
           canvasRef.current = node;
         }
       }}
-      className={`relative flex-1 min-h-[400px] overflow-auto rounded-xl border-2 border-dashed transition-colors ${isOver
-          ? 'border-blue-400 bg-blue-50/50 dark:border-blue-600 dark:bg-blue-950/20'
-          : 'border-zinc-200 dark:border-zinc-800'
+      className={`relative flex-1 min-h-[400px] overflow-auto rounded-xl border-2 border-dashed transition-colors duration-200 ${isOver
+          ? 'border-primary bg-primary/5'
+          : 'border-border'
         } ${viewMode === 'list' ? 'flex flex-col' : ''}`}
       style={viewMode === 'table' ? {
         position: 'relative',
@@ -1244,10 +1244,10 @@ function CanvasDropZone({
     >
       {!hasItems && (
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
-          <div className="w-10 h-10 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
-            <Plus className="h-5 w-5 text-zinc-400 dark:text-zinc-500" />
+          <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
+            <Plus className="h-5 w-5 text-muted-foreground" />
           </div>
-          <p className="text-sm text-zinc-400 dark:text-zinc-500">
+          <p className="text-sm text-muted-foreground">
             Drag or add items from the library
           </p>
         </div>
@@ -1410,31 +1410,31 @@ function CanvasContent({
   const [showDetails, setShowDetails] = useState(true);
 
   return (
-    <main className="flex-1 flex flex-col overflow-hidden bg-white dark:bg-zinc-950">
+    <main className="flex-1 flex flex-col overflow-hidden bg-background">
       {/* ── Header: Name + key info on one line ── */}
-      <div className="shrink-0 border-b border-zinc-200 dark:border-zinc-800 px-5 py-3">
+      <div className="shrink-0 border-b border-border px-5 py-3">
         <div className="flex items-center gap-3">
           <Input
             value={metadata.name}
             onChange={(e) => onMetadataChange({ name: e.target.value })}
             placeholder="Dish name"
-            className="text-base font-semibold flex-1 min-w-0 border-transparent bg-transparent hover:border-zinc-300 dark:hover:border-zinc-700 focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors h-9"
+            className="text-base font-semibold flex-1 min-w-0 border-transparent bg-transparent hover:border-foreground/20 focus:border-ring transition-colors h-9"
           />
 
           {/* Compact cost summary pills */}
           <div className="hidden sm:flex items-center gap-2 shrink-0">
             {canvasCost > 0 && (
-              <span className="text-xs font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 rounded-full px-2.5 py-1 tabular-nums">
+              <span className="text-xs font-medium bg-secondary text-foreground/80 rounded-full px-2.5 py-1 tabular-nums">
                 Batch {formatCurrency(canvasCost)}
               </span>
             )}
             {canvasCost > 0 && metadata.yield_quantity > 0 && (
-              <span className="text-xs font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 rounded-full px-2.5 py-1 tabular-nums">
+              <span className="text-xs font-medium bg-secondary text-foreground/80 rounded-full px-2.5 py-1 tabular-nums">
                 {formatCurrency(canvasCost / metadata.yield_quantity)}/{metadata.yield_unit}
               </span>
             )}
             {metadata.selling_price > 0 && (
-              <span className="text-xs font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 rounded-full px-2.5 py-1 tabular-nums">
+              <span className="text-xs font-medium bg-secondary text-foreground/80 rounded-full px-2.5 py-1 tabular-nums">
                 Sell {formatCurrency(metadata.selling_price)}
               </span>
             )}
@@ -1448,7 +1448,7 @@ function CanvasContent({
                   'text-xs font-medium rounded-full px-2.5 py-1 tabular-nums',
                   isProfit && 'bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400',
                   isLoss && 'bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400',
-                  !isProfit && !isLoss && 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400'
+                  !isProfit && !isLoss && 'bg-secondary text-foreground/80'
                 )}>
                   {isProfit ? '+' : ''}{formatCurrency(profitPerPortion)}/{metadata.yield_unit}
                 </span>
@@ -1459,7 +1459,7 @@ function CanvasContent({
           {/* Toggle details */}
           <button
             onClick={() => setShowDetails(!showDetails)}
-            className="shrink-0 p-1.5 rounded-md text-zinc-400 hover:text-zinc-600 dark:text-zinc-500 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+            className="shrink-0 p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
             title={showDetails ? 'Hide details' : 'Show details'}
           >
             {showDetails ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
@@ -1468,17 +1468,17 @@ function CanvasContent({
 
         {/* Version info */}
         {(rootRecipeName || currentVersion) && (
-          <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5 pl-1">
+          <p className="text-xs text-muted-foreground mt-0.5 pl-1">
             Based on: {rootRecipeName || 'N/A'}{currentVersion ? ` · v${currentVersion}` : ''}
           </p>
         )}
 
         {/* ── Collapsible details panel ── */}
         {showDetails && (
-          <div className="mt-3 pt-3 border-t border-zinc-100 dark:border-zinc-800 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-x-4 gap-y-3">
+          <div className="mt-3 pt-3 border-t border-border/60 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-x-4 gap-y-3">
             {/* Yield */}
             <div className="flex flex-col gap-1">
-              <label className="text-[11px] font-medium uppercase tracking-wide text-zinc-400 dark:text-zinc-500">Yield</label>
+              <label className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Yield</label>
               <div className="flex items-center gap-1.5">
                 <NumericInput
                   value={metadata.yield_quantity}
@@ -1497,7 +1497,7 @@ function CanvasContent({
 
             {/* Status */}
             <div className="flex flex-col gap-1">
-              <label className="text-[11px] font-medium uppercase tracking-wide text-zinc-400 dark:text-zinc-500">Status</label>
+              <label className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Status</label>
               <Select
                 value={metadata.status}
                 onChange={(e) => onMetadataChange({ status: e.target.value as RecipeStatus })}
@@ -1508,9 +1508,9 @@ function CanvasContent({
 
             {/* Selling Price */}
             <div className="flex flex-col gap-1">
-              <label className="text-[11px] font-medium uppercase tracking-wide text-zinc-400 dark:text-zinc-500">Selling Price</label>
+              <label className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Selling Price</label>
               <div className="flex items-center gap-1">
-                <span className="text-xs text-zinc-400">$</span>
+                <span className="text-xs text-muted-foreground">$</span>
                 <NumericInput
                   value={metadata.selling_price}
                   onChange={(v) => onMetadataChange({ selling_price: v })}
@@ -1522,7 +1522,7 @@ function CanvasContent({
 
             {/* Toggles */}
             <div className="flex flex-col gap-1">
-              <label className="text-[11px] font-medium uppercase tracking-wide text-zinc-400 dark:text-zinc-500">Options</label>
+              <label className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Options</label>
               <div className="flex items-center gap-3 h-8">
                 <Checkbox
                   checked={metadata.is_public}
@@ -1534,14 +1534,14 @@ function CanvasContent({
 
             {/* View Mode */}
             <div className="flex flex-col gap-1">
-              <label className="text-[11px] font-medium uppercase tracking-wide text-zinc-400 dark:text-zinc-500">View</label>
+              <label className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">View</label>
               <div className="flex items-center gap-1 h-8">
                 <button
                   onClick={() => onViewModeChange('grid')}
                   className={`p-1.5 rounded ${
                     viewMode === 'grid'
-                      ? 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400'
-                      : 'text-zinc-400 hover:text-zinc-600 dark:text-zinc-500 dark:hover:text-zinc-300'
+                      ? 'bg-primary/15 text-primary'
+                      : 'text-muted-foreground hover:text-foreground'
                   }`}
                   title="Card view"
                 >
@@ -1551,8 +1551,8 @@ function CanvasContent({
                   onClick={() => onViewModeChange('list')}
                   className={`p-1.5 rounded ${
                     viewMode === 'list'
-                      ? 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400'
-                      : 'text-zinc-400 hover:text-zinc-600 dark:text-zinc-500 dark:hover:text-zinc-300'
+                      ? 'bg-primary/15 text-primary'
+                      : 'text-muted-foreground hover:text-foreground'
                   }`}
                   title="List view"
                 >
@@ -1562,8 +1562,8 @@ function CanvasContent({
                   onClick={() => onViewModeChange('table')}
                   className={`p-1.5 rounded ${
                     viewMode === 'table'
-                      ? 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400'
-                      : 'text-zinc-400 hover:text-zinc-600 dark:text-zinc-500 dark:hover:text-zinc-300'
+                      ? 'bg-primary/15 text-primary'
+                      : 'text-muted-foreground hover:text-foreground'
                   }`}
                   title="Table view"
                 >
@@ -1601,15 +1601,15 @@ function CanvasContent({
       </div>
 
       {/* ── Bottom Bar — compact ── */}
-      <div className="shrink-0 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50/80 dark:bg-zinc-900/80 backdrop-blur-sm px-5 py-2.5">
+      <div className="shrink-0 border-t border-border bg-card/80 backdrop-blur-sm px-5 py-2.5">
         <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3 text-xs text-zinc-500 dark:text-zinc-400">
+          <div className="flex items-center gap-3 text-xs text-muted-foreground">
             <span className="tabular-nums">{stagedIngredients.length} ingredient{stagedIngredients.length !== 1 ? 's' : ''}</span>
-            <span className="text-zinc-300 dark:text-zinc-700">·</span>
+            <span className="text-muted-foreground/40">·</span>
             <span className="tabular-nums">{stagedRecipes.length} item{stagedRecipes.length !== 1 ? 's' : ''}</span>
             {hasUnsavedChanges && (
               <>
-                <span className="text-zinc-300 dark:text-zinc-700">·</span>
+                <span className="text-muted-foreground/40">·</span>
                 <span className="font-medium text-amber-600 dark:text-amber-400">Unsaved</span>
               </>
             )}
@@ -3042,7 +3042,7 @@ export function CanvasTab({ outlets }: CanvasTabProps) {
             value={addIngredientsText}
             onChange={(e) => setAddIngredientsText(e.target.value)}
             placeholder="Enter ingredients (one per line or comma-separated)"
-            className="w-full h-48 p-3 border border-zinc-300 rounded-lg dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full h-48 p-3 border border-input bg-secondary text-foreground rounded-lg placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
           />
           <div className="flex justify-end gap-3">
             <Button
