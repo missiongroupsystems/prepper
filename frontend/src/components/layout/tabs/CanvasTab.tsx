@@ -246,7 +246,7 @@ function StagedIngredientCard({
       {/* Title Banner */}
       <div className="game-card-title">
         <div className="flex items-center gap-2">
-          <button {...listeners} {...attributes} className="cursor-grab touch-none text-blue-300 hover:text-blue-100">
+          <button {...listeners} {...attributes} aria-label={`Drag ${staged.ingredient.name}`} className="cursor-grab touch-none text-blue-300 hover:text-blue-100">
             <GripVertical className="h-5 w-5" />
           </button>
           <h3 className="flex-1 font-bold text-white truncate text-base tracking-wide uppercase">
@@ -254,6 +254,7 @@ function StagedIngredientCard({
           </h3>
           <button
             onClick={onRemove}
+            aria-label={`Remove ${staged.ingredient.name}`}
             className="rounded p-1 text-blue-300 hover:text-white hover:bg-white/10"
           >
             <X className="h-5 w-5" />
@@ -282,6 +283,7 @@ function StagedIngredientCard({
               }}
               className="rounded p-1 text-blue-300 hover:text-white hover:bg-blue-500/20"
               title="Decrease quantity"
+              aria-label="Decrease quantity"
             >
               <Minus className="h-4 w-4" />
             </button>
@@ -289,13 +291,23 @@ function StagedIngredientCard({
               value={staged.quantity}
               onChange={onQuantityChange}
               onClick={(e) => e.stopPropagation()}
+              aria-label={`Quantity of ${staged.ingredient.name}`}
               className="w-16 rounded bg-black/30 border border-blue-400/30 px-2 py-1 text-base text-white text-center focus:border-blue-400 focus:outline-none"
               min={0.001}
             />
+            <button
+              onClick={() => onQuantityChange(parseFloat((staged.quantity + 1).toFixed(1)))}
+              className="rounded p-1 text-blue-300 hover:text-white hover:bg-blue-500/20"
+              title="Increase quantity"
+              aria-label="Increase quantity"
+            >
+              <Plus className="h-4 w-4" />
+            </button>
             <select
               value={staged.unit}
               onChange={(e) => { e.stopPropagation(); onUnitChange(e.target.value); }}
               onClick={(e) => e.stopPropagation()}
+              aria-label={`Unit for ${staged.ingredient.name}`}
               className="rounded bg-black/30 border border-blue-400/30 px-1 py-0.5 text-sm text-blue-100 focus:border-blue-400 focus:outline-none"
             >
               {getCompatibleUnits(staged.unit).map((u) => (
@@ -305,6 +317,8 @@ function StagedIngredientCard({
           </div>
           <button
             onClick={() => setIsExpanded(!isExpanded)}
+            aria-label={isExpanded ? 'Hide ingredient details' : 'Show ingredient details'}
+            aria-expanded={isExpanded}
             className="rounded p-1.5 text-blue-300 hover:text-white hover:bg-white/10"
           >
             {isExpanded ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
@@ -454,6 +468,7 @@ function StagedIngredientListItem({
           value={staged.selectedSupplierId ?? ''}
           onChange={(e) => onSupplierSelect(e.target.value ? parseInt(e.target.value, 10) : null)}
           onClick={(e) => e.stopPropagation()}
+          aria-label={`Supplier for ${staged.ingredient.name}`}
           className="shrink-0 w-32 rounded-md border border-border bg-secondary px-1.5 py-1 text-xs text-foreground/80 focus:border-blue-400 focus:outline-none"
         >
           <option value="">Median</option>
@@ -469,6 +484,8 @@ function StagedIngredientListItem({
       <div className="flex items-center gap-1 shrink-0">
         <button
           onClick={() => onQuantityChange(parseFloat(Math.max(1, staged.quantity - 1).toFixed(1)))}
+          aria-label="Decrease quantity"
+          title="Decrease quantity"
           className="rounded p-0.5 text-muted-foreground hover:text-foreground"
         >
           <Minus className="h-3.5 w-3.5" />
@@ -477,13 +494,23 @@ function StagedIngredientListItem({
           value={staged.quantity}
           onChange={onQuantityChange}
           onClick={(e) => e.stopPropagation()}
+          aria-label={`Quantity of ${staged.ingredient.name}`}
           className="w-14 rounded-md border border-border bg-secondary px-2 py-1 text-sm text-center tabular-nums text-foreground focus:border-blue-400 focus:outline-none"
           min={0.001}
         />
+        <button
+          onClick={() => onQuantityChange(parseFloat((staged.quantity + 1).toFixed(1)))}
+          aria-label="Increase quantity"
+          title="Increase quantity"
+          className="rounded p-0.5 text-muted-foreground hover:text-foreground"
+        >
+          <Plus className="h-3.5 w-3.5" />
+        </button>
         <select
           value={staged.unit}
           onChange={(e) => { e.stopPropagation(); onUnitChange(e.target.value); }}
           onClick={(e) => e.stopPropagation()}
+          aria-label={`Unit for ${staged.ingredient.name}`}
           className="w-14 rounded-md border border-border bg-secondary px-1 py-1 text-xs text-foreground/80 focus:border-blue-400 focus:outline-none"
         >
           {getCompatibleUnits(staged.unit).map((u) => (
@@ -498,17 +525,19 @@ function StagedIngredientListItem({
           value={staged.wastage_percentage}
           onChange={(v) => onWastageChange(v)}
           onClick={(e) => e.stopPropagation()}
+          aria-label={`Wastage percentage for ${staged.ingredient.name}`}
           className="w-12 rounded-md border border-border bg-secondary px-1.5 py-1 text-sm text-center tabular-nums text-foreground focus:border-blue-400 focus:outline-none"
           min={0}
           max={100}
         />
-        <span className="text-xs text-muted-foreground">%w</span>
+        <span className="text-xs text-muted-foreground" title="Wastage %">%w</span>
       </div>
 
       {/* Remove */}
       <button
         onClick={onRemove}
-        className="shrink-0 rounded p-1 text-muted-foreground/50 opacity-0 group-hover:opacity-100 hover:text-red-500 dark:hover:text-red-400 transition-all"
+        aria-label={`Remove ${staged.ingredient.name}`}
+        className="shrink-0 rounded p-1 text-muted-foreground/50 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 hover:text-red-500 dark:hover:text-red-400 transition-all"
       >
         <X className="h-4 w-4" />
       </button>
@@ -558,6 +587,8 @@ function StagedRecipeListItem({
         <div className="flex items-center gap-1 shrink-0">
           <button
             onClick={() => onQuantityChange(parseFloat(Math.max(1, staged.quantity - 1).toFixed(1)))}
+            aria-label="Decrease quantity"
+            title="Decrease quantity"
             className="rounded p-0.5 text-muted-foreground hover:text-foreground"
           >
             <Minus className="h-3.5 w-3.5" />
@@ -566,16 +597,26 @@ function StagedRecipeListItem({
             value={staged.quantity}
             onChange={onQuantityChange}
             onClick={(e) => e.stopPropagation()}
+            aria-label={`Quantity of ${staged.recipe.name}`}
             className="w-14 rounded-md border border-border bg-secondary px-2 py-1 text-sm text-center tabular-nums text-foreground focus:border-green-400 focus:outline-none"
             min={0.001}
           />
+          <button
+            onClick={() => onQuantityChange(parseFloat((staged.quantity + 1).toFixed(1)))}
+            aria-label="Increase quantity"
+            title="Increase quantity"
+            className="rounded p-0.5 text-muted-foreground hover:text-foreground"
+          >
+            <Plus className="h-3.5 w-3.5" />
+          </button>
           <span className="text-xs text-muted-foreground">portion</span>
         </div>
 
         {/* Remove */}
         <button
           onClick={onRemove}
-          className="shrink-0 rounded p-1 text-muted-foreground/50 opacity-0 group-hover:opacity-100 hover:text-red-500 dark:hover:text-red-400 transition-all"
+          aria-label={`Remove ${staged.recipe.name}`}
+          className="shrink-0 rounded p-1 text-muted-foreground/50 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 hover:text-red-500 dark:hover:text-red-400 transition-all"
         >
           <X className="h-4 w-4" />
         </button>
@@ -693,7 +734,7 @@ function StagedRecipeCard({
       {/* Title Banner */}
       <div className="game-card-title">
         <div className="flex items-center gap-2">
-          <button {...listeners} {...attributes} className="cursor-grab touch-none text-green-300 hover:text-green-100">
+          <button {...listeners} {...attributes} aria-label={`Drag ${staged.recipe.name}`} className="cursor-grab touch-none text-green-300 hover:text-green-100">
             <GripVertical className="h-5 w-5" />
           </button>
           <h3 className="flex-1 font-bold text-white truncate text-base tracking-wide uppercase">
@@ -701,6 +742,7 @@ function StagedRecipeCard({
           </h3>
           <button
             onClick={onRemove}
+            aria-label={`Remove ${staged.recipe.name}`}
             className="rounded p-1 text-green-300 hover:text-white hover:bg-white/10"
           >
             <X className="h-5 w-5" />
@@ -720,6 +762,7 @@ function StagedRecipeCard({
               }}
               className="rounded p-1 text-green-300 hover:text-white hover:bg-green-500/20"
               title="Decrease quantity"
+              aria-label="Decrease quantity"
             >
               <Minus className="h-4 w-4" />
             </button>
@@ -727,13 +770,24 @@ function StagedRecipeCard({
               value={staged.quantity}
               onChange={onQuantityChange}
               onClick={(e) => e.stopPropagation()}
+              aria-label={`Quantity of ${staged.recipe.name}`}
               className="w-16 rounded bg-black/30 border border-green-400/30 px-2 py-1 text-base text-white text-center focus:border-green-400 focus:outline-none"
               min={0.001}
             />
+            <button
+              onClick={() => onQuantityChange(parseFloat((staged.quantity + 1).toFixed(1)))}
+              className="rounded p-1 text-green-300 hover:text-white hover:bg-green-500/20"
+              title="Increase quantity"
+              aria-label="Increase quantity"
+            >
+              <Plus className="h-4 w-4" />
+            </button>
             <span className="game-card-stat game-card-stat-recipe">portion</span>
           </div>
           <button
             onClick={() => setIsExpanded(!isExpanded)}
+            aria-label={isExpanded ? 'Hide recipe details' : 'Show recipe details'}
+            aria-expanded={isExpanded}
             className="rounded p-1.5 text-green-300 hover:text-white hover:bg-white/10"
           >
             {isExpanded ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
@@ -1035,6 +1089,8 @@ function CanvasTable({
                 <div className="flex items-center gap-1">
                   <button
                     onClick={() => onIngredientQuantityChange(staged.id, parseFloat(Math.max(1, staged.quantity - 1).toFixed(1)))}
+                    aria-label="Decrease quantity"
+                    title="Decrease quantity"
                     className="rounded p-0.5 text-muted-foreground hover:text-foreground"
                   >
                     <Minus className="h-3 w-3" />
@@ -1043,11 +1099,14 @@ function CanvasTable({
                     value={staged.quantity}
                     onChange={(v) => onIngredientQuantityChange(staged.id, v)}
                     onClick={(e) => e.stopPropagation()}
+                    aria-label={`Quantity of ${staged.ingredient.name}`}
                     className="w-14 rounded-md border border-border bg-secondary px-2 py-1 text-sm text-center tabular-nums text-foreground focus:border-blue-400 focus:outline-none"
                     min={0.001}
                   />
                   <button
                     onClick={() => onIngredientQuantityChange(staged.id, parseFloat((staged.quantity + 1).toFixed(1)))}
+                    aria-label="Increase quantity"
+                    title="Increase quantity"
                     className="rounded p-0.5 text-muted-foreground hover:text-foreground"
                   >
                     <Plus className="h-3 w-3" />
@@ -1059,6 +1118,7 @@ function CanvasTable({
                   value={staged.unit}
                   onChange={(e) => { e.stopPropagation(); onIngredientUnitChange(staged.id, e.target.value); }}
                   onClick={(e) => e.stopPropagation()}
+                  aria-label={`Unit for ${staged.ingredient.name}`}
                   className="rounded-md border border-border bg-secondary px-1.5 py-1 text-sm text-foreground/80 focus:border-blue-400 focus:outline-none"
                 >
                   {getCompatibleUnits(staged.unit).map((u) => (
@@ -1072,6 +1132,7 @@ function CanvasTable({
                     value={staged.wastage_percentage}
                     onChange={(v) => onIngredientWastageChange(staged.id, v)}
                     onClick={(e) => e.stopPropagation()}
+                    aria-label={`Wastage percentage for ${staged.ingredient.name}`}
                     className="w-14 rounded-md border border-border bg-secondary px-2 py-1 text-sm text-center tabular-nums text-foreground focus:border-blue-400 focus:outline-none"
                     min={0}
                     max={100}
@@ -1104,7 +1165,8 @@ function CanvasTable({
               <td className="px-4 py-2.5">
                 <button
                   onClick={() => onRemoveIngredient(staged.id)}
-                  className="rounded p-1 text-muted-foreground/50 opacity-0 group-hover:opacity-100 hover:text-red-500 dark:hover:text-red-400 transition-all"
+                  aria-label={`Remove ${staged.ingredient.name}`}
+                  className="rounded p-1 text-muted-foreground/50 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 hover:text-red-500 dark:hover:text-red-400 transition-all"
                 >
                   <X className="h-3.5 w-3.5" />
                 </button>
@@ -1119,6 +1181,8 @@ function CanvasTable({
                 <div className="flex items-center gap-1">
                   <button
                     onClick={() => onRecipeQuantityChange(staged.id, parseFloat(Math.max(1, staged.quantity - 1).toFixed(1)))}
+                    aria-label="Decrease quantity"
+                    title="Decrease quantity"
                     className="rounded p-0.5 text-muted-foreground hover:text-foreground"
                   >
                     <Minus className="h-3 w-3" />
@@ -1127,11 +1191,14 @@ function CanvasTable({
                     value={staged.quantity}
                     onChange={(v) => onRecipeQuantityChange(staged.id, v)}
                     onClick={(e) => e.stopPropagation()}
+                    aria-label={`Quantity of ${staged.recipe.name}`}
                     className="w-14 rounded-md border border-border bg-secondary px-2 py-1 text-sm text-center tabular-nums text-foreground focus:border-green-400 focus:outline-none"
                     min={0.001}
                   />
                   <button
                     onClick={() => onRecipeQuantityChange(staged.id, parseFloat((staged.quantity + 1).toFixed(1)))}
+                    aria-label="Increase quantity"
+                    title="Increase quantity"
                     className="rounded p-0.5 text-muted-foreground hover:text-foreground"
                   >
                     <Plus className="h-3 w-3" />
@@ -1158,7 +1225,8 @@ function CanvasTable({
               <td className="px-4 py-2.5">
                 <button
                   onClick={() => onRemoveRecipe(staged.id)}
-                  className="rounded p-1 text-muted-foreground/50 opacity-0 group-hover:opacity-100 hover:text-red-500 dark:hover:text-red-400 transition-all"
+                  aria-label={`Remove ${staged.recipe.name}`}
+                  className="rounded p-1 text-muted-foreground/50 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 hover:text-red-500 dark:hover:text-red-400 transition-all"
                 >
                   <X className="h-3.5 w-3.5" />
                 </button>
@@ -1280,7 +1348,7 @@ function CanvasDropZone({
           ))}
         </div>
       ) : viewMode === 'table' ? (
-        <CanvasTable
+        hasItems && <CanvasTable
           stagedIngredients={stagedIngredients}
           stagedRecipes={stagedRecipes}
           onRemoveIngredient={onRemoveIngredient}
@@ -1461,6 +1529,8 @@ function CanvasContent({
             onClick={() => setShowDetails(!showDetails)}
             className="shrink-0 p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
             title={showDetails ? 'Hide details' : 'Show details'}
+            aria-label={showDetails ? 'Hide recipe details' : 'Show recipe details'}
+            aria-expanded={showDetails}
           >
             {showDetails ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
           </button>
@@ -1469,7 +1539,7 @@ function CanvasContent({
         {/* Version info */}
         {(rootRecipeName || currentVersion) && (
           <p className="text-xs text-muted-foreground mt-0.5 pl-1">
-            Based on: {rootRecipeName || 'N/A'}{currentVersion ? ` · v${currentVersion}` : ''}
+            {rootRecipeName ? `Based on: ${rootRecipeName}` : 'Original'}{currentVersion ? ` · v${currentVersion}` : ''}
           </p>
         )}
 
@@ -1535,9 +1605,11 @@ function CanvasContent({
             {/* View Mode */}
             <div className="flex flex-col gap-1">
               <label className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">View</label>
-              <div className="flex items-center gap-1 h-8">
+              <div className="flex items-center gap-1 h-8" role="group" aria-label="Canvas view mode">
                 <button
                   onClick={() => onViewModeChange('grid')}
+                  aria-label="Card view"
+                  aria-pressed={viewMode === 'grid'}
                   className={`p-1.5 rounded ${
                     viewMode === 'grid'
                       ? 'bg-primary/15 text-primary'
@@ -1549,6 +1621,8 @@ function CanvasContent({
                 </button>
                 <button
                   onClick={() => onViewModeChange('list')}
+                  aria-label="List view"
+                  aria-pressed={viewMode === 'list'}
                   className={`p-1.5 rounded ${
                     viewMode === 'list'
                       ? 'bg-primary/15 text-primary'
@@ -1560,6 +1634,8 @@ function CanvasContent({
                 </button>
                 <button
                   onClick={() => onViewModeChange('table')}
+                  aria-label="Table view"
+                  aria-pressed={viewMode === 'table'}
                   className={`p-1.5 rounded ${
                     viewMode === 'table'
                       ? 'bg-primary/15 text-primary'
@@ -1606,7 +1682,7 @@ function CanvasContent({
           <div className="flex items-center gap-3 text-xs text-muted-foreground">
             <span className="tabular-nums">{stagedIngredients.length} ingredient{stagedIngredients.length !== 1 ? 's' : ''}</span>
             <span className="text-muted-foreground/40">·</span>
-            <span className="tabular-nums">{stagedRecipes.length} item{stagedRecipes.length !== 1 ? 's' : ''}</span>
+            <span className="tabular-nums">{stagedRecipes.length} sub-recipe{stagedRecipes.length !== 1 ? 's' : ''}</span>
             {hasUnsavedChanges && (
               <>
                 <span className="text-muted-foreground/40">·</span>
@@ -1642,7 +1718,7 @@ function CanvasContent({
               size="sm"
               onClick={onShowAddIngredientsModal}
             >
-              + Ingredients
+              Add ingredients
             </Button>
             <Button size="sm" onClick={onSubmit} disabled={
               isSubmitting ||

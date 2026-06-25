@@ -34,7 +34,7 @@ export function AllergenCard({
         <div className="flex-1 min-w-0">
           <CardTitle className="truncate">{allergen.name}</CardTitle>
           {allergen.description && (
-            <p className="text-sm text-zinc-500 dark:text-zinc-400 line-clamp-2 mt-1">
+            <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
               {allergen.description}
             </p>
           )}
@@ -43,7 +43,7 @@ export function AllergenCard({
       </div>
 
       {showActions && (
-        <div className="absolute top-2 right-2 flex items-center gap-1 bg-white dark:bg-zinc-950 rounded-md shadow-sm border border-zinc-200 dark:border-zinc-800 p-1">
+        <div className="absolute top-2 right-2 flex items-center gap-1 bg-card rounded-md shadow-sm border border-border p-1">
           {onEdit && (
             <Button
               variant="ghost"

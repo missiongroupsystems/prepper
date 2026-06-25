@@ -144,7 +144,7 @@ function SupplierCard({ supplier }: { supplier: Supplier }) {
           <div className="flex items-center justify-between w-full gap-2">
             <Link href={`/suppliers/${supplier.id}`} className="min-w-0 flex-1">
               <div>
-                <CardTitle className="text-xl cursor-pointer hover:text-zinc-600 dark:hover:text-zinc-300">
+                <CardTitle className="text-xl cursor-pointer hover:text-muted-foreground">
                   <OverflowTooltip text={supplier.name}>{supplier.name}</OverflowTooltip>
                 </CardTitle>
                 <div className="flex items-center gap-2 mt-1 flex-wrap">
@@ -187,7 +187,7 @@ function SupplierCard({ supplier }: { supplier: Supplier }) {
         {isEditing ? (
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <MapPin className="h-4 w-4 text-zinc-400 shrink-0" />
+              <MapPin className="h-4 w-4 text-muted-foreground shrink-0" />
               <Input
                 value={editAddress}
                 onChange={(e) => setEditAddress(e.target.value)}
@@ -196,7 +196,7 @@ function SupplierCard({ supplier }: { supplier: Supplier }) {
               />
             </div>
             <div className="flex items-center gap-2">
-              <Phone className="h-4 w-4 text-zinc-400 shrink-0" />
+              <Phone className="h-4 w-4 text-muted-foreground shrink-0" />
               <Input
                 value={editPhone}
                 onChange={(e) => setEditPhone(e.target.value)}
@@ -205,7 +205,7 @@ function SupplierCard({ supplier }: { supplier: Supplier }) {
               />
             </div>
             <div className="flex items-center gap-2">
-              <Mail className="h-4 w-4 text-zinc-400 shrink-0" />
+              <Mail className="h-4 w-4 text-muted-foreground shrink-0" />
               <Input
                 value={editEmail}
                 onChange={(e) => setEditEmail(e.target.value)}
@@ -216,7 +216,7 @@ function SupplierCard({ supplier }: { supplier: Supplier }) {
             </div>
           </div>
         ) : (
-          <div className="space-y-1 text-sm text-zinc-600 dark:text-zinc-400">
+          <div className="space-y-1 text-sm text-muted-foreground">
             {supplier.address && (
               <div className="flex items-center gap-2 min-w-0">
                 <MapPin className="h-4 w-4 shrink-0" />
@@ -236,7 +236,7 @@ function SupplierCard({ supplier }: { supplier: Supplier }) {
               </div>
             )}
             {!supplier.address && !supplier.phone_number && !supplier.email && (
-              <p className="text-zinc-400 dark:text-zinc-500 italic">No contact info</p>
+              <p className="text-muted-foreground italic">No contact info</p>
             )}
           </div>
         )}
@@ -379,7 +379,7 @@ export default function SuppliersPage() {
         {/* Empty State */}
         {!isLoading && filteredSuppliers.length === 0 && (
           <div className="text-center py-12">
-            <p className="text-zinc-500 dark:text-zinc-400">
+            <p className="text-muted-foreground">
               {search ? 'No suppliers match your search' : 'No suppliers yet'}
             </p>
           </div>

@@ -108,13 +108,13 @@ function SubRecipeRow({
       ref={setNodeRef}
       style={style}
       className={cn(
-        'flex items-center gap-3 rounded-lg border border-zinc-200 bg-white p-3 dark:border-zinc-700 dark:bg-zinc-900',
+        'flex items-center gap-3 rounded-lg border border-border bg-card p-3',
         isDragging && 'opacity-50'
       )}
     >
       {canEdit && (
         <button
-          className="cursor-grab touch-none text-zinc-400 hover:text-zinc-600"
+          className="cursor-grab touch-none text-muted-foreground hover:text-foreground"
           {...attributes}
           {...listeners}
         >
@@ -124,10 +124,10 @@ function SubRecipeRow({
 
       <div className="min-w-0 flex-1">
         <p className="truncate font-medium">{recipeName}</p>
-        <p className="text-xs text-zinc-500">
+        <p className="text-xs text-muted-foreground">
           Added {formatDate(subRecipe.created_at)}
           {childRecipeYield > 1 && (
-            <span className="ml-2 text-zinc-400">· yields {childRecipeYield} {childRecipeYieldUnit}</span>
+            <span className="ml-2 text-muted-foreground">· yields {childRecipeYield} {childRecipeYieldUnit}</span>
           )}
         </p>
         {subRecipe.unit === 'portion' && portionCost != null && (
@@ -159,7 +159,7 @@ function SubRecipeRow({
         {canEdit && (
           <button
             onClick={onRemove}
-            className="rounded p-1.5 text-zinc-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20"
+            className="rounded p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
           >
             <Trash2 className="h-4 w-4" />
           </button>
@@ -242,7 +242,7 @@ function AddSubRecipeForm({ recipeId, existingChildIds, recipes, userId, userTyp
 
   if (availableRecipes.length === 0) {
     return (
-      <div className="rounded-lg border-2 border-dashed border-zinc-200 p-4 text-center text-sm text-zinc-500 dark:border-zinc-700">
+      <div className="rounded-lg border-2 border-dashed border-border p-4 text-center text-sm text-muted-foreground">
         No recipes available to add as sub-recipes
       </div>
     );
@@ -251,7 +251,7 @@ function AddSubRecipeForm({ recipeId, existingChildIds, recipes, userId, userTyp
   return (
     <form onSubmit={handleSubmit} className="flex items-end gap-2">
       <div className="flex-1">
-        <label className="mb-1 block text-xs font-medium text-zinc-500">Recipe</label>
+        <label className="mb-1 block text-xs font-medium text-muted-foreground">Recipe</label>
         <Select
           value={selectedRecipeId}
           onChange={(e) => setSelectedRecipeId(e.target.value)}
@@ -259,7 +259,7 @@ function AddSubRecipeForm({ recipeId, existingChildIds, recipes, userId, userTyp
           className="w-full"
         />
         {selectedRecipe && (
-          <p className="mt-1 text-xs text-zinc-500">
+          <p className="mt-1 text-xs text-muted-foreground">
             {(selectedRecipe.yield_quantity ?? 1) > 1
               ? `Yields ${selectedRecipe.yield_quantity} ${selectedRecipe.yield_unit} per batch`
               : 'Tip: set this recipe\'s yield for accurate per-portion costing'}
@@ -268,7 +268,7 @@ function AddSubRecipeForm({ recipeId, existingChildIds, recipes, userId, userTyp
       </div>
 
       <div className="w-24">
-        <label className="mb-1 block text-xs font-medium text-zinc-500">Quantity</label>
+        <label className="mb-1 block text-xs font-medium text-muted-foreground">Quantity</label>
         <Input
           type="text"
           inputMode="decimal"
@@ -279,7 +279,7 @@ function AddSubRecipeForm({ recipeId, existingChildIds, recipes, userId, userTyp
       </div>
 
       <div className="w-32">
-        <label className="mb-1 block text-xs font-medium text-zinc-500">Unit</label>
+        <label className="mb-1 block text-xs font-medium text-muted-foreground">Unit</label>
         <Select
           value={unit}
           onChange={(e) => setUnit(e.target.value as SubRecipeUnit)}
@@ -457,12 +457,12 @@ export function SubRecipesList({ recipeId, canEdit }: SubRecipesListProps) {
       ) : (
         <div
           className={cn(
-            'rounded-lg border-2 border-dashed border-zinc-200 p-8 text-center dark:border-zinc-700',
+            'rounded-lg border-2 border-dashed border-border p-8 text-center',
             isOver && 'border-green-400 bg-green-50 dark:bg-green-900/20'
           )}
         >
-          <p className="text-zinc-500">No sub-recipes yet</p>
-          <p className="mt-1 text-sm text-zinc-400">
+          <p className="text-muted-foreground">No sub-recipes yet</p>
+          <p className="mt-1 text-sm text-muted-foreground">
             Add recipes as components of this recipe
           </p>
         </div>

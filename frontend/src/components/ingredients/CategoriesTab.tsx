@@ -60,7 +60,7 @@ function EditCategoryModal({ category, onClose }: EditCategoryModalProps) {
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
       <form
         onSubmit={handleSubmit}
-        className="relative bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-6 shadow-lg w-full max-w-md mx-4"
+        className="relative bg-card border border-border rounded-lg p-6 shadow-lg w-full max-w-md mx-4"
       >
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-medium text-lg">Edit Category</h3>
@@ -210,7 +210,7 @@ export function CategoriesTab() {
         {/* Empty State */}
         {!isLoading && filteredCategories.length === 0 && (
           <div className="text-center py-12">
-            <p className="text-zinc-500 dark:text-zinc-400">
+            <p className="text-muted-foreground">
               {search ? 'No categories match your search' : 'No categories yet'}
             </p>
           </div>

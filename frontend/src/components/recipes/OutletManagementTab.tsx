@@ -75,7 +75,7 @@ function EditOutletModal({ outlet, allOutlets, onClose }: EditOutletModalProps) 
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
       <form
         onSubmit={handleSubmit}
-        className="relative bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-6 shadow-lg w-full max-w-md mx-4"
+        className="relative bg-card border border-border rounded-lg p-6 shadow-lg w-full max-w-md mx-4"
       >
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-medium text-lg">Edit Outlet</h3>
@@ -118,7 +118,7 @@ function EditOutletModal({ outlet, allOutlets, onClose }: EditOutletModalProps) 
             <select
               value={formData.parent_outlet_id || ''}
               onChange={(e) => setFormData((prev) => ({ ...prev, parent_outlet_id: e.target.value ? parseInt(e.target.value) : null }))}
-              className="w-full px-3 py-2 border border-zinc-200 dark:border-zinc-700 rounded-md bg-white dark:bg-zinc-950 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-input rounded-md bg-card text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="">-- None --</option>
               {allOutlets
@@ -252,7 +252,7 @@ export function OutletManagementTab({ userType }: OutletManagementTabProps) {
   if (error) {
     return (
       <div className="p-6">
-        <div className="rounded-lg bg-red-50 dark:bg-red-950 p-4 text-red-600 dark:text-red-400">
+        <div className="rounded-lg bg-destructive/10 p-4 text-destructive">
           Failed to load outlets. Please try again.
         </div>
       </div>
@@ -326,7 +326,7 @@ export function OutletManagementTab({ userType }: OutletManagementTabProps) {
         {/* Empty State */}
         {!isLoading && filteredOutlets.length === 0 && (
           <div className="text-center py-12">
-            <p className="text-zinc-500 dark:text-zinc-400">
+            <p className="text-muted-foreground">
               {search ? 'No outlets match your search' : 'No outlets yet'}
             </p>
           </div>
@@ -344,7 +344,7 @@ export function OutletManagementTab({ userType }: OutletManagementTabProps) {
 
                   return (
                     <div key={brandId || 'ungrouped'}>
-                      <h3 className="text-lg font-semibold mb-4 text-zinc-900 dark:text-zinc-100">
+                      <h3 className="text-lg font-semibold mb-4 text-foreground">
                         {brand?.name || 'Etc'}
                       </h3>
                       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -400,7 +400,7 @@ export function OutletManagementTab({ userType }: OutletManagementTabProps) {
                         {children.length > 0 ? (
                           <button
                             onClick={() => toggleParentExpanded(parent.id)}
-                            className="p-1 rounded hover:bg-zinc-200 dark:hover:bg-zinc-700 cursor-pointer"
+                            className="p-1 rounded hover:bg-secondary cursor-pointer"
                             title={isExpanded ? 'Collapse' : 'Expand'}
                           >
                             {isExpanded ? (
@@ -417,7 +417,7 @@ export function OutletManagementTab({ userType }: OutletManagementTabProps) {
                         </div>
                       </div>
                       {isExpanded && (
-                        <div className="flex flex-col gap-2 pl-6 border-l-2 border-zinc-200 dark:border-zinc-700">
+                        <div className="flex flex-col gap-2 pl-6 border-l-2 border-border">
                           {children
                             .filter((child: Outlet) => {
                               if (search && !child.name.toLowerCase().includes(search.toLowerCase())) {

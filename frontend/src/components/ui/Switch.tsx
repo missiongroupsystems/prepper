@@ -18,13 +18,13 @@ export const Switch = forwardRef<HTMLInputElement, SwitchProps>(
           disabled={disabled}
           className={cn(
             'relative h-6 w-11 appearance-none rounded-full transition-colors',
-            'bg-zinc-300 dark:bg-zinc-600',
+            'bg-muted',
             'checked:bg-blue-500 dark:checked:bg-blue-600',
             'disabled:opacity-50 disabled:cursor-not-allowed',
-            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-zinc-950',
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-background',
             'cursor-pointer',
             // Slider effect using ::before pseudo-element via CSS
-            'before:content-[""] before:absolute before:h-5 before:w-5 before:rounded-full before:bg-white dark:before:bg-zinc-200 before:transition-transform before:pointer-events-none',
+            'before:content-[""] before:absolute before:h-5 before:w-5 before:rounded-full before:bg-card before:transition-transform before:pointer-events-none',
             'before:left-0.5 before:top-0.5',
             'checked:before:translate-x-5',
             className
@@ -32,7 +32,7 @@ export const Switch = forwardRef<HTMLInputElement, SwitchProps>(
           {...props}
         />
         {label && (
-          <label className="text-sm text-zinc-500 dark:text-zinc-400 cursor-pointer select-none">
+          <label className="text-sm text-muted-foreground cursor-pointer select-none">
             {label}
           </label>
         )}

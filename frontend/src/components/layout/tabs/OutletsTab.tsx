@@ -28,9 +28,9 @@ export function OutletsTab({ outlets = [] }: OutletsTabProps) {
 
   if (!selectedRecipeId) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-white dark:bg-zinc-950">
+      <div className="flex-1 flex items-center justify-center bg-background">
         <div className="text-center">
-          <p className="text-zinc-500 dark:text-zinc-400">
+          <p className="text-muted-foreground">
             Select a recipe from the left panel to view its outlets
           </p>
         </div>
@@ -40,7 +40,7 @@ export function OutletsTab({ outlets = [] }: OutletsTabProps) {
 
   if (recipeLoading || outletsLoading || allOutletsLoading) {
     return (
-      <div className="flex-1 bg-white dark:bg-zinc-950 p-6">
+      <div className="flex-1 bg-background p-6">
         <div className="max-w-4xl mx-auto">
           <div className="space-y-3">
             <Skeleton className="h-10 w-full" />
@@ -54,7 +54,7 @@ export function OutletsTab({ outlets = [] }: OutletsTabProps) {
 
   if (recipeError || outletsError || !recipe) {
     return (
-      <div className="flex-1 bg-white dark:bg-zinc-950 p-6">
+      <div className="flex-1 bg-background p-6">
         <div className="max-w-4xl mx-auto">
           <div className="rounded-lg bg-red-50 dark:bg-red-950 p-4 text-red-600 dark:text-red-400">
             Recipe not found or failed to load.
@@ -104,10 +104,10 @@ export function OutletsTab({ outlets = [] }: OutletsTabProps) {
   };
 
   return (
-    <div className="flex-1 overflow-auto bg-white dark:bg-zinc-950">
+    <div className="flex-1 overflow-auto bg-background">
       <div className="p-6 max-w-4xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+          <h2 className="text-lg font-semibold text-foreground">
             Associated Outlets
           </h2>
           <Button onClick={() => setIsModalOpen(true)} className="flex items-center gap-2">
@@ -120,7 +120,7 @@ export function OutletsTab({ outlets = [] }: OutletsTabProps) {
           <CardContent className="p-6">
             {recipeOutlets.length === 0 ? (
               <div className="text-center py-8">
-                <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                <p className="text-sm text-muted-foreground">
                   No outlets associated with this recipe yet
                 </p>
                 <Button
@@ -135,20 +135,20 @@ export function OutletsTab({ outlets = [] }: OutletsTabProps) {
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-zinc-200 dark:border-zinc-700">
-                      <th className="py-3 pr-4 text-left font-medium text-zinc-500 dark:text-zinc-400">
+                    <tr className="border-b border-border">
+                      <th className="py-3 pr-4 text-left font-medium text-muted-foreground">
                         Outlet
                       </th>
-                      <th className="px-4 py-3 text-left font-medium text-zinc-500 dark:text-zinc-400">
+                      <th className="px-4 py-3 text-left font-medium text-muted-foreground">
                         Code
                       </th>
-                      <th className="px-4 py-3 text-left font-medium text-zinc-500 dark:text-zinc-400">
+                      <th className="px-4 py-3 text-left font-medium text-muted-foreground">
                         Status
                       </th>
-                      <th className="px-4 py-3 text-right font-medium text-zinc-500 dark:text-zinc-400">
+                      <th className="px-4 py-3 text-right font-medium text-muted-foreground">
                         Price Override
                       </th>
-                      <th className="py-3 pl-4 text-right font-medium text-zinc-500 dark:text-zinc-400">
+                      <th className="py-3 pl-4 text-right font-medium text-muted-foreground">
                         Action
                       </th>
                     </tr>
@@ -160,12 +160,12 @@ export function OutletsTab({ outlets = [] }: OutletsTabProps) {
                       return (
                         <tr
                           key={recipeOutlet.outlet_id}
-                          className="border-b border-zinc-100 dark:border-zinc-800"
+                          className="border-b border-border"
                         >
-                          <td className="py-3 pr-4 text-zinc-900 dark:text-zinc-100">
+                          <td className="py-3 pr-4 text-foreground">
                             {outlet?.name || `Outlet ${recipeOutlet.outlet_id}`}
                           </td>
-                          <td className="px-4 py-3 text-zinc-600 dark:text-zinc-300">
+                          <td className="px-4 py-3 text-muted-foreground">
                             {outlet?.code || '—'}
                           </td>
                           <td className="px-4 py-3">
@@ -173,7 +173,7 @@ export function OutletsTab({ outlets = [] }: OutletsTabProps) {
                               className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
                                 recipeOutlet.is_active
                                   ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                                  : 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400'
+                                  : 'bg-muted text-muted-foreground'
                               }`}
                             >
                               {recipeOutlet.is_active ? 'Active' : 'Inactive'}
@@ -188,10 +188,10 @@ export function OutletsTab({ outlets = [] }: OutletsTabProps) {
                                 onChange={(e) => setEditingPrice(e.target.value)}
                                 onBlur={() => { const n = parseFloat(editingPrice); if (!isNaN(n)) setEditingPrice(String(n)); }}
                                 placeholder="0.00"
-                                className="w-24 rounded-md border border-zinc-300 bg-white px-2 py-1 text-sm text-zinc-900 placeholder-zinc-400 focus:border-zinc-500 focus:outline-none dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100"
+                                className="w-24 rounded-md border border-input bg-card px-2 py-1 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none"
                               />
                             ) : (
-                              <span className="text-zinc-600 dark:text-zinc-300">
+                              <span className="text-muted-foreground">
                                 {recipeOutlet.price_override != null
                                   ? formatCurrency(recipeOutlet.price_override)
                                   : '—'}
@@ -210,7 +210,7 @@ export function OutletsTab({ outlets = [] }: OutletsTabProps) {
                                 </button>
                                 <button
                                   onClick={handleCancelEdit}
-                                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+                                  className="text-muted-foreground hover:text-foreground"
                                   title="Cancel"
                                 >
                                   <X className="h-4 w-4" />
@@ -220,7 +220,7 @@ export function OutletsTab({ outlets = [] }: OutletsTabProps) {
                               <>
                                 <button
                                   onClick={() => handleStartEditPrice(recipeOutlet.outlet_id, recipeOutlet.price_override)}
-                                  className="text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-300"
+                                  className="text-muted-foreground hover:text-foreground"
                                   title="Edit price"
                                 >
                                   <Edit2 className="h-4 w-4" />

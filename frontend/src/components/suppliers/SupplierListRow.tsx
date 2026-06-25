@@ -18,7 +18,7 @@ export function SupplierListRow({ supplier, href }: SupplierListRowProps) {
           <div className="flex items-center justify-between gap-4">
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <h3 className="text-base font-medium text-zinc-900 dark:text-zinc-100 truncate hover:text-blue-600 dark:hover:text-blue-400">
+                <h3 className="text-base font-medium text-foreground truncate hover:text-blue-600 dark:hover:text-blue-400">
                   {supplier.name}
                 </h3>
                 {supplier.code && (
@@ -28,9 +28,9 @@ export function SupplierListRow({ supplier, href }: SupplierListRowProps) {
                   <Badge variant="secondary" className="shrink-0">Archived</Badge>
                 )}
               </div>
-              <div className="flex flex-col gap-1 mt-2 text-sm text-zinc-500 dark:text-zinc-400">
+              <div className="flex flex-col gap-1 mt-2 text-sm text-muted-foreground">
                 {supplier.shipping_company_name && (
-                  <span className="text-xs text-zinc-400 dark:text-zinc-500">Ships via {supplier.shipping_company_name}</span>
+                  <span className="text-xs text-muted-foreground">Ships via {supplier.shipping_company_name}</span>
                 )}
                 {supplier.address && (
                   <div className="flex items-center gap-2 truncate">

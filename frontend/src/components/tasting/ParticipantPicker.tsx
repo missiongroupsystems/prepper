@@ -80,9 +80,9 @@ export function ParticipantPicker({
             placeholder="Search users by name or email..."
           />
           {query && (
-            <div className="absolute z-10 mt-1 w-full max-h-48 overflow-y-auto bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-md shadow-lg">
+            <div className="absolute z-10 mt-1 w-full max-h-48 overflow-y-auto bg-popover text-popover-foreground border border-border rounded-md shadow-lg">
               {filtered.length === 0 ? (
-                <p className="px-3 py-2 text-sm text-zinc-500">
+                <p className="px-3 py-2 text-sm text-muted-foreground">
                   No users found
                 </p>
               ) : (
@@ -94,10 +94,10 @@ export function ParticipantPicker({
                       addUser(user);
                       setQuery('');
                     }}
-                    className="w-full text-left px-3 py-2 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center gap-2"
+                    className="w-full text-left px-3 py-2 text-sm hover:bg-secondary flex items-center gap-2"
                   >
                     <span className="font-medium">{user.username}</span>
-                    <span className="text-zinc-400 text-xs">{user.email}</span>
+                    <span className="text-muted-foreground text-xs">{user.email}</span>
                   </button>
                 ))
               )}

@@ -45,23 +45,23 @@ export function ProductsTab() {
           />
         </div>
 
-        <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 overflow-hidden">
+        <div className="rounded-lg border border-border overflow-hidden">
           <table className="w-full text-sm">
             <thead>
-              <tr className="bg-zinc-50 dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800">
-                <th className="px-4 py-3 text-left font-medium text-zinc-600 dark:text-zinc-400">Product Name</th>
-                <th className="px-4 py-3 text-left font-medium text-zinc-600 dark:text-zinc-400">Category</th>
-                <th className="px-4 py-3 text-left font-medium text-zinc-600 dark:text-zinc-400">SKU</th>
-                <th className="px-4 py-3 text-left font-medium text-zinc-600 dark:text-zinc-400">Supplier</th>
-                <th className="px-4 py-3 text-left font-medium text-zinc-600 dark:text-zinc-400">Tags</th>
-                <th className="px-4 py-3 text-left font-medium text-zinc-600 dark:text-zinc-400">Unit</th>
-                <th className="px-4 py-3 text-right font-medium text-zinc-600 dark:text-zinc-400">Price / Pack</th>
+              <tr className="bg-secondary border-b border-border">
+                <th className="px-4 py-3 text-left font-medium text-muted-foreground">Product Name</th>
+                <th className="px-4 py-3 text-left font-medium text-muted-foreground">Category</th>
+                <th className="px-4 py-3 text-left font-medium text-muted-foreground">SKU</th>
+                <th className="px-4 py-3 text-left font-medium text-muted-foreground">Supplier</th>
+                <th className="px-4 py-3 text-left font-medium text-muted-foreground">Tags</th>
+                <th className="px-4 py-3 text-left font-medium text-muted-foreground">Unit</th>
+                <th className="px-4 py-3 text-right font-medium text-muted-foreground">Price / Pack</th>
               </tr>
             </thead>
             <tbody>
               {isLoading && (
                 Array.from({ length: 5 }).map((_, i) => (
-                  <tr key={i} className="border-b border-zinc-100 dark:border-zinc-800">
+                  <tr key={i} className="border-b border-border">
                     {Array.from({ length: 7 }).map((_, j) => (
                       <td key={j} className="px-4 py-3">
                         <Skeleton className="h-4 rounded" />
@@ -73,7 +73,7 @@ export function ProductsTab() {
 
               {!isLoading && items.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-4 py-12 text-center text-zinc-500 dark:text-zinc-400">
+                  <td colSpan={7} className="px-4 py-12 text-center text-muted-foreground">
                     {debouncedSearch ? 'No products match your search' : 'No products yet'}
                   </td>
                 </tr>
@@ -82,26 +82,26 @@ export function ProductsTab() {
               {!isLoading && items.map((item) => (
                 <tr
                   key={item.id}
-                  className="border-b border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900/50 transition-colors"
+                  className="border-b border-border hover:bg-secondary transition-colors"
                 >
                   <td className="px-4 py-3">
                     <Link
                       href={`/ingredients/${item.ingredient_id}`}
-                      className="font-medium text-zinc-900 dark:text-zinc-100 hover:underline"
+                      className="font-medium text-foreground hover:underline"
                     >
                       {item.ingredient_name ?? '—'}
                     </Link>
                   </td>
-                  <td className="px-4 py-3 text-zinc-600 dark:text-zinc-400">
+                  <td className="px-4 py-3 text-muted-foreground">
                     {item.category_name ?? '—'}
                   </td>
-                  <td className="px-4 py-3 font-mono text-xs text-zinc-600 dark:text-zinc-400">
+                  <td className="px-4 py-3 font-mono text-xs text-muted-foreground">
                     {item.sku ?? '—'}
                   </td>
                   <td className="px-4 py-3">
                     <Link
                       href={`/suppliers/${item.supplier_id}`}
-                      className="text-zinc-700 dark:text-zinc-300 hover:underline"
+                      className="text-muted-foreground hover:underline"
                     >
                       {item.supplier_name ?? '—'}
                     </Link>
@@ -109,10 +109,10 @@ export function ProductsTab() {
                   <td className="px-4 py-3">
                     <TagsCell siId={item.id} />
                   </td>
-                  <td className="px-4 py-3 text-zinc-600 dark:text-zinc-400">
+                  <td className="px-4 py-3 text-muted-foreground">
                     {item.unit}
                   </td>
-                  <td className="px-4 py-3 text-right font-medium text-zinc-900 dark:text-zinc-100">
+                  <td className="px-4 py-3 text-right font-medium text-foreground">
                     {formatCurrency(item.price_per_pack)}
                   </td>
                 </tr>

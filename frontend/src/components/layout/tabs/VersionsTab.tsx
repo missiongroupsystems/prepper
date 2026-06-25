@@ -43,19 +43,19 @@ const VersionNode = memo(({ data }: NodeProps<VersionNodeType>) => {
         'cursor-pointer rounded-lg border p-4 transition-all hover:shadow-md min-w-[280px] max-w-[320px]',
         isCurrentRecipe
           ? 'border-blue-500 bg-blue-50 shadow-blue-100 dark:border-blue-400 dark:bg-blue-950 dark:shadow-blue-900/20'
-          : 'border-zinc-200 bg-white hover:border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800 dark:hover:border-zinc-600'
+          : 'border-border bg-card hover:border-border'
       )}
     >
       <Handle
         type="target"
         position={Position.Left}
-        className="!bg-zinc-400 !w-2 !h-2 !border-0"
+        className="!bg-muted-foreground !w-2 !h-2 !border-0"
       />
 
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
-            <h3 className="font-medium text-zinc-900 dark:text-zinc-100 truncate">
+            <h3 className="font-medium text-foreground truncate">
               {recipe.name}
             </h3>
             {isCurrentRecipe && (
@@ -64,7 +64,7 @@ const VersionNode = memo(({ data }: NodeProps<VersionNodeType>) => {
               </Badge>
             )}
           </div>
-          <div className="flex items-center gap-3 text-sm text-zinc-500 dark:text-zinc-400">
+          <div className="flex items-center gap-3 text-sm text-muted-foreground">
             <span className="flex items-center gap-1">
               <History className="h-3.5 w-3.5" />
               v{recipe.version}
@@ -75,7 +75,7 @@ const VersionNode = memo(({ data }: NodeProps<VersionNodeType>) => {
             </span>
           </div>
           {recipe.created_by && (
-            <div className="mt-1 flex items-center gap-1 text-xs text-zinc-400 dark:text-zinc-500">
+            <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
               <User className="h-3 w-3" />
               {recipe.created_by}
             </div>
@@ -89,7 +89,7 @@ const VersionNode = memo(({ data }: NodeProps<VersionNodeType>) => {
       <Handle
         type="source"
         position={Position.Right}
-        className="!bg-zinc-400 !w-2 !h-2 !border-0"
+        className="!bg-muted-foreground !w-2 !h-2 !border-0"
       />
     </div>
   );
@@ -243,7 +243,7 @@ function buildVersionGraph(
 
 function VersionNodeSkeleton() {
   return (
-    <div className="rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-4 min-w-[280px] max-w-[320px]">
+    <div className="rounded-lg border border-border bg-card p-4 min-w-[280px] max-w-[320px]">
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0 space-y-2">
           {/* Title row */}
@@ -312,10 +312,10 @@ export function VersionsTab() {
 
   if (!selectedRecipeId) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-white dark:bg-zinc-950">
+      <div className="flex-1 flex items-center justify-center bg-background">
         <div className="text-center">
-          <History className="h-12 w-12 mx-auto mb-4 text-zinc-300 dark:text-zinc-600" />
-          <p className="text-zinc-500 dark:text-zinc-400">
+          <History className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+          <p className="text-muted-foreground">
             Select a recipe to view its version history
           </p>
         </div>
@@ -325,7 +325,7 @@ export function VersionsTab() {
 
   if (error) {
     return (
-      <div className="flex-1 bg-white dark:bg-zinc-950 p-6">
+      <div className="flex-1 bg-background p-6">
         <div className="max-w-2xl mx-auto">
           <div className="rounded-lg bg-red-50 dark:bg-red-950 p-4 text-red-600 dark:text-red-400">
             Failed to load version history
@@ -337,7 +337,7 @@ export function VersionsTab() {
 
   if (isLoading) {
     return (
-      <div className="flex-1 overflow-auto bg-white dark:bg-zinc-950">
+      <div className="flex-1 overflow-auto bg-background">
         <VersionTreeSkeleton />
       </div>
     );
@@ -345,10 +345,10 @@ export function VersionsTab() {
 
   if (!versions || versions.length === 0) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-white dark:bg-zinc-950">
+      <div className="flex-1 flex items-center justify-center bg-background">
         <div className="text-center">
-          <History className="h-12 w-12 mx-auto mb-4 text-zinc-300 dark:text-zinc-600" />
-          <p className="text-zinc-500 dark:text-zinc-400">
+          <History className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+          <p className="text-muted-foreground">
             No version history available
           </p>
         </div>
@@ -357,11 +357,11 @@ export function VersionsTab() {
   }
 
   return (
-    <div className="flex-1 bg-white dark:bg-zinc-950 flex flex-col">
+    <div className="flex-1 bg-background flex flex-col">
       {/* Header */}
-      <div className="flex items-center gap-2 p-4 border-b border-zinc-200 dark:border-zinc-800">
-        <History className="h-5 w-5 text-zinc-600 dark:text-zinc-400" />
-        <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+      <div className="flex items-center gap-2 p-4 border-b border-border">
+        <History className="h-5 w-5 text-muted-foreground" />
+        <h2 className="text-lg font-semibold text-foreground">
           Iteration History
         </h2>
         <Badge variant="secondary" className="ml-auto">
@@ -394,8 +394,8 @@ export function VersionsTab() {
       </div>
 
       {/* Footer hint */}
-      <div className="p-3 border-t border-zinc-200 dark:border-zinc-800 text-center">
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+      <div className="p-3 border-t border-border text-center">
+        <p className="text-sm text-muted-foreground">
           Click a version node to view that recipe
         </p>
       </div>

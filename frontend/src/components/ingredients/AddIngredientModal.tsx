@@ -199,12 +199,12 @@ export function AddIngredientModal({ isOpen, onClose }: AddIngredientModalProps)
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Basic Info Section */}
         <div className="space-y-4">
-          <h3 className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+          <h3 className="text-sm font-medium text-foreground">
             Basic Information
           </h3>
 
           <div>
-            <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1">
+            <label className="block text-xs font-medium text-muted-foreground mb-1">
               Ingredient Name *
             </label>
             <Input
@@ -216,7 +216,7 @@ export function AddIngredientModal({ isOpen, onClose }: AddIngredientModalProps)
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1">
+              <label className="block text-xs font-medium text-muted-foreground mb-1">
                 Base Unit *
               </label>
               <Select
@@ -226,7 +226,7 @@ export function AddIngredientModal({ isOpen, onClose }: AddIngredientModalProps)
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1">
+              <label className="block text-xs font-medium text-muted-foreground mb-1">
                 Cost per Unit (optional)
               </label>
               <Input
@@ -250,9 +250,9 @@ export function AddIngredientModal({ isOpen, onClose }: AddIngredientModalProps)
         </div>
 
         {/* Suppliers Section */}
-        <div className="border-t border-zinc-200 dark:border-zinc-700 pt-6">
+        <div className="border-t border-border pt-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+            <h3 className="text-sm font-medium text-foreground">
               Suppliers (optional)
             </h3>
             <Button
@@ -268,7 +268,7 @@ export function AddIngredientModal({ isOpen, onClose }: AddIngredientModalProps)
           </div>
 
           {supplierEntries.length === 0 ? (
-            <p className="text-sm text-zinc-500 dark:text-zinc-400 text-center py-4 border border-dashed border-zinc-200 dark:border-zinc-700 rounded-lg">
+            <p className="text-sm text-muted-foreground text-center py-4 border border-dashed border-border rounded-lg">
               No suppliers added. Click &quot;Add Supplier&quot; to link suppliers to this ingredient.
             </p>
           ) : (
@@ -292,7 +292,7 @@ export function AddIngredientModal({ isOpen, onClose }: AddIngredientModalProps)
         </div>
 
         {/* Footer */}
-        <div className="flex justify-end gap-3 pt-4 border-t border-zinc-200 dark:border-zinc-700">
+        <div className="flex justify-end gap-3 pt-4 border-t border-border">
           <Button type="button" variant="outline" onClick={handleClose}>
             Cancel
           </Button>
@@ -333,9 +333,9 @@ function SupplierEntryForm({
   );
 
   return (
-    <div className="p-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg border border-zinc-200 dark:border-zinc-700">
+    <div className="p-4 bg-secondary rounded-lg border border-border">
       <div className="flex items-center justify-between mb-3">
-        <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+        <span className="text-sm font-medium text-foreground">
           Supplier {index + 1}
         </span>
         <Button
@@ -351,7 +351,7 @@ function SupplierEntryForm({
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <div>
-          <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1">
+          <label className="block text-xs font-medium text-muted-foreground mb-1">
             Supplier *
           </label>
           <Select
@@ -368,7 +368,7 @@ function SupplierEntryForm({
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1">
+          <label className="block text-xs font-medium text-muted-foreground mb-1">
             Outlet *
           </label>
           <Select
@@ -386,7 +386,7 @@ function SupplierEntryForm({
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1">
+          <label className="block text-xs font-medium text-muted-foreground mb-1">
             SKU
           </label>
           <Input
@@ -398,7 +398,7 @@ function SupplierEntryForm({
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1">
+          <label className="block text-xs font-medium text-muted-foreground mb-1">
             Pack Size *
           </label>
           <Input
@@ -412,7 +412,7 @@ function SupplierEntryForm({
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1">
+          <label className="block text-xs font-medium text-muted-foreground mb-1">
             Pack Unit *
           </label>
           <Select
@@ -426,7 +426,7 @@ function SupplierEntryForm({
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1">
+          <label className="block text-xs font-medium text-muted-foreground mb-1">
             Price per Pack *
           </label>
           <Input

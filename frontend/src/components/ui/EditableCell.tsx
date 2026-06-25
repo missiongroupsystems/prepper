@@ -66,7 +66,7 @@ export function EditableCell({
         onBlur={handleBlur}
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
-        className={`w-full px-1 py-0.5 text-sm border border-purple-400 rounded focus:outline-none focus:ring-1 focus:ring-purple-500 bg-white dark:bg-zinc-800 ${className}`}
+        className={`w-full px-1 py-0.5 text-sm border border-purple-400 rounded focus:outline-none focus:ring-1 focus:ring-purple-500 bg-card ${className}`}
       />
     );
   }
@@ -76,9 +76,9 @@ export function EditableCell({
   return (
     <span
       onClick={() => setIsEditing(true)}
-      className={`cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-700 px-1 py-0.5 rounded ${className}`}
+      className={`cursor-pointer hover:bg-secondary px-1 py-0.5 rounded ${className}`}
     >
-      {display || <span className="text-zinc-400 italic">{placeholder || '-'}</span>}
+      {display || <span className="text-muted-foreground italic">{placeholder || '-'}</span>}
     </span>
   );
 }

@@ -105,8 +105,8 @@ export function Modal({
         aria-labelledby="modal-title"
         tabIndex={-1}
         className={cn(
-          'relative z-10 w-full overflow-y-auto rounded-lg bg-white p-6 shadow-xl',
-          'dark:bg-zinc-900 dark:border dark:border-zinc-800',
+          'relative z-10 w-full overflow-y-auto rounded-lg bg-card p-6 shadow-xl',
+          'border border-border',
           'focus:outline-none',
           maxWidth,
           maxHeight
@@ -116,14 +116,14 @@ export function Modal({
         <div className="flex items-start justify-between mb-6">
           <h2
             id="modal-title"
-            className="text-lg font-semibold text-zinc-900 dark:text-zinc-100"
+            className="text-lg font-semibold text-foreground"
           >
             {title}
           </h2>
           {!disableClose && (
             <button
               onClick={onClose}
-              className="rounded p-1 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 dark:hover:bg-zinc-800 dark:hover:text-zinc-300"
+              className="rounded p-1 text-muted-foreground hover:bg-secondary hover:text-foreground"
               aria-label="Close modal"
             >
               <X className="h-5 w-5" />

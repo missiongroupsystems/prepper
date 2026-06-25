@@ -116,7 +116,7 @@ function SortableDishItem({
     <div
       ref={setNodeRef}
       style={style}
-      className="bg-zinc-50 dark:bg-zinc-800/50 rounded-lg"
+      className="bg-secondary rounded-lg"
     >
       <div className="flex items-center gap-1 p-3">
         {isCreator && (
@@ -124,24 +124,24 @@ function SortableDishItem({
             type="button"
             {...attributes}
             {...listeners}
-            className="p-1 text-zinc-300 dark:text-zinc-600 hover:text-zinc-500 dark:hover:text-zinc-400 cursor-grab active:cursor-grabbing touch-none shrink-0"
+            className="p-1 text-muted-foreground hover:text-foreground cursor-grab active:cursor-grabbing touch-none shrink-0"
             title="Drag to reorder"
           >
             <GripVertical className="h-4 w-4" />
           </button>
         )}
-        <div className="flex items-center gap-2 font-medium text-zinc-900 dark:text-zinc-100 flex-1 min-w-0">
+        <div className="flex items-center gap-2 font-medium text-foreground flex-1 min-w-0">
           {reviewedRecipeIds.has(sr.recipe_id) ? (
             <CheckCircle className="h-4 w-4 text-green-500 shrink-0" />
           ) : (
-            <div className="h-4 w-4 rounded-full border-2 border-zinc-300 dark:border-zinc-600 shrink-0" />
+            <div className="h-4 w-4 rounded-full border-2 border-border shrink-0" />
           )}
           <span className="truncate">{sr.recipe_name || `Dish #${sr.recipe_id}`}</span>
         </div>
         <button
           type="button"
           onClick={onToggle}
-          className="flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 shrink-0"
+          className="flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium text-muted-foreground hover:bg-accent shrink-0"
         >
           <ChevronDown className={`h-3.5 w-3.5 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
           Feedback
@@ -149,7 +149,7 @@ function SortableDishItem({
         {isCreator && (
           <button
             onClick={() => onRemoveRecipe(sr.recipe_id)}
-            className="p-1.5 rounded-md hover:bg-red-100 dark:hover:bg-red-900/30 text-zinc-400 hover:text-red-600 shrink-0"
+            className="p-1.5 rounded-md hover:bg-destructive/10 text-muted-foreground hover:text-destructive shrink-0"
             title="Remove from session"
           >
             <X className="h-4 w-4" />
@@ -290,7 +290,7 @@ function SessionRecipesSection({
   return (
     <div className="mb-8">
       <div className="flex items-center justify-between gap-2 mb-4">
-        <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2 min-w-0">
+        <h2 className="text-lg font-semibold text-foreground flex items-center gap-2 min-w-0">
           <ChefHat className="h-5 w-5 text-purple-500 shrink-0" />
           <span className="truncate">Session Dishes</span>
           {sessionRecipes.length > 0 && (
@@ -317,7 +317,7 @@ function SessionRecipesSection({
           <CardContent className="pt-4">
             <div className="space-y-3">
               <div>
-                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                <label className="block text-sm font-medium text-muted-foreground mb-1">
                   Search Dishes
                 </label>
                 <SearchInput
@@ -328,9 +328,9 @@ function SessionRecipesSection({
                   className="w-full"
                 />
               </div>
-              <div className="max-h-48 overflow-y-auto border border-zinc-200 dark:border-zinc-700 rounded-md">
+              <div className="max-h-48 overflow-y-auto border border-border rounded-md">
                 {availableRecipes.length === 0 ? (
-                  <div className="p-3 text-sm text-zinc-500 dark:text-zinc-400 text-center">
+                  <div className="p-3 text-sm text-muted-foreground text-center">
                     {searchQuery ? 'No dishes match your search' : 'No dishes available'}
                   </div>
                 ) : (
@@ -342,17 +342,17 @@ function SessionRecipesSection({
                         key={recipe.id}
                         type="button"
                         onClick={() => handleToggleRecipe(recipe.id)}
-                        className={`w-full text-left px-3 py-2 text-sm border-b border-zinc-100 dark:border-zinc-800 last:border-b-0 flex items-center justify-between ${
+                        className={`w-full text-left px-3 py-2 text-sm border-b border-border last:border-b-0 flex items-center justify-between ${
                           isSelected
                             ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-900 dark:text-purple-100'
-                            : 'text-zinc-900 dark:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800'
+                            : 'text-foreground hover:bg-secondary'
                         }`}
                       >
                         <span className="flex items-center gap-2">
                           <span className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${
                             isSelected
                               ? 'bg-purple-600 border-purple-600 text-white'
-                              : 'border-zinc-300 dark:border-zinc-600'
+                              : 'border-border'
                             }`}>
                             {isSelected && <span className="text-xs">&#10003;</span>}
                           </span>
@@ -377,7 +377,7 @@ function SessionRecipesSection({
                     type="button"
                     onClick={handleCreateAndSelect}
                     disabled={isCreatingRecipe}
-                    className="w-full px-3 py-2 text-sm text-left flex items-center gap-2 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 border-t border-zinc-100 dark:border-zinc-800 font-medium disabled:opacity-50"
+                    className="w-full px-3 py-2 text-sm text-left flex items-center gap-2 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 border-t border-border font-medium disabled:opacity-50"
                   >
                     <Plus className="h-4 w-4 shrink-0" />
                     {isCreatingRecipe ? 'Creating...' : <>Create &ldquo;{searchQuery.trim()}&rdquo; as new dish</>}
@@ -412,10 +412,10 @@ function SessionRecipesSection({
       )}
 
       {!isLoading && localDishes.length === 0 && !showAddRecipe && (
-        <div className="text-center py-8 border border-dashed border-zinc-200 dark:border-zinc-700 rounded-lg">
-          <ChefHat className="h-8 w-8 mx-auto text-zinc-300 dark:text-zinc-600 mb-2" />
-          <p className="text-zinc-500 dark:text-zinc-400">No dishes added to this session</p>
-          <p className="text-sm text-zinc-400 dark:text-zinc-500 mt-1">
+        <div className="text-center py-8 border border-dashed border-border rounded-lg">
+          <ChefHat className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+          <p className="text-muted-foreground">No dishes added to this session</p>
+          <p className="text-sm text-muted-foreground mt-1">
             Add dishes to track what will be tasted
           </p>
         </div>
@@ -476,7 +476,7 @@ function SessionIngredientsSection({
   return (
     <div className="mb-8">
       <div className="flex items-center justify-between gap-2 mb-4">
-        <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2 min-w-0">
+        <h2 className="text-lg font-semibold text-foreground flex items-center gap-2 min-w-0">
           <span className="text-amber-500 shrink-0">🥘</span>
           <span className="truncate">Session Ingredients</span>
           {ingredients.length > 0 && (
@@ -495,10 +495,10 @@ function SessionIngredientsSection({
       )}
 
       {!isLoading && ingredients.length === 0 && (
-        <div className="text-center py-8 border border-dashed border-zinc-200 dark:border-zinc-700 rounded-lg">
+        <div className="text-center py-8 border border-dashed border-border rounded-lg">
           <span className="text-2xl mx-auto mb-2 block">🥘</span>
-          <p className="text-zinc-500 dark:text-zinc-400">No ingredients yet</p>
-          <p className="text-sm text-zinc-400 dark:text-zinc-500 mt-1">
+          <p className="text-muted-foreground">No ingredients yet</p>
+          <p className="text-sm text-muted-foreground mt-1">
             Add dishes to see their ingredients here
           </p>
         </div>
@@ -509,12 +509,12 @@ function SessionIngredientsSection({
           {ingredients.map((item) => (
             <div
               key={item.id}
-              className="flex items-center justify-between p-3 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg"
+              className="flex items-center justify-between p-3 bg-secondary rounded-lg"
             >
               <div className="min-w-0 flex-1">
                 <Link
                   href={`/tastings/${sessionId}/i/${item.id}`}
-                  className="font-medium text-zinc-900 dark:text-zinc-100 hover:text-amber-600 dark:hover:text-amber-400"
+                  className="font-medium text-foreground hover:text-amber-600 dark:hover:text-amber-400"
                 >
                   {item.name}
                 </Link>
@@ -790,10 +790,10 @@ export default function TastingSessionDetailPage() {
   if (is403Error) {
     return (
       <div className="p-6">
-        <div className="rounded-lg bg-red-50 dark:bg-red-950 p-4 text-red-600 dark:text-red-400">
+        <div className="rounded-lg bg-destructive/10 p-4 text-destructive">
           <p className="font-medium">Access Denied</p>
           <p className="text-sm mt-1">You are not invited to this tasting session.</p>
-          <Link href="/rnd" className="text-red-600 dark:text-red-400 hover:underline text-sm mt-2 inline-block">
+          <Link href="/rnd" className="text-destructive hover:underline text-sm mt-2 inline-block">
             Back to R&D
           </Link>
         </div>
@@ -804,7 +804,7 @@ export default function TastingSessionDetailPage() {
   if (!session) {
     return (
       <div className="p-6">
-        <div className="rounded-lg bg-red-50 dark:bg-red-950 p-4 text-red-600 dark:text-red-400">
+        <div className="rounded-lg bg-destructive/10 p-4 text-destructive">
           Tasting session not found.
         </div>
       </div>
@@ -814,10 +814,10 @@ export default function TastingSessionDetailPage() {
   if (!isInvited) {
     return (
       <div className="p-6">
-        <div className="rounded-lg bg-red-50 dark:bg-red-950 p-4 text-red-600 dark:text-red-400">
+        <div className="rounded-lg bg-destructive/10 p-4 text-destructive">
           <p className="font-medium">Access Denied</p>
           <p className="text-sm mt-1">You are not invited to this tasting session.</p>
-          <Link href="/rnd" className="text-red-600 dark:text-red-400 hover:underline text-sm mt-2 inline-block">
+          <Link href="/rnd" className="text-destructive hover:underline text-sm mt-2 inline-block">
             Back to R&D
           </Link>
         </div>
@@ -831,7 +831,7 @@ export default function TastingSessionDetailPage() {
         <div className="mb-6">
           <Link
             href="/rnd"
-            className="inline-flex items-center gap-1 text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
+            className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft className="h-4 w-4" />
             Back to R&D
@@ -841,7 +841,7 @@ export default function TastingSessionDetailPage() {
         {/* Session Header */}
         <div className="mb-8">
           <div className="flex items-center gap-2 mb-2">
-            <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
+            <h1 className="text-2xl font-bold text-foreground">
               {isCreator ? (
                 <EditableCell
                   value={session.name}
@@ -857,29 +857,29 @@ export default function TastingSessionDetailPage() {
               <Badge variant="success" className="text-xs shrink-0">Your Session</Badge>
             )}
           </div>
-          <div className="flex flex-wrap items-center gap-4 text-sm text-zinc-600 dark:text-zinc-300">
+          <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
             {/* DateTime */}
             <div className="flex items-center gap-1.5 relative">
-              <Calendar className="h-4 w-4 text-zinc-400" />
+              <Calendar className="h-4 w-4 text-muted-foreground" />
               {isCreator ? (
                 <button
                   type="button"
                   onClick={() => setShowCalendar(!showCalendar)}
-                  className="hover:bg-zinc-100 dark:hover:bg-zinc-700 px-1 py-0.5 rounded cursor-pointer flex items-center gap-2"
+                  className="hover:bg-secondary px-1 py-0.5 rounded cursor-pointer flex items-center gap-2"
                 >
                   <span>{formatDate(session.date)}</span>
-                  <Clock className="h-3 w-3 text-zinc-400" />
+                  <Clock className="h-3 w-3 text-muted-foreground" />
                   <span>{getDisplayTime()}</span>
                 </button>
               ) : (
                 <span className="flex items-center gap-2">
                   <span>{formatDate(session.date)}</span>
-                  <Clock className="h-3 w-3 text-zinc-400" />
+                  <Clock className="h-3 w-3 text-muted-foreground" />
                   <span>{getDisplayTime()}</span>
                 </span>
               )}
               {isCreator && showCalendar && (
-                <div className="absolute z-20 top-full left-0 mt-1 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-lg p-3">
+                <div className="absolute z-20 top-full left-0 mt-1 bg-card border border-border rounded-lg shadow-lg p-3">
                   <style>{`
                     .rdp-root {
                       --rdp-accent-color: hsl(270 65% 50%);
@@ -899,15 +899,15 @@ export default function TastingSessionDetailPage() {
                       }
                     }}
                   />
-                  <div className="border-t border-zinc-200 dark:border-zinc-700 mt-3 pt-3">
-                    <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-2">
+                  <div className="border-t border-border mt-3 pt-3">
+                    <label className="block text-xs font-medium text-muted-foreground mb-2">
                       Select Time
                     </label>
                     <div className="flex items-center gap-2">
                       <select
                         value={selectedHour}
                         onChange={(e) => setSelectedHour(e.target.value)}
-                        className="flex-1 px-3 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-zinc-800 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        className="flex-1 px-3 py-2 border border-input rounded-md bg-card text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                       >
                         {hours.map((h) => (
                           <option key={h} value={h}>
@@ -915,11 +915,11 @@ export default function TastingSessionDetailPage() {
                           </option>
                         ))}
                       </select>
-                      <span className="text-zinc-500 font-medium">:</span>
+                      <span className="text-muted-foreground font-medium">:</span>
                       <select
                         value={selectedMinute}
                         onChange={(e) => setSelectedMinute(e.target.value)}
-                        className="flex-1 px-3 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-zinc-800 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        className="flex-1 px-3 py-2 border border-input rounded-md bg-card text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                       >
                         {minutes.map((m) => (
                           <option key={m} value={m}>
@@ -930,7 +930,7 @@ export default function TastingSessionDetailPage() {
                       <select
                         value={selectedPeriod}
                         onChange={(e) => setSelectedPeriod(e.target.value as 'AM' | 'PM')}
-                        className="flex-1 px-3 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-zinc-800 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        className="flex-1 px-3 py-2 border border-input rounded-md bg-card text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                       >
                         <option value="AM">AM</option>
                         <option value="PM">PM</option>
@@ -958,7 +958,7 @@ export default function TastingSessionDetailPage() {
                         }
                         setShowCalendar(false);
                       }}
-                      className="flex-1 px-3 py-2 border border-zinc-300 dark:border-zinc-600 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-md text-sm font-medium transition-colors"
+                      className="flex-1 px-3 py-2 border border-input hover:bg-secondary rounded-md text-sm font-medium transition-colors"
                     >
                       Cancel
                     </button>
@@ -969,7 +969,7 @@ export default function TastingSessionDetailPage() {
 
             {/* Location */}
             <div className="flex items-center gap-1.5">
-              <MapPin className="h-4 w-4 text-zinc-400" />
+              <MapPin className="h-4 w-4 text-muted-foreground" />
               {isCreator ? (
                 <EditableCell
                   value={session.location || ''}
@@ -1029,7 +1029,7 @@ export default function TastingSessionDetailPage() {
           </div>
 
           {session.notes && (
-            <p className="mt-3 text-sm text-zinc-500 dark:text-zinc-400 italic">{session.notes}</p>
+            <p className="mt-3 text-sm text-muted-foreground italic">{session.notes}</p>
           )}
         </div>
 
@@ -1068,10 +1068,10 @@ export default function TastingSessionDetailPage() {
 
         {/* Delete Session - creator only */}
         {isCreator && (
-          <div className="mt-12 pt-6 border-t border-zinc-200 dark:border-zinc-700">
+          <div className="mt-12 pt-6 border-t border-border">
             {confirmDelete ? (
               <div className="flex items-center gap-3">
-                <p className="text-sm text-red-600 dark:text-red-400">
+                <p className="text-sm text-destructive">
                   Are you sure? This will delete the session and all its notes.
                 </p>
                 <Button variant="destructive" size="sm" onClick={handleDeleteSession}>
@@ -1084,7 +1084,7 @@ export default function TastingSessionDetailPage() {
             ) : (
               <button
                 onClick={() => setConfirmDelete(true)}
-                className="text-sm text-zinc-500 hover:text-red-600 dark:hover:text-red-400"
+                className="text-sm text-muted-foreground hover:text-destructive"
               >
                 Delete this session
               </button>

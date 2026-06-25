@@ -42,11 +42,11 @@ export function IngredientListRow({
         <div className="flex items-center justify-between gap-4">
           <div className="flex-1 min-w-0">
             <Link href={`/ingredients/${ingredient.id}`}>
-              <h3 className="text-base font-medium text-zinc-900 dark:text-zinc-100 truncate hover:text-blue-600 dark:hover:text-blue-400">
+              <h3 className="text-base font-medium text-foreground truncate hover:text-blue-600 dark:hover:text-blue-400">
                 {ingredient.name}
               </h3>
             </Link>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-0.5">
+            <p className="text-sm text-muted-foreground mt-0.5">
               {formatCurrency(ingredient.cost_per_base_unit)} per unit
             </p>
           </div>

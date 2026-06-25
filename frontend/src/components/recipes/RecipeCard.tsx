@@ -32,7 +32,7 @@ export const RecipeCard = memo(function RecipeCard({ recipe, costPerPortion, isO
         <CardHeader>
           <div className="flex-1 min-w-0">
             <CardTitle className="truncate text-xl">{recipe.name}</CardTitle>
-            <p className="text-base text-zinc-500 dark:text-zinc-400 mt-0.5">
+            <p className="text-base text-muted-foreground mt-0.5">
               {recipe.yield_quantity} {recipe.yield_unit}
             </p>
           </div>
@@ -47,7 +47,7 @@ export const RecipeCard = memo(function RecipeCard({ recipe, costPerPortion, isO
               className="w-16 h-16 rounded-md object-cover"
             />
           ) : (
-            <div className="w-16 h-16 rounded-md bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-zinc-400">
+            <div className="w-16 h-16 rounded-md bg-secondary flex items-center justify-center text-muted-foreground">
               <ImagePlus className="h-6 w-6" />
             </div>
           )}
@@ -74,7 +74,7 @@ export const RecipeCard = memo(function RecipeCard({ recipe, costPerPortion, isO
             {/* Outlets */}
             {outletNames.length > 0 && (
               <div className="flex flex-col gap-1">
-                <p className="text-xs font-medium text-zinc-600 dark:text-zinc-300">Outlets</p>
+                <p className="text-xs font-medium text-muted-foreground">Outlets</p>
                 <div className="flex flex-wrap gap-1">
                   {outletNames.map((name) => (
                     <Badge key={name} variant="secondary" className="text-xs">
@@ -88,7 +88,7 @@ export const RecipeCard = memo(function RecipeCard({ recipe, costPerPortion, isO
             {/* Categories */}
             {categoryNames.length > 0 && (
               <div className="flex flex-col gap-1">
-                <p className="text-xs font-medium text-zinc-600 dark:text-zinc-300">Categories</p>
+                <p className="text-xs font-medium text-muted-foreground">Categories</p>
                 <div className="flex flex-wrap gap-1">
                   {categoryNames.map((name) => (
                     <Badge key={name} variant="secondary" className="text-xs">
@@ -102,7 +102,7 @@ export const RecipeCard = memo(function RecipeCard({ recipe, costPerPortion, isO
             {/* Allergens */}
             {allergenNames.length > 0 && (
               <div className="flex flex-col gap-1">
-                <p className="text-xs font-medium text-zinc-600 dark:text-zinc-300">Allergens</p>
+                <p className="text-xs font-medium text-muted-foreground">Allergens</p>
                 <div className="flex flex-wrap gap-1">
                   {allergenNames.map((name) => (
                     <Badge key={name} variant="warning" className="text-xs">
@@ -118,13 +118,13 @@ export const RecipeCard = memo(function RecipeCard({ recipe, costPerPortion, isO
         <CardFooter>
           <div className="flex items-center justify-between w-full">
             <div className="text-base">
-              <span className="text-zinc-500 dark:text-zinc-400">Cost: </span>
-              <span className="font-medium text-zinc-900 dark:text-zinc-100">
+              <span className="text-muted-foreground">Cost: </span>
+              <span className="font-medium text-foreground">
                 {formatCurrency(costPerPortion ?? (recipe.cost_price != null && recipe.yield_quantity > 0 ? recipe.cost_price / recipe.yield_quantity : recipe.cost_price))}
               </span>
-              <span className="text-zinc-400 dark:text-zinc-500">/portion</span>
+              <span className="text-muted-foreground">/portion</span>
             </div>
-            <ExternalLink className="h-4 w-4 text-zinc-400" />
+            <ExternalLink className="h-4 w-4 text-muted-foreground" />
           </div>
         </CardFooter>
       </Card>

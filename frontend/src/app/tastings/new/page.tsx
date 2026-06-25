@@ -128,7 +128,7 @@ export default function NewTastingSessionPage() {
         <div className="mb-6">
           <Link
             href="/rnd"
-            className="inline-flex items-center gap-1 text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
+            className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft className="h-4 w-4" />
             Back to R&D
@@ -154,7 +154,7 @@ export default function NewTastingSessionPage() {
           <div>
             <label
               htmlFor="name"
-              className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1"
+              className="block text-sm font-medium text-muted-foreground mb-1"
             >
               Session Name *
             </label>
@@ -174,7 +174,7 @@ export default function NewTastingSessionPage() {
           <div>
             <label
               htmlFor="date"
-              className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1"
+              className="block text-sm font-medium text-muted-foreground mb-1"
             >
               Date & Time *
             </label>
@@ -182,20 +182,20 @@ export default function NewTastingSessionPage() {
               <button
                 type="button"
                 onClick={() => setShowCalendar(!showCalendar)}
-                className={`w-full flex items-center justify-between px-3 py-2 border rounded-md bg-white dark:bg-zinc-900 text-left text-sm hover:border-zinc-400 dark:hover:border-zinc-600 transition-colors ${
-                  errors.date ? 'border-red-500' : 'border-zinc-300 dark:border-zinc-700'
+                className={`w-full flex items-center justify-between px-3 py-2 border rounded-md bg-card text-left text-sm hover:border-input transition-colors ${
+                  errors.date ? 'border-red-500' : 'border-input'
                 }`}
               >
                 <span className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-zinc-500" />
+                  <Calendar className="h-4 w-4 text-muted-foreground" />
                   {format(selectedDate, 'MMMM d, yyyy')}
-                  <span className="text-zinc-400">|</span>
-                  <Clock className="h-4 w-4 text-zinc-500" />
+                  <span className="text-muted-foreground">|</span>
+                  <Clock className="h-4 w-4 text-muted-foreground" />
                   {getDisplayTime()}
                 </span>
               </button>
               {showCalendar && (
-                <div className="absolute z-10 mt-1 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-lg p-3">
+                <div className="absolute z-10 mt-1 bg-popover border border-border rounded-lg shadow-lg p-3">
                   <style>{`
                     .rdp-root {
                       --rdp-accent-color: hsl(15 65% 50%);
@@ -217,15 +217,15 @@ export default function NewTastingSessionPage() {
                     }}
 
                   />
-                  <div className="border-t border-zinc-200 dark:border-zinc-700 mt-3 pt-3">
-                    <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-2">
+                  <div className="border-t border-border mt-3 pt-3">
+                    <label className="block text-xs font-medium text-muted-foreground mb-2">
                       Select Time
                     </label>
                     <div className="flex items-center gap-2">
                       <select
                         value={selectedHour}
                         onChange={(e) => setSelectedHour(e.target.value)}
-                        className="flex-1 px-3 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-zinc-800 text-sm focus:outline-none focus:ring-2 focus:ring-[hsl(15_65%_50%)] focus:border-transparent"
+                        className="flex-1 px-3 py-2 border border-input rounded-md bg-card text-sm focus:outline-none focus:ring-2 focus:ring-[hsl(15_65%_50%)] focus:border-transparent"
                       >
                         {hours.map((h) => (
                           <option key={h} value={h}>
@@ -233,11 +233,11 @@ export default function NewTastingSessionPage() {
                           </option>
                         ))}
                       </select>
-                      <span className="text-zinc-500 font-medium">:</span>
+                      <span className="text-muted-foreground font-medium">:</span>
                       <select
                         value={selectedMinute}
                         onChange={(e) => setSelectedMinute(e.target.value)}
-                        className="flex-1 px-3 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-zinc-800 text-sm focus:outline-none focus:ring-2 focus:ring-[hsl(15_65%_50%)] focus:border-transparent"
+                        className="flex-1 px-3 py-2 border border-input rounded-md bg-card text-sm focus:outline-none focus:ring-2 focus:ring-[hsl(15_65%_50%)] focus:border-transparent"
                       >
                         {minutes.map((m) => (
                           <option key={m} value={m}>
@@ -248,7 +248,7 @@ export default function NewTastingSessionPage() {
                       <select
                         value={selectedPeriod}
                         onChange={(e) => setSelectedPeriod(e.target.value as 'AM' | 'PM')}
-                        className="flex-1 px-3 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-zinc-800 text-sm focus:outline-none focus:ring-2 focus:ring-[hsl(15_65%_50%)] focus:border-transparent"
+                        className="flex-1 px-3 py-2 border border-input rounded-md bg-card text-sm focus:outline-none focus:ring-2 focus:ring-[hsl(15_65%_50%)] focus:border-transparent"
                       >
                         <option value="AM">AM</option>
                         <option value="PM">PM</option>
@@ -271,7 +271,7 @@ export default function NewTastingSessionPage() {
           <div>
             <label
               htmlFor="location"
-              className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1"
+              className="block text-sm font-medium text-muted-foreground mb-1"
             >
               Location
             </label>
@@ -284,7 +284,7 @@ export default function NewTastingSessionPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+            <label className="block text-sm font-medium text-muted-foreground mb-1">
               Attendees
             </label>
             <ParticipantPicker
@@ -296,7 +296,7 @@ export default function NewTastingSessionPage() {
           <div>
             <label
               htmlFor="notes"
-              className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1"
+              className="block text-sm font-medium text-muted-foreground mb-1"
             >
               Session Notes
             </label>

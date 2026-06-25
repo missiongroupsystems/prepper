@@ -65,7 +65,7 @@ function EditableSelect({ value, onSave, options, className = '', onValidate, di
         value={value}
         onChange={handleChange}
         onBlur={handleBlur}
-        className={`px-1 py-0.5 text-sm border border-purple-400 rounded focus:outline-none focus:ring-1 focus:ring-purple-500 bg-white dark:bg-zinc-800 ${className}`}
+        className={`px-1 py-0.5 text-sm border border-purple-400 rounded focus:outline-none focus:ring-1 focus:ring-purple-500 bg-card ${className}`}
       >
         {options.map((opt) => (
           <option key={opt.value} value={opt.value}>
@@ -81,9 +81,9 @@ function EditableSelect({ value, onSave, options, className = '', onValidate, di
   return (
     <span
       onClick={() => !disabled && setIsEditing(true)}
-      className={`px-1 py-0.5 rounded font-medium text-zinc-900 dark:text-zinc-100 ${disabled
-          ? 'cursor-not-allowed text-zinc-400 dark:text-zinc-500'
-          : 'cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-700'
+      className={`px-1 py-0.5 rounded font-medium text-foreground ${disabled
+          ? 'cursor-not-allowed text-muted-foreground'
+          : 'cursor-pointer hover:bg-secondary'
         } ${className}`}
     >
       {displayLabel}
@@ -237,7 +237,7 @@ export default function OutletPage({ params }: OutletPageProps) {
       <div className="p-6">
         <Link
           href="/recipes"
-          className="inline-flex items-center gap-2 text-sm text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-300 mb-6"
+          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6"
         >
           <ArrowLeft className="h-4 w-4" />
           Back
@@ -257,7 +257,7 @@ export default function OutletPage({ params }: OutletPageProps) {
         {/* Back Link */}
         <Link
           href="/settings"
-          className="inline-flex items-center gap-2 text-sm text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-300 mb-6"
+          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6"
         >
           <ArrowLeft className="h-4 w-4" />
           Back
@@ -276,7 +276,7 @@ export default function OutletPage({ params }: OutletPageProps) {
                 <div className="space-y-6">
                   {/* Outlet Name */}
                   <div>
-                    <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
+                    <h1 className="text-2xl font-bold text-foreground">
                       <EditableCell
                         value={outlet.name}
                         onSave={(value) => handleUpdateOutlet({ name: value })}
@@ -286,10 +286,10 @@ export default function OutletPage({ params }: OutletPageProps) {
                   </div>
 
                   {/* Info Grid */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border-t border-zinc-100 dark:border-zinc-800 pt-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border-t border-border pt-6">
                     {/* Code */}
                     <div className="space-y-1">
-                      <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                      <label className="block text-xs font-medium text-muted-foreground">
                         Code
                       </label>
                       <div className="flex items-center gap-2">
@@ -303,10 +303,10 @@ export default function OutletPage({ params }: OutletPageProps) {
 
                     {/* Outlet Type */}
                     <div className="space-y-1">
-                      <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                      <label className="block text-xs font-medium text-muted-foreground">
                         Outlet Type
                         {hasChildren && (
-                          <span className="ml-2 text-xs text-zinc-400">(Cannot change with child outlets)</span>
+                          <span className="ml-2 text-xs text-muted-foreground">(Cannot change with child outlets)</span>
                         )}
                       </label>
                       <EditableSelect
@@ -319,14 +319,14 @@ export default function OutletPage({ params }: OutletPageProps) {
 
                     {/* Parent Outlet */}
                     <div className="space-y-1">
-                      <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                      <label className="block text-xs font-medium text-muted-foreground">
                         Parent Outlet
                         {outlet.outlet_type === 'brand' && (
-                          <span className="ml-2 text-xs text-zinc-400">(Brands only)</span>
+                          <span className="ml-2 text-xs text-muted-foreground">(Brands only)</span>
                         )}
                       </label>
                       {outlet.outlet_type === 'brand' ? (
-                        <span className="text-sm text-zinc-400 dark:text-zinc-500">
+                        <span className="text-sm text-muted-foreground">
                           Only locations can have parent outlets
                         </span>
                       ) : outlet.parent_outlet_id ? (
@@ -338,7 +338,7 @@ export default function OutletPage({ params }: OutletPageProps) {
                             variant="ghost"
                             size="sm"
                             onClick={() => handleUpdateOutlet({ parent_outlet_id: null })}
-                            className="h-6 px-2 text-xs text-zinc-400 hover:text-zinc-600"
+                            className="h-6 px-2 text-xs text-muted-foreground hover:text-foreground"
                           >
                             <X className="h-3 w-3" />
                           </Button>
@@ -351,7 +351,7 @@ export default function OutletPage({ params }: OutletPageProps) {
                               e.target.value = '';
                             }
                           }}
-                          className="px-2 py-1 text-sm border border-purple-400 rounded focus:outline-none focus:ring-1 focus:ring-purple-500 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 cursor-pointer"
+                          className="px-2 py-1 text-sm border border-purple-400 rounded focus:outline-none focus:ring-1 focus:ring-purple-500 bg-card text-foreground cursor-pointer"
                         >
                           <option value="">Select parent outlet...</option>
                           {parentOutletOptions.map((opt) => (
@@ -361,13 +361,13 @@ export default function OutletPage({ params }: OutletPageProps) {
                           ))}
                         </select>
                       ) : (
-                        <span className="text-sm text-zinc-400 dark:text-zinc-500">None</span>
+                        <span className="text-sm text-muted-foreground">None</span>
                       )}
                     </div>
 
                     {/* Status */}
                     <div className="space-y-1">
-                      <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                      <label className="block text-xs font-medium text-muted-foreground">
                         Status
                       </label>
                       <Badge variant={outlet.is_active ? 'success' : 'warning'}>
@@ -377,7 +377,7 @@ export default function OutletPage({ params }: OutletPageProps) {
                   </div>
 
                   {/* Timestamps */}
-                  <div className="text-sm text-zinc-500 dark:text-zinc-400 border-t border-zinc-100 dark:border-zinc-800 pt-4">
+                  <div className="text-sm text-muted-foreground border-t border-border pt-4">
                     Created: {new Date(outlet.created_at).toLocaleDateString()}
                     {outlet.updated_at !== outlet.created_at && (
                       <span className="ml-4">
@@ -393,7 +393,7 @@ export default function OutletPage({ params }: OutletPageProps) {
             <Card>
               <CardContent className="p-6">
                 <div className="flex items-center gap-2 mb-4">
-                  <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+                  <h2 className="text-lg font-semibold text-foreground">
                     Outlet Recipe
                   </h2>
                 </div>
@@ -422,7 +422,7 @@ export default function OutletPage({ params }: OutletPageProps) {
                 >
                   <form onSubmit={handleAddRecipe} className="space-y-4">
                     <div>
-                      <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-2">
+                      <label className="block text-xs font-medium text-muted-foreground mb-2">
                         Search Recipe
                       </label>
                       <Input
@@ -432,7 +432,7 @@ export default function OutletPage({ params }: OutletPageProps) {
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className="mb-2"
                       />
-                      <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1">
+                      <label className="block text-xs font-medium text-muted-foreground mb-1">
                         Recipe
                       </label>
                       <Select
@@ -451,7 +451,7 @@ export default function OutletPage({ params }: OutletPageProps) {
                     </div>
 
                     <div>
-                      <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1">
+                      <label className="block text-xs font-medium text-muted-foreground mb-1">
                         Price Override (Optional)
                       </label>
                       <Input
@@ -469,7 +469,7 @@ export default function OutletPage({ params }: OutletPageProps) {
                       />
                     </div>
 
-                    <div className="flex items-center justify-end gap-3 pt-4 border-t border-zinc-200 dark:border-zinc-700">
+                    <div className="flex items-center justify-end gap-3 pt-4 border-t border-border">
                       <Button
                         type="button"
                         variant="outline"
@@ -497,11 +497,11 @@ export default function OutletPage({ params }: OutletPageProps) {
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead>
-                        <tr className="border-b border-zinc-200 dark:border-zinc-700">
-                          <th className="text-left py-3 px-2 font-medium text-zinc-500 dark:text-zinc-400">
+                        <tr className="border-b border-border">
+                          <th className="text-left py-3 px-2 font-medium text-muted-foreground">
                             Recipe Name
                           </th>
-                          <th className="text-right py-3 px-2 font-medium text-zinc-500 dark:text-zinc-400">
+                          <th className="text-right py-3 px-2 font-medium text-muted-foreground">
                             Price Override
                           </th>
                           <th className="py-3 px-2 w-12"></th>
@@ -513,9 +513,9 @@ export default function OutletPage({ params }: OutletPageProps) {
                           return (
                             <tr
                               key={recipeOutlet.recipe_id}
-                              className="border-b border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 group"
+                              className="border-b border-border hover:bg-secondary group"
                             >
-                              <td className="py-3 px-2 text-zinc-900 dark:text-zinc-100 font-medium">
+                              <td className="py-3 px-2 text-foreground font-medium">
                                 <Link
                                   href={`/recipes/${recipeOutlet.recipe_id}`}
                                   className="hover:text-purple-600 dark:hover:text-purple-400 hover:underline"
@@ -523,7 +523,7 @@ export default function OutletPage({ params }: OutletPageProps) {
                                   {recipe?.name || 'Unknown Recipe'}
                                 </Link>
                               </td>
-                              <td className="py-3 px-2 text-right text-zinc-900 dark:text-zinc-100">
+                              <td className="py-3 px-2 text-right text-foreground">
                                 {editingRecipe === recipeOutlet.recipe_id ? (
                                   <input
                                     type="text"
@@ -542,7 +542,7 @@ export default function OutletPage({ params }: OutletPageProps) {
                                       const n = parseFloat(raw);
                                       if (!isNaN(n)) setEditData({ ...editData, [recipeOutlet.recipe_id]: { price_override: String(n) } });
                                     }}
-                                    className="w-full px-2 py-1 text-sm border border-zinc-300 dark:border-zinc-600 rounded bg-white dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-purple-500 text-right"
+                                    className="w-full px-2 py-1 text-sm border border-input rounded bg-card text-foreground focus:outline-none focus:ring-1 focus:ring-purple-500 text-right"
                                   />
                                 ) : (
                                   recipeOutlet.price_override !== null ? formatCurrency(recipeOutlet.price_override) : '-'
@@ -550,11 +550,11 @@ export default function OutletPage({ params }: OutletPageProps) {
                               </td>
                               <td className="py-3 px-2">
                                 <div className="relative group/menu">
-                                  <button className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 p-1">
+                                  <button className="text-muted-foreground hover:text-foreground p-1">
                                     <MoreVertical className="h-4 w-4" />
                                   </button>
 
-                                  <div className="absolute right-0 top-full mt-0 bg-white dark:bg-zinc-700 border border-zinc-200 dark:border-zinc-600 rounded-md shadow-lg opacity-0 invisible group-hover/menu:opacity-100 group-hover/menu:visible transition-all z-10 min-w-max">
+                                  <div className="absolute right-0 top-full mt-0 bg-popover border border-border rounded-md shadow-lg opacity-0 invisible group-hover/menu:opacity-100 group-hover/menu:visible transition-all z-10 min-w-max">
                                     {editingRecipe === recipeOutlet.recipe_id ? (
                                       <>
                                         <Button
@@ -621,8 +621,8 @@ export default function OutletPage({ params }: OutletPageProps) {
                     </table>
                   </div>
                 ) : (
-                  <div className="text-center py-6 border border-dashed border-zinc-200 dark:border-zinc-700 rounded-lg">
-                    <p className="text-zinc-400 dark:text-zinc-500">
+                  <div className="text-center py-6 border border-dashed border-border rounded-lg">
+                    <p className="text-muted-foreground">
                       No recipes added to this outlet yet
                     </p>
                   </div>
@@ -635,10 +635,10 @@ export default function OutletPage({ params }: OutletPageProps) {
               <Card>
                 <CardContent className="p-6">
                   <div className="flex items-center gap-2 mb-4">
-                    <h2 className="text-lg font-semibold text-zinc-500 dark:text-zinc-400">
+                    <h2 className="text-lg font-semibold text-muted-foreground">
                       Recipes from Parent Outlet
                     </h2>
-                    <span className="text-xs text-zinc-400 dark:text-zinc-500 italic">
+                    <span className="text-xs text-muted-foreground italic">
                       (Inherited, read-only)
                     </span>
                   </div>
@@ -647,11 +647,11 @@ export default function OutletPage({ params }: OutletPageProps) {
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead>
-                        <tr className="border-b border-zinc-200 dark:border-zinc-700">
-                          <th className="text-left py-3 px-2 font-medium text-zinc-500 dark:text-zinc-400">
+                        <tr className="border-b border-border">
+                          <th className="text-left py-3 px-2 font-medium text-muted-foreground">
                             Recipe Name
                           </th>
-                          <th className="text-right py-3 px-2 font-medium text-zinc-500 dark:text-zinc-400">
+                          <th className="text-right py-3 px-2 font-medium text-muted-foreground">
                             Price Override
                           </th>
                         </tr>
@@ -662,9 +662,9 @@ export default function OutletPage({ params }: OutletPageProps) {
                           return (
                             <tr
                               key={recipeOutlet.recipe_id}
-                              className="border-b border-zinc-100 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/30"
+                              className="border-b border-border bg-secondary"
                             >
-                              <td className="py-3 px-2 text-zinc-500 dark:text-zinc-400 font-medium">
+                              <td className="py-3 px-2 text-muted-foreground font-medium">
                                 <Link
                                   href={`/recipes/${recipeOutlet.recipe_id}`}
                                   className="hover:text-purple-600 dark:hover:text-purple-400 hover:underline"
@@ -672,7 +672,7 @@ export default function OutletPage({ params }: OutletPageProps) {
                                   {recipe?.name || 'Unknown Recipe'}
                                 </Link>
                               </td>
-                              <td className="py-3 px-2 text-right text-zinc-500 dark:text-zinc-400">
+                              <td className="py-3 px-2 text-right text-muted-foreground">
                                 {recipeOutlet.price_override !== null ? formatCurrency(recipeOutlet.price_override) : '-'}
                               </td>
                             </tr>

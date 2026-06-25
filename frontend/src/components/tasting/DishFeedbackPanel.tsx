@@ -77,10 +77,10 @@ export function DishFeedbackPanel({ recipeId, sessionId, currentUserId, isPartic
   };
 
   return (
-    <div className="px-4 pt-3 pb-4 border-t border-zinc-200 dark:border-zinc-700">
+    <div className="px-4 pt-3 pb-4 border-t border-border">
       {recipeNotes.length === 0 && !showAddForm ? (
-        <div className="text-center py-6 border border-dashed border-zinc-200 dark:border-zinc-700 rounded-lg mb-3">
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">No feedback recorded yet</p>
+        <div className="text-center py-6 border border-dashed border-border rounded-lg mb-3">
+          <p className="text-sm text-muted-foreground">No feedback recorded yet</p>
         </div>
       ) : (
         <div>
@@ -98,11 +98,11 @@ export function DishFeedbackPanel({ recipeId, sessionId, currentUserId, isPartic
       )}
 
       {isParticipant && (
-        <div className="mt-2 border-t border-zinc-100 dark:border-zinc-700/60">
+        <div className="mt-2 border-t border-border">
           <button
             type="button"
             onClick={() => setShowAddForm(!showAddForm)}
-            className="flex items-center gap-1.5 w-full py-2 text-xs font-medium text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200"
+            className="flex items-center gap-1.5 w-full py-2 text-xs font-medium text-muted-foreground hover:text-foreground"
           >
             <ChevronDown className={`h-3.5 w-3.5 transition-transform ${showAddForm ? 'rotate-180' : ''}`} />
             Add Feedback

@@ -57,14 +57,14 @@ function TastingSessionCard({ session, expired, isOwn, isInvited }: TastingSessi
                 <Badge variant="secondary" className="text-xs shrink-0">Past</Badge>
               )}
             </div>
-            <div className="flex items-center gap-1.5 text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+            <div className="flex items-center gap-1.5 text-sm text-muted-foreground mt-1">
               <Calendar className="h-3.5 w-3.5" />
               <span>{formatDate(session.date)}</span>
             </div>
           </div>
           <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
             expired
-              ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-500'
+              ? 'bg-secondary text-muted-foreground'
               : 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400'
           }`}>
             <Wine className="h-5 w-5" />
@@ -72,16 +72,16 @@ function TastingSessionCard({ session, expired, isOwn, isInvited }: TastingSessi
         </CardHeader>
 
         <CardContent>
-          <div className="space-y-2 text-sm text-zinc-600 dark:text-zinc-300">
+          <div className="space-y-2 text-sm text-muted-foreground">
             {session.location && (
               <div className="flex items-center gap-1.5">
-                <MapPin className="h-3.5 w-3.5 text-zinc-400" />
+                <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
                 <span className="truncate">{session.location}</span>
               </div>
             )}
             {session.participants && session.participants.length > 0 && (
               <div className="flex items-center gap-1.5">
-                <Users className="h-3.5 w-3.5 text-zinc-400" />
+                <Users className="h-3.5 w-3.5 text-muted-foreground" />
                 <span className="truncate">
                   {session.participants.length} attendee{session.participants.length !== 1 ? 's' : ''}
                 </span>
@@ -91,7 +91,7 @@ function TastingSessionCard({ session, expired, isOwn, isInvited }: TastingSessi
         </CardContent>
 
         <CardFooter>
-          <p className="text-xs text-zinc-400 dark:text-zinc-500 truncate">
+          <p className="text-xs text-muted-foreground truncate">
             {session.notes ? session.notes.substring(0, 60) + (session.notes.length > 60 ? '...' : '') : 'No notes'}
           </p>
         </CardFooter>
@@ -187,11 +187,11 @@ export default function TastingsPage() {
         {/* Empty State */}
         {!isLoading && hasNoSessions && (
           <div className="text-center py-12">
-            <Wine className="h-12 w-12 mx-auto mb-4 text-zinc-300 dark:text-zinc-600" />
-            <p className="text-zinc-500 dark:text-zinc-400">
+            <Wine className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+            <p className="text-muted-foreground">
               {search ? 'No sessions match your search' : 'No tasting sessions yet'}
             </p>
-            <p className="text-sm text-zinc-400 dark:text-zinc-500 mt-2">
+            <p className="text-sm text-muted-foreground mt-2">
               Create your first tasting session to start tracking recipe feedback
             </p>
             <Link href="/tastings/new" className="mt-4 inline-block">
@@ -208,10 +208,10 @@ export default function TastingsPage() {
           <div className="mb-8">
             <div className="flex items-center gap-2 mb-4">
               <Clock className="h-5 w-5 text-purple-500" />
-              <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+              <h2 className="text-lg font-semibold text-foreground">
                 Upcoming & Today
               </h2>
-              <span className="text-sm text-zinc-500 dark:text-zinc-400">
+              <span className="text-sm text-muted-foreground">
                 ({ongoingSessions.length})
               </span>
             </div>
@@ -227,11 +227,11 @@ export default function TastingsPage() {
         {!isLoading && expiredSessions.length > 0 && (
           <div>
             <div className="flex items-center gap-2 mb-4">
-              <History className="h-5 w-5 text-zinc-400" />
-              <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+              <History className="h-5 w-5 text-muted-foreground" />
+              <h2 className="text-lg font-semibold text-foreground">
                 Past Sessions
               </h2>
-              <span className="text-sm text-zinc-500 dark:text-zinc-400">
+              <span className="text-sm text-muted-foreground">
                 ({expiredSessions.length})
               </span>
             </div>

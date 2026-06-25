@@ -84,7 +84,7 @@ export function FilterButtons({
       {/* Category Filters */}
       {activeCategories.length > 0 && (
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mr-1">
+          <span className="text-xs font-medium text-muted-foreground mr-1">
             {hasSearch ? 'Matching tags:' : 'Category:'}
           </span>
           {activeCategories.map((category) => (
@@ -95,7 +95,7 @@ export function FilterButtons({
                 'px-3 py-1 text-xs font-medium rounded-full transition-colors',
                 selectedCategories.includes(category.id)
                   ? 'bg-primary text-primary-foreground'
-                  : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
+                  : 'bg-secondary text-secondary-foreground hover:bg-muted'
               )}
             >
               {category.name}
@@ -105,7 +105,7 @@ export function FilterButtons({
             <button
               onClick={onLoadMoreCategories}
               disabled={isLoadingMoreCategories}
-              className="px-3 py-1 text-xs font-medium rounded-full text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200 underline transition-colors disabled:opacity-50"
+              className="px-3 py-1 text-xs font-medium rounded-full text-muted-foreground hover:text-foreground underline transition-colors disabled:opacity-50"
             >
               {isLoadingMoreCategories ? 'Loading...' : 'See more'}
             </button>
@@ -115,7 +115,7 @@ export function FilterButtons({
 
       {/* Unit Filters */}
       <div className="flex flex-wrap items-center gap-2">
-        <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mr-1">
+        <span className="text-xs font-medium text-muted-foreground mr-1">
           Unit:
         </span>
         {UNIT_OPTIONS.map((unit) => (
@@ -126,7 +126,7 @@ export function FilterButtons({
               'px-3 py-1 text-xs font-medium rounded-full transition-colors',
               selectedUnits.includes(unit.value)
                 ? 'bg-primary text-primary-foreground'
-                : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
+                : 'bg-secondary text-secondary-foreground hover:bg-muted'
             )}
           >
             {unit.label}
@@ -136,7 +136,7 @@ export function FilterButtons({
 
       {/* Halal Filters */}
       <div className="flex flex-wrap items-center gap-2">
-        <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mr-1">
+        <span className="text-xs font-medium text-muted-foreground mr-1">
           Halal:
         </span>
         <button
@@ -145,7 +145,7 @@ export function FilterButtons({
             'px-3 py-1 text-xs font-medium rounded-full transition-colors',
             selectedHalal.includes(true)
               ? 'bg-primary text-primary-foreground'
-              : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
+              : 'bg-secondary text-secondary-foreground hover:bg-muted'
           )}
         >
           Halal
@@ -156,7 +156,7 @@ export function FilterButtons({
             'px-3 py-1 text-xs font-medium rounded-full transition-colors',
             selectedHalal.includes(false)
               ? 'bg-primary text-primary-foreground'
-              : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
+              : 'bg-secondary text-secondary-foreground hover:bg-muted'
           )}
         >
           Non-Halal
@@ -166,7 +166,7 @@ export function FilterButtons({
       {/* Allergen Filters */}
       {activeAllergens.length > 0 && (
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mr-1">
+          <span className="text-xs font-medium text-muted-foreground mr-1">
             Allergens:
           </span>
           {activeAllergens.map((allergen) => (
@@ -177,7 +177,7 @@ export function FilterButtons({
                 'px-3 py-1 text-xs font-medium rounded-full transition-colors',
                 selectedAllergens.includes(allergen.id)
                   ? 'bg-primary text-primary-foreground'
-                  : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
+                  : 'bg-secondary text-secondary-foreground hover:bg-muted'
               )}
             >
               {allergen.name}

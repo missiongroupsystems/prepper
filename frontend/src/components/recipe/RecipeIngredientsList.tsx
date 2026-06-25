@@ -149,12 +149,12 @@ export function RecipeIngredientsList({ recipeId, canEdit }: RecipeIngredientsLi
       <div
         ref={setNodeRef}
         className={cn(
-          'rounded-lg border-2 border-dashed border-zinc-200 p-8 text-center dark:border-zinc-700',
+          'rounded-lg border-2 border-dashed border-border p-8 text-center',
           isOver && 'border-blue-400 bg-blue-50 dark:bg-blue-900/20'
         )}
       >
-        <p className="text-zinc-500">No ingredients yet</p>
-        <p className="mt-1 text-sm text-zinc-400">
+        <p className="text-muted-foreground">No ingredients yet</p>
+        <p className="mt-1 text-sm text-muted-foreground">
           Drag ingredients from the right panel to add them
         </p>
       </div>

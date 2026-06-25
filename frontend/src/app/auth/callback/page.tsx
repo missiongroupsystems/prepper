@@ -106,7 +106,7 @@ export default function AuthCallbackPage() {
       <div className="max-w-sm text-center">
         {error ? (
           <>
-            <p className="mb-4 text-sm text-red-600 dark:text-red-400">{error}</p>
+            <p className="mb-4 text-sm text-destructive">{error}</p>
             <button
               type="button"
               onClick={() => router.replace('/login')}
@@ -116,7 +116,7 @@ export default function AuthCallbackPage() {
             </button>
           </>
         ) : (
-          <p className="text-sm text-zinc-600 dark:text-zinc-400">Completing sign-in…</p>
+          <p className="text-sm text-muted-foreground">Completing sign-in…</p>
         )}
       </div>
     </div>

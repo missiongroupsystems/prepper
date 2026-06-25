@@ -50,7 +50,7 @@ function DraggableIngredientCard({ ingredient, categoryMap }: { ingredient: Ingr
       ref={setNodeRef}
       data-ingredient-card
       className={cn(
-        'flex items-center gap-2.5 rounded-lg px-3 py-2.5 border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 hover:border-zinc-300 dark:hover:border-zinc-600 transition-all group cursor-default',
+        'flex items-center gap-2.5 rounded-lg px-3 py-2.5 border border-border bg-card hover:border-input transition-all group cursor-default',
         isDragging && 'opacity-50'
       )}
     >
@@ -61,7 +61,7 @@ function DraggableIngredientCard({ ingredient, categoryMap }: { ingredient: Ingr
           <button
             {...listeners}
             {...attributes}
-            className="cursor-grab touch-none text-zinc-300 dark:text-zinc-600 hover:text-zinc-500 dark:hover:text-zinc-400 active:cursor-grabbing"
+            className="cursor-grab touch-none text-muted-foreground hover:text-foreground active:cursor-grabbing"
           >
             <GripVertical className="h-3.5 w-3.5" />
           </button>
@@ -70,25 +70,25 @@ function DraggableIngredientCard({ ingredient, categoryMap }: { ingredient: Ingr
 
       {/* Content */}
       <div className="flex-1 min-w-0">
-        <h3 className="font-medium text-sm text-zinc-900 dark:text-white truncate">
+        <h3 className="font-medium text-sm text-foreground truncate">
           {ingredient.name}
         </h3>
         {ingredient.supplier_names?.[0] && (
-          <p className="text-[11px] text-zinc-400 dark:text-zinc-500 truncate mt-0.5">
+          <p className="text-[11px] text-muted-foreground truncate mt-0.5">
             {ingredient.supplier_names[0]}
           </p>
         )}
         {categoryName && (
-          <p className="text-[11px] text-zinc-400 dark:text-zinc-500 truncate mt-0.5">
+          <p className="text-[11px] text-muted-foreground truncate mt-0.5">
             {categoryName}
           </p>
         )}
         <div className="flex items-center gap-1.5 mt-0.5">
-          <span className="text-[11px] text-zinc-500 dark:text-zinc-400">{ingredient.base_unit}</span>
+          <span className="text-[11px] text-muted-foreground">{ingredient.base_unit}</span>
           {ingredient.cost_per_base_unit !== null && (
             <>
-              <span className="text-zinc-300 dark:text-zinc-600 text-[11px]">·</span>
-              <span className="text-[11px] text-zinc-400 dark:text-zinc-500 tabular-nums">
+              <span className="text-muted-foreground text-[11px]">·</span>
+              <span className="text-[11px] text-muted-foreground tabular-nums">
                 {formatCurrency(ingredient.cost_per_base_unit)}/{ingredient.base_unit}
               </span>
             </>
@@ -99,7 +99,7 @@ function DraggableIngredientCard({ ingredient, categoryMap }: { ingredient: Ingr
       {/* Add button */}
       <button
         onClick={handleAddClick}
-        className="shrink-0 p-1 rounded-md text-zinc-400 dark:text-zinc-500 opacity-0 group-hover:opacity-100 hover:text-blue-500 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-all"
+        className="shrink-0 p-1 rounded-md text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-blue-500 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-all"
         aria-label="Add to canvas"
       >
         <Plus className="h-3.5 w-3.5" />
@@ -143,7 +143,7 @@ function DraggableRecipeCard({
       ref={setNodeRef}
       data-recipe-card
       className={cn(
-        'flex items-center gap-2.5 rounded-lg px-3 py-2.5 border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 hover:border-zinc-300 dark:hover:border-zinc-600 transition-all group cursor-default',
+        'flex items-center gap-2.5 rounded-lg px-3 py-2.5 border border-border bg-card hover:border-input transition-all group cursor-default',
         isDragging && 'opacity-50',
         isCurrentRecipe && 'opacity-40 cursor-not-allowed'
       )}
@@ -156,7 +156,7 @@ function DraggableRecipeCard({
             {...listeners}
             {...attributes}
             className={cn(
-              'touch-none text-zinc-300 dark:text-zinc-600 hover:text-zinc-500 dark:hover:text-zinc-400',
+              'touch-none text-muted-foreground hover:text-foreground',
               isCurrentRecipe ? 'cursor-not-allowed' : 'cursor-grab active:cursor-grabbing'
             )}
             disabled={isCurrentRecipe}
@@ -176,25 +176,25 @@ function DraggableRecipeCard({
       {/* Content */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-1.5">
-          <h3 className="font-medium text-sm text-zinc-900 dark:text-white truncate">
+          <h3 className="font-medium text-sm text-foreground truncate">
             {recipe.name}
           </h3>
           {isCurrentRecipe && (
-            <span className="text-[10px] font-medium uppercase text-zinc-400 dark:text-zinc-500 shrink-0">current</span>
+            <span className="text-[10px] font-medium uppercase text-muted-foreground shrink-0">current</span>
           )}
         </div>
         <div className="flex items-center gap-1.5 mt-0.5">
-          <span className="text-[11px] text-zinc-500 dark:text-zinc-400">{recipe.yield_quantity} {recipe.yield_unit}</span>
+          <span className="text-[11px] text-muted-foreground">{recipe.yield_quantity} {recipe.yield_unit}</span>
           {outletNames.length > 0 && (
             <>
-              <span className="text-zinc-300 dark:text-zinc-600 text-[11px]">·</span>
-              <span className="text-[11px] text-zinc-400 dark:text-zinc-500 truncate">{outletNames.join(', ')}</span>
+              <span className="text-muted-foreground text-[11px]">·</span>
+              <span className="text-[11px] text-muted-foreground truncate">{outletNames.join(', ')}</span>
             </>
           )}
           {categoryNames.length > 0 && (
             <>
-              <span className="text-zinc-300 dark:text-zinc-600 text-[11px]">·</span>
-              <span className="text-[11px] text-zinc-400 dark:text-zinc-500 truncate">{categoryNames.join(', ')}</span>
+              <span className="text-muted-foreground text-[11px]">·</span>
+              <span className="text-[11px] text-muted-foreground truncate">{categoryNames.join(', ')}</span>
             </>
           )}
         </div>
@@ -204,7 +204,7 @@ function DraggableRecipeCard({
       <button
         onClick={handleAddClick}
         disabled={isCurrentRecipe}
-        className="shrink-0 p-1 rounded-md text-zinc-400 dark:text-zinc-500 opacity-0 group-hover:opacity-100 hover:text-green-500 dark:hover:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30 transition-all disabled:opacity-0"
+        className="shrink-0 p-1 rounded-md text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-green-500 dark:hover:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30 transition-all disabled:opacity-0"
         aria-label="Add to canvas"
       >
         <Plus className="h-3.5 w-3.5" />
@@ -455,30 +455,30 @@ export function RightPanel({ outlets }: RightPanelProps) {
   const showRecipes = activeTab === 'all' || activeTab === 'items';
 
   return (
-    <aside className={cn("flex h-full flex-col border-l border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-950/50 transition-all duration-300 ease-in-out overflow-hidden", isCollapsed ? "w-10" : "w-72")}>
+    <aside className={cn("flex h-full flex-col border-l border-border bg-secondary transition-all duration-300 ease-in-out overflow-hidden", isCollapsed ? "w-10" : "w-72")}>
       {/* Header */}
       {!isCollapsed && (
-        <div className="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 px-3 py-2.5">
-          <h2 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">Library</h2>
+        <div className="flex items-center justify-between border-b border-border px-3 py-2.5">
+          <h2 className="text-sm font-semibold text-foreground">Library</h2>
           <div className="flex items-center gap-1">
             <div className="flex items-center gap-1.5 mr-1">
               <Switch
                 checked={isDragDropEnabled}
                 onChange={(e) => setIsDragDropEnabled(e.currentTarget.checked)}
               />
-              <span className="text-[11px] text-zinc-400 dark:text-zinc-500 whitespace-nowrap">Drag and Drop</span>
+              <span className="text-[11px] text-muted-foreground whitespace-nowrap">Drag and Drop</span>
             </div>
             <button
               onClick={() => setShowForm(true)}
               disabled={showForm}
-              className="p-1.5 rounded-md text-zinc-400 hover:text-zinc-600 dark:text-zinc-500 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors disabled:opacity-40"
+              className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors disabled:opacity-40"
               title="New ingredient"
             >
               <Plus className="h-3.5 w-3.5" />
             </button>
             <button
               onClick={() => setIsCollapsed(true)}
-              className="p-1.5 rounded-md text-zinc-400 hover:text-zinc-600 dark:text-zinc-500 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+              className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
               title="Collapse panel"
             >
               <ChevronRight className="h-3.5 w-3.5" />
@@ -489,10 +489,10 @@ export function RightPanel({ outlets }: RightPanelProps) {
 
       {/* Collapsed Header */}
       {isCollapsed && (
-        <div className="flex items-center justify-center border-b border-zinc-200 dark:border-zinc-800 px-1 py-2.5">
+        <div className="flex items-center justify-center border-b border-border px-1 py-2.5">
           <button
             onClick={() => setIsCollapsed(false)}
-            className="p-1 rounded-md text-zinc-400 hover:text-zinc-600 dark:text-zinc-500 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+            className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
             title="Expand panel"
           >
             <ChevronLeft className="h-3.5 w-3.5" />
@@ -503,7 +503,7 @@ export function RightPanel({ outlets }: RightPanelProps) {
       {!isCollapsed && (
         <>
           {/* Tabs */}
-          <div className={cn("border-b border-zinc-200 dark:border-zinc-800 px-3 pt-1", isQuickAdding && "pointer-events-none opacity-50")}>
+          <div className={cn("border-b border-border px-3 pt-1", isQuickAdding && "pointer-events-none opacity-50")}>
             <nav className="flex gap-1" aria-label="Library tabs">
               {TABS.map((tab) => (
                 <button
@@ -512,8 +512,8 @@ export function RightPanel({ outlets }: RightPanelProps) {
                   className={cn(
                     'px-2.5 py-1.5 text-xs font-medium rounded-md transition-colors',
                     activeTab === tab.id
-                      ? 'bg-zinc-200/70 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100'
-                      : 'text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/50'
+                      ? 'bg-muted text-foreground'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
                   )}
                 >
                   {tab.label}
@@ -523,9 +523,9 @@ export function RightPanel({ outlets }: RightPanelProps) {
           </div>
 
           {/* Search */}
-          <div className={cn("border-b border-zinc-200 dark:border-zinc-800 px-3 py-2", isQuickAdding && "pointer-events-none opacity-50")}>
+          <div className={cn("border-b border-border px-3 py-2", isQuickAdding && "pointer-events-none opacity-50")}>
             <div className="relative">
-              <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-zinc-400 dark:text-zinc-500" />
+              <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
               <Input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
@@ -537,10 +537,10 @@ export function RightPanel({ outlets }: RightPanelProps) {
 
           {/* Category Filter — compact */}
           {(activeTab === 'all' || activeTab === 'ingredients') && displayedCategories.length > 0 && (
-            <div className="border-b border-zinc-200 dark:border-zinc-800">
+            <div className="border-b border-border">
               <button
                 onClick={() => setShowCategoryFilter(!showCategoryFilter)}
-                className="w-full px-3 py-1.5 flex items-center justify-between text-xs font-medium text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100/50 dark:hover:bg-zinc-800/50 transition-colors"
+                className="w-full px-3 py-1.5 flex items-center justify-between text-xs font-medium text-muted-foreground hover:bg-secondary transition-colors"
               >
                 <span>Filter{selectedCategories.length > 0 ? ` (${selectedCategories.length})` : ''}</span>
                 <ChevronDown className={cn("h-3 w-3 transition-transform", showCategoryFilter && "rotate-180")} />
@@ -557,7 +557,7 @@ export function RightPanel({ outlets }: RightPanelProps) {
                           'px-2 py-0.5 text-[11px] font-medium rounded-full transition-colors',
                           selectedCategories.includes(category.id)
                             ? 'bg-blue-500 text-white'
-                            : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
+                            : 'bg-secondary text-muted-foreground hover:bg-muted'
                         )}
                       >
                         {category.name}
@@ -577,7 +577,7 @@ export function RightPanel({ outlets }: RightPanelProps) {
                     {selectedCategories.length > 0 && (
                       <button
                         onClick={clearCategoryFilters}
-                        className="text-[11px] text-zinc-400 dark:text-zinc-500 hover:underline"
+                        className="text-[11px] text-muted-foreground hover:underline"
                       >
                         Clear
                       </button>
@@ -599,8 +599,8 @@ export function RightPanel({ outlets }: RightPanelProps) {
           >
         {/* Loading overlay */}
         {isQuickAdding && (
-          <div className="absolute inset-0 z-10 flex items-center justify-center bg-zinc-50/70 dark:bg-zinc-950/70">
-            <div className="flex items-center gap-2 text-xs text-zinc-500">
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-secondary/70">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <Loader2 className="h-4 w-4 animate-spin" />
               <span>Creating ingredient...</span>
             </div>
@@ -615,7 +615,7 @@ export function RightPanel({ outlets }: RightPanelProps) {
         {isLoading ? (
           <ListSkeleton />
         ) : hasError ? (
-          <div className="rounded-lg bg-red-50 p-3 text-center text-xs text-red-600 dark:bg-red-900/20 dark:text-red-400">
+          <div className="rounded-lg bg-destructive/10 p-3 text-center text-xs text-destructive">
             Failed to load items
           </div>
         ) : (
@@ -624,7 +624,7 @@ export function RightPanel({ outlets }: RightPanelProps) {
             {showIngredients && (
               <div>
                 {activeTab === 'all' && (
-                  <h3 className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500 px-1">Ingredients</h3>
+                  <h3 className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground px-1">Ingredients</h3>
                 )}
                 {filteredIngredients.length === 0 ? (
                   <div className="px-1">
@@ -638,10 +638,10 @@ export function RightPanel({ outlets }: RightPanelProps) {
                           <Plus className="h-3.5 w-3.5 shrink-0" />
                           <span className="truncate">Add &ldquo;{search.trim()}&rdquo;</span>
                         </button>
-                        <p className="text-xs text-zinc-400 dark:text-zinc-500">No matching ingredients</p>
+                        <p className="text-xs text-muted-foreground">No matching ingredients</p>
                       </>
                     ) : (
-                      <p className="text-xs text-zinc-500">No ingredients yet</p>
+                      <p className="text-xs text-muted-foreground">No ingredients yet</p>
                     )}
                   </div>
                 ) : (
@@ -657,7 +657,7 @@ export function RightPanel({ outlets }: RightPanelProps) {
                       <button
                         onClick={() => fetchNextIngredients()}
                         disabled={isFetchingNextIngredients}
-                        className="w-full mt-1 py-2 text-xs font-medium text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition-colors disabled:opacity-50"
+                        className="w-full mt-1 py-2 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-secondary rounded-lg transition-colors disabled:opacity-50"
                       >
                         {isFetchingNextIngredients ? (
                           <span className="flex items-center justify-center gap-1.5">
@@ -678,10 +678,10 @@ export function RightPanel({ outlets }: RightPanelProps) {
             {showRecipes && (
               <div>
                 {activeTab === 'all' && (
-                  <h3 className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500 px-1">Items</h3>
+                  <h3 className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground px-1">Items</h3>
                 )}
                 {filteredRecipes.length === 0 ? (
-                  <p className="text-xs text-zinc-500 px-1">
+                  <p className="text-xs text-muted-foreground px-1">
                     {search ? 'No matches' : 'No dishes yet'}
                   </p>
                 ) : (
@@ -698,7 +698,7 @@ export function RightPanel({ outlets }: RightPanelProps) {
                       <button
                         onClick={() => fetchNextRecipes()}
                         disabled={isFetchingNextRecipes}
-                        className="w-full mt-1 py-2 text-xs font-medium text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition-colors disabled:opacity-50"
+                        className="w-full mt-1 py-2 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-secondary rounded-lg transition-colors disabled:opacity-50"
                       >
                         {isFetchingNextRecipes ? (
                           <span className="flex items-center justify-center gap-1.5">
@@ -718,7 +718,7 @@ export function RightPanel({ outlets }: RightPanelProps) {
             {/* Empty state */}
             {activeTab === 'all' && filteredIngredients.length === 0 && filteredRecipes.length === 0 && !search && (
               <div className="py-8 text-center">
-                <p className="text-xs text-zinc-500">No items yet</p>
+                <p className="text-xs text-muted-foreground">No items yet</p>
               </div>
             )}
           </div>

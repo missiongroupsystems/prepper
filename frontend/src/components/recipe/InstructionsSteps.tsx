@@ -100,9 +100,9 @@ export function InstructionsSteps({ recipe, canEdit }: InstructionsStepsProps) {
 
   if (steps.length === 0) {
     return (
-      <div className="rounded-lg border-2 border-dashed border-zinc-200 p-8 text-center dark:border-zinc-700">
-        <p className="text-zinc-500">No steps yet</p>
-        <p className="mt-1 text-sm text-zinc-400">
+      <div className="rounded-lg border-2 border-dashed border-border p-8 text-center">
+        <p className="text-muted-foreground">No steps yet</p>
+        <p className="mt-1 text-sm text-muted-foreground">
           Write freeform instructions and click &quot;Format into steps&quot;, or add steps manually
         </p>
         {canEdit && (

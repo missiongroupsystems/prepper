@@ -89,7 +89,7 @@ export function InstructionStepCard({
       ref={setNodeRef}
       style={style}
       className={cn(
-        'rounded-lg border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-800',
+        'rounded-lg border border-border bg-card',
         isDragging && 'opacity-50 shadow-lg'
       )}
     >
@@ -98,13 +98,13 @@ export function InstructionStepCard({
           <button
             {...listeners}
             {...attributes}
-            className="mt-2 cursor-grab touch-none text-zinc-400 hover:text-zinc-600 active:cursor-grabbing"
+            className="mt-2 cursor-grab touch-none text-muted-foreground hover:text-foreground active:cursor-grabbing"
           >
             <GripVertical className="h-4 w-4" />
           </button>
         )}
 
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-sm font-semibold dark:bg-zinc-700">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-secondary text-sm font-semibold">
           {stepNumber}
         </div>
 
@@ -119,7 +119,7 @@ export function InstructionStepCard({
 
           <div className="flex flex-wrap gap-4">
             <div className="flex items-center gap-2">
-              <Timer className="h-4 w-4 text-zinc-400" />
+              <Timer className="h-4 w-4 text-muted-foreground" />
               <Input
                 type="text"
                 value={localTimer}
@@ -131,7 +131,7 @@ export function InstructionStepCard({
             </div>
 
             <div className="flex items-center gap-2">
-              <Thermometer className="h-4 w-4 text-zinc-400" />
+              <Thermometer className="h-4 w-4 text-muted-foreground" />
               <div className="flex items-center gap-1">
                 <Input
                   type="text"
@@ -143,7 +143,7 @@ export function InstructionStepCard({
                   className="w-20"
                   disabled={!canEdit}
                 />
-                <span className="text-sm text-zinc-500">°C</span>
+                <span className="text-sm text-muted-foreground">°C</span>
               </div>
             </div>
           </div>
@@ -151,7 +151,7 @@ export function InstructionStepCard({
 
         {canEdit && (
           <Button variant="ghost" size="icon" onClick={onDelete}>
-            <Trash2 className="h-4 w-4 text-zinc-400 hover:text-red-500" />
+            <Trash2 className="h-4 w-4 text-muted-foreground hover:text-destructive" />
           </Button>
         )}
       </div>

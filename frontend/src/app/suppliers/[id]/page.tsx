@@ -185,7 +185,7 @@ export default function SupplierPage({ params }: SupplierPageProps) {
       <div className="p-6">
         <Link
           href="/ingredients"
-          className="inline-flex items-center gap-2 text-sm text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-300 mb-6"
+          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to Ingredients
@@ -203,7 +203,7 @@ export default function SupplierPage({ params }: SupplierPageProps) {
         {/* Back Link */}
         <Link
           href="/ingredients"
-          className="inline-flex items-center gap-2 text-sm text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-300 mb-6"
+          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to Ingredients
@@ -221,14 +221,14 @@ export default function SupplierPage({ params }: SupplierPageProps) {
               <CardContent className="p-6">
                 <div className="flex items-start gap-6">
                   {/* Placeholder for hero image */}
-                  <div className="w-24 h-24 md:w-32 md:h-32 rounded-lg bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-zinc-400 shrink-0">
+                  <div className="w-24 h-24 md:w-32 md:h-32 rounded-lg bg-secondary flex items-center justify-center text-muted-foreground shrink-0">
                     <ImagePlus className="h-8 w-8" />
                   </div>
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1">
-                        <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
+                        <h1 className="text-2xl font-bold text-foreground">
                           <EditableCell
                             value={supplier.name}
                             onSave={(value) => handleUpdateSupplier({ name: value })}
@@ -255,59 +255,59 @@ export default function SupplierPage({ params }: SupplierPageProps) {
                     {/* Contact Information */}
                     <div className="mt-4 space-y-3">
                       <div className="flex items-center gap-2 text-sm">
-                        <Tag className="h-4 w-4 text-zinc-400 shrink-0" />
-                        <span className="text-zinc-500 dark:text-zinc-400 w-32 shrink-0">Code:</span>
+                        <Tag className="h-4 w-4 text-muted-foreground shrink-0" />
+                        <span className="text-muted-foreground w-32 shrink-0">Code:</span>
                         <EditableCell
                           value={supplier.code || ''}
                           onSave={(value) => handleUpdateSupplier({ code: value || null })}
-                          className="font-medium text-zinc-900 dark:text-zinc-100 flex-1"
+                          className="font-medium text-foreground flex-1"
                           placeholder="Add code"
                         />
                       </div>
                       <div className="flex items-center gap-2 text-sm">
-                        <MapPin className="h-4 w-4 text-zinc-400 shrink-0" />
-                        <span className="text-zinc-500 dark:text-zinc-400 w-32 shrink-0">Shipping address:</span>
+                        <MapPin className="h-4 w-4 text-muted-foreground shrink-0" />
+                        <span className="text-muted-foreground w-32 shrink-0">Shipping address:</span>
                         <EditableCell
                           value={supplier.address || ''}
                           onSave={(value) => handleUpdateSupplier({ address: value || null })}
-                          className="font-medium text-zinc-900 dark:text-zinc-100 flex-1"
+                          className="font-medium text-foreground flex-1"
                           placeholder="Add shipping address"
                         />
                       </div>
                       <div className="flex items-center gap-2 text-sm">
-                        <Truck className="h-4 w-4 text-zinc-400 shrink-0" />
-                        <span className="text-zinc-500 dark:text-zinc-400 w-32 shrink-0">Shipping company:</span>
+                        <Truck className="h-4 w-4 text-muted-foreground shrink-0" />
+                        <span className="text-muted-foreground w-32 shrink-0">Shipping company:</span>
                         <EditableCell
                           value={supplier.shipping_company_name || ''}
                           onSave={(value) => handleUpdateSupplier({ shipping_company_name: value || null })}
-                          className="font-medium text-zinc-900 dark:text-zinc-100 flex-1"
+                          className="font-medium text-foreground flex-1"
                           placeholder="Add shipping company"
                         />
                       </div>
                       <div className="flex items-center gap-2 text-sm">
-                        <Phone className="h-4 w-4 text-zinc-400 shrink-0" />
-                        <span className="text-zinc-500 dark:text-zinc-400 w-32 shrink-0">Phone:</span>
+                        <Phone className="h-4 w-4 text-muted-foreground shrink-0" />
+                        <span className="text-muted-foreground w-32 shrink-0">Phone:</span>
                         <EditableCell
                           value={supplier.phone_number || ''}
                           onSave={(value) => handleUpdateSupplier({ phone_number: value || null })}
-                          className="font-medium text-zinc-900 dark:text-zinc-100 flex-1"
+                          className="font-medium text-foreground flex-1"
                           placeholder="Add phone number"
                         />
                       </div>
                       <div className="flex items-center gap-2 text-sm">
-                        <Mail className="h-4 w-4 text-zinc-400 shrink-0" />
-                        <span className="text-zinc-500 dark:text-zinc-400 w-32 shrink-0">Email:</span>
+                        <Mail className="h-4 w-4 text-muted-foreground shrink-0" />
+                        <span className="text-muted-foreground w-32 shrink-0">Email:</span>
                         <EditableCell
                           value={supplier.email || ''}
                           onSave={(value) => handleUpdateSupplier({ email: value || null })}
                           type="email"
-                          className="font-medium text-zinc-900 dark:text-zinc-100 flex-1"
+                          className="font-medium text-foreground flex-1"
                           placeholder="Add email"
                         />
                       </div>
                     </div>
 
-                    <div className="mt-4 pt-4 border-t border-zinc-100 dark:border-zinc-800 text-sm text-zinc-500 dark:text-zinc-400">
+                    <div className="mt-4 pt-4 border-t border-border text-sm text-muted-foreground">
                       Created: {new Date(supplier.created_at).toLocaleDateString()}
                       {supplier.updated_at !== supplier.created_at && (
                         <span className="ml-4">
@@ -325,7 +325,7 @@ export default function SupplierPage({ params }: SupplierPageProps) {
               <CardContent className="p-6">
                 <div className="flex items-center gap-2 mb-4">
                   <Package className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-                  <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+                  <h2 className="text-lg font-semibold text-foreground">
                     Ingredients
                   </h2>
                 </div>
@@ -350,7 +350,7 @@ export default function SupplierPage({ params }: SupplierPageProps) {
                 >
                   <form onSubmit={handleAddIngredient} className="space-y-4">
                     <div>
-                      <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1">
+                      <label className="block text-xs font-medium text-muted-foreground mb-1">
                         Ingredient
                       </label>
                       <Select
@@ -368,7 +368,7 @@ export default function SupplierPage({ params }: SupplierPageProps) {
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1">
+                      <label className="block text-xs font-medium text-muted-foreground mb-1">
                         Outlet
                       </label>
                       <Select
@@ -387,7 +387,7 @@ export default function SupplierPage({ params }: SupplierPageProps) {
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1">
+                      <label className="block text-xs font-medium text-muted-foreground mb-1">
                         SKU
                       </label>
                       <Input
@@ -400,7 +400,7 @@ export default function SupplierPage({ params }: SupplierPageProps) {
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1">
+                      <label className="block text-xs font-medium text-muted-foreground mb-1">
                         Pack Size
                       </label>
                       <Input
@@ -418,7 +418,7 @@ export default function SupplierPage({ params }: SupplierPageProps) {
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1">
+                      <label className="block text-xs font-medium text-muted-foreground mb-1">
                         Pack Unit
                       </label>
                       <Select
@@ -433,7 +433,7 @@ export default function SupplierPage({ params }: SupplierPageProps) {
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1">
+                      <label className="block text-xs font-medium text-muted-foreground mb-1">
                         Price/Pack
                       </label>
                       <Input
@@ -451,10 +451,10 @@ export default function SupplierPage({ params }: SupplierPageProps) {
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1">
+                      <label className="block text-xs font-medium text-muted-foreground mb-1">
                         Unit Cost
                       </label>
-                      <div className="px-3 py-2 rounded border border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100">
+                      <div className="px-3 py-2 rounded border border-input bg-secondary text-foreground">
                         {formData.pack_size && formData.price_per_pack
                           ? formatCurrency(calculateUnitCost(parseFloat(formData.pack_size), parseFloat(formData.price_per_pack)))
                           : formatCurrency(0)}
@@ -467,7 +467,7 @@ export default function SupplierPage({ params }: SupplierPageProps) {
                       }
                       label="Preferred Supplier"
                     />
-                    <div className="flex items-center justify-end gap-3 pt-4 border-t border-zinc-200 dark:border-zinc-700">
+                    <div className="flex items-center justify-end gap-3 pt-4 border-t border-border">
                       <Button
                         type="button"
                         variant="outline"
@@ -498,26 +498,26 @@ export default function SupplierPage({ params }: SupplierPageProps) {
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead>
-                        <tr className="border-b border-zinc-200 dark:border-zinc-700">
-                          <th className="text-left py-3 px-2 font-medium text-zinc-500 dark:text-zinc-400">
+                        <tr className="border-b border-border">
+                          <th className="text-left py-3 px-2 font-medium text-muted-foreground">
                             Ingredient
                           </th>
-                          <th className="text-left py-3 px-2 font-medium text-zinc-500 dark:text-zinc-400">
+                          <th className="text-left py-3 px-2 font-medium text-muted-foreground">
                             Outlet
                           </th>
-                          <th className="text-left py-3 px-2 font-medium text-zinc-500 dark:text-zinc-400">
+                          <th className="text-left py-3 px-2 font-medium text-muted-foreground">
                             SKU
                           </th>
-                          <th className="text-right py-3 px-2 font-medium text-zinc-500 dark:text-zinc-400">
+                          <th className="text-right py-3 px-2 font-medium text-muted-foreground">
                             Pack Size
                           </th>
-                          <th className="text-left py-3 px-2 font-medium text-zinc-500 dark:text-zinc-400">
+                          <th className="text-left py-3 px-2 font-medium text-muted-foreground">
                             Pack Unit
                           </th>
-                          <th className="text-right py-3 px-2 font-medium text-zinc-500 dark:text-zinc-400">
+                          <th className="text-right py-3 px-2 font-medium text-muted-foreground">
                             Price/Pack
                           </th>
-                          <th className="text-right py-3 px-2 font-medium text-zinc-500 dark:text-zinc-400">
+                          <th className="text-right py-3 px-2 font-medium text-muted-foreground">
                             Unit Cost
                           </th>
                           <th className="py-3 px-2 w-12"></th>
@@ -527,9 +527,9 @@ export default function SupplierPage({ params }: SupplierPageProps) {
                         {supplierIngredients.map((ingredient) => (
                           <tr
                             key={ingredient.id}
-                            className="border-b border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 group"
+                            className="border-b border-border hover:bg-secondary group"
                           >
-                            <td className="py-3 px-2 text-zinc-900 dark:text-zinc-100 font-medium">
+                            <td className="py-3 px-2 text-foreground font-medium">
                               <Link
                                 href={`/ingredients/${ingredient.ingredient_id}`}
                                 className="hover:text-purple-600 dark:hover:text-purple-400"
@@ -537,10 +537,10 @@ export default function SupplierPage({ params }: SupplierPageProps) {
                                 {ingredient.ingredient_name}
                               </Link>
                             </td>
-                            <td className="py-3 px-2 text-zinc-600 dark:text-zinc-300 text-xs">
+                            <td className="py-3 px-2 text-muted-foreground text-xs">
                               {ingredient.outlet_name ?? '-'}
                             </td>
-                            <td className="py-3 px-2 text-zinc-600 dark:text-zinc-300 font-mono text-xs">
+                            <td className="py-3 px-2 text-muted-foreground font-mono text-xs">
                               {editingIngredient === ingredient.id ? (
                                 <input
                                   type="text"
@@ -555,13 +555,13 @@ export default function SupplierPage({ params }: SupplierPageProps) {
                                     })
                                   }
                                   placeholder="e.g., SKU-001"
-                                  className="w-full px-2 py-1 text-sm border border-zinc-300 dark:border-zinc-600 rounded bg-white dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-purple-500"
+                                  className="w-full px-2 py-1 text-sm border border-input rounded bg-card text-foreground focus:outline-none focus:ring-1 focus:ring-purple-500"
                                 />
                               ) : (
                                 ingredient.sku ?? '-'
                               )}
                             </td>
-                            <td className="py-3 px-2 text-right text-zinc-900 dark:text-zinc-100">
+                            <td className="py-3 px-2 text-right text-foreground">
                               {editingIngredient === ingredient.id ? (
                                 <input
                                   type="text"
@@ -580,7 +580,7 @@ export default function SupplierPage({ params }: SupplierPageProps) {
                                     const n = parseFloat(editData[ingredient.id]?.pack_size ?? '');
                                     if (!isNaN(n)) setEditData({ ...editData, [ingredient.id]: { ...editData[ingredient.id], pack_size: String(n) } });
                                   }}
-                                  className="w-full px-2 py-1 text-sm border border-zinc-300 dark:border-zinc-600 rounded bg-white dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-purple-500 text-right"
+                                  className="w-full px-2 py-1 text-sm border border-input rounded bg-card text-foreground focus:outline-none focus:ring-1 focus:ring-purple-500 text-right"
                                 />
                               ) : (
                                 ingredient.pack_size
@@ -599,7 +599,7 @@ export default function SupplierPage({ params }: SupplierPageProps) {
                                       },
                                     })
                                   }
-                                  className="px-2 py-1 text-sm border border-zinc-300 dark:border-zinc-600 rounded bg-white dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-purple-500 w-full"
+                                  className="px-2 py-1 text-sm border border-input rounded bg-card text-foreground focus:outline-none focus:ring-1 focus:ring-purple-500 w-full"
                                 >
                                   {UNIT_OPTIONS.map((opt) => (
                                     <option key={opt.value} value={opt.value}>
@@ -611,7 +611,7 @@ export default function SupplierPage({ params }: SupplierPageProps) {
                                 ingredient.pack_unit
                               )}
                             </td>
-                            <td className="py-3 px-2 text-right text-zinc-900 dark:text-zinc-100">
+                            <td className="py-3 px-2 text-right text-foreground">
                               {editingIngredient === ingredient.id ? (
                                 <input
                                   type="text"
@@ -630,13 +630,13 @@ export default function SupplierPage({ params }: SupplierPageProps) {
                                     const n = parseFloat(editData[ingredient.id]?.price_per_pack ?? '');
                                     if (!isNaN(n)) setEditData({ ...editData, [ingredient.id]: { ...editData[ingredient.id], price_per_pack: String(n) } });
                                   }}
-                                  className="w-full px-2 py-1 text-sm border border-zinc-300 dark:border-zinc-600 rounded bg-white dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-purple-500 text-right"
+                                  className="w-full px-2 py-1 text-sm border border-input rounded bg-card text-foreground focus:outline-none focus:ring-1 focus:ring-purple-500 text-right"
                                 />
                               ) : (
                                 formatCurrency(ingredient.price_per_pack)
                               )}
                             </td>
-                            <td className="py-3 px-2 text-right text-zinc-900 dark:text-zinc-100">
+                            <td className="py-3 px-2 text-right text-foreground">
                               {editingIngredient === ingredient.id
                                 ? formatCurrency(
                                     calculateUnitCost(
@@ -649,12 +649,12 @@ export default function SupplierPage({ params }: SupplierPageProps) {
                             <td className="py-3 px-2">
                               <div className="relative group/menu">
                                 {/* Three dots button */}
-                                <button className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 p-1">
+                                <button className="text-muted-foreground hover:text-foreground p-1">
                                   <MoreVertical className="h-4 w-4" />
                                 </button>
 
                                 {/* Dropdown menu */}
-                                <div className="absolute right-0 top-full mt-0 bg-white dark:bg-zinc-700 border border-zinc-200 dark:border-zinc-600 rounded-md shadow-lg opacity-0 invisible group-hover/menu:opacity-100 group-hover/menu:visible transition-all z-10 min-w-max">
+                                <div className="absolute right-0 top-full mt-0 bg-popover border border-border rounded-md shadow-lg opacity-0 invisible group-hover/menu:opacity-100 group-hover/menu:visible transition-all z-10 min-w-max">
                                   {editingIngredient === ingredient.id ? (
                                     <>
                                       <Button
@@ -738,9 +738,9 @@ export default function SupplierPage({ params }: SupplierPageProps) {
                     </table>
                   </div>
                 ) : (
-                  <div className="text-center py-6 border border-dashed border-zinc-200 dark:border-zinc-700 rounded-lg">
-                    <Package className="h-8 w-8 mx-auto mb-2 text-zinc-300 dark:text-zinc-600" />
-                    <p className="text-zinc-400 dark:text-zinc-500">
+                  <div className="text-center py-6 border border-dashed border-border rounded-lg">
+                    <Package className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+                    <p className="text-muted-foreground">
                       No ingredients added yet
                     </p>
                   </div>

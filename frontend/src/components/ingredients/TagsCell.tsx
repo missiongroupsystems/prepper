@@ -19,14 +19,14 @@ export function TagsCell({ siId }: TagsCellProps) {
         {tags.map((tag) => (
           <span
             key={tag.id}
-            className="inline-flex items-center rounded-full bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 text-xs font-medium text-zinc-700 dark:text-zinc-300"
+            className="inline-flex items-center rounded-full bg-secondary px-2 py-0.5 text-xs font-medium text-muted-foreground"
           >
             {tag.name}
           </span>
         ))}
         <button
           onClick={() => setOpen(true)}
-          className="inline-flex items-center justify-center rounded p-0.5 text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100 dark:hover:bg-zinc-800 dark:hover:text-zinc-300 transition-colors"
+          className="inline-flex items-center justify-center rounded p-0.5 text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
           aria-label="Edit tags"
         >
           <Tag className="h-3.5 w-3.5" />

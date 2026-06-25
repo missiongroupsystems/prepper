@@ -81,14 +81,14 @@ export function Instructions({ recipe, canEdit }: InstructionsProps) {
   return (
     <div>
       {/* Tab Toggle */}
-      <div className="mb-4 flex gap-1 rounded-lg bg-zinc-100 p-1 dark:bg-zinc-800">
+      <div className="mb-4 flex gap-1 rounded-lg bg-secondary p-1">
         <button
           onClick={() => setInstructionsTab('freeform')}
           className={cn(
             'flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors',
             instructionsTab === 'freeform'
-              ? 'bg-white text-zinc-900 shadow-sm dark:bg-zinc-700 dark:text-white'
-              : 'text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white'
+              ? 'bg-card text-foreground shadow-sm'
+              : 'text-muted-foreground hover:text-foreground'
           )}
         >
           Freeform
@@ -98,8 +98,8 @@ export function Instructions({ recipe, canEdit }: InstructionsProps) {
           className={cn(
             'flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors',
             instructionsTab === 'steps'
-              ? 'bg-white text-zinc-900 shadow-sm dark:bg-zinc-700 dark:text-white'
-              : 'text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white'
+              ? 'bg-card text-foreground shadow-sm'
+              : 'text-muted-foreground hover:text-foreground'
           )}
         >
           Steps

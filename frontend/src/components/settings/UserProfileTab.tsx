@@ -20,10 +20,10 @@ function timeAgo(dateStr: string): string {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <p className="text-[11px] font-semibold tracking-widest text-zinc-400 dark:text-zinc-500 uppercase mb-1">
+      <p className="text-[11px] font-semibold tracking-widest text-muted-foreground uppercase mb-1">
         {label}
       </p>
-      <div className="text-base font-semibold text-zinc-900 dark:text-zinc-100 pb-3 border-b border-zinc-200 dark:border-zinc-800">
+      <div className="text-base font-semibold text-foreground pb-3 border-b border-border">
         {children}
       </div>
     </div>
@@ -48,13 +48,13 @@ export function UserProfileTab() {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
-            <UserIcon className="h-6 w-6 text-zinc-500 dark:text-zinc-400" />
-            <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">Account Information</h1>
+            <UserIcon className="h-6 w-6 text-muted-foreground" />
+            <h1 className="text-2xl font-bold text-foreground">Account Information</h1>
           </div>
           {userLoading ? (
             <Skeleton className="h-4 w-32 rounded" />
           ) : user?.updated_at ? (
-            <span className="text-sm text-zinc-400 dark:text-zinc-500">
+            <span className="text-sm text-muted-foreground">
               Last updated: {timeAgo(user.updated_at)}
             </span>
           ) : null}
@@ -84,29 +84,29 @@ export function UserProfileTab() {
 
         {/* Assigned Outlet */}
         <div>
-          <p className="text-[11px] font-semibold tracking-widest text-zinc-400 dark:text-zinc-500 uppercase mb-3">
+          <p className="text-[11px] font-semibold tracking-widest text-muted-foreground uppercase mb-3">
             Assigned Outlet
           </p>
 
           {outletLoading ? (
             <Skeleton className="h-20 rounded-xl" />
           ) : outlet ? (
-            <div className="flex items-center gap-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 px-5 py-4">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-zinc-200 dark:bg-zinc-800">
-                <Store className="h-5 w-5 text-zinc-500 dark:text-zinc-400" />
+            <div className="flex items-center gap-4 rounded-xl border border-border bg-card px-5 py-4">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-secondary">
+                <Store className="h-5 w-5 text-muted-foreground" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-semibold text-zinc-900 dark:text-zinc-100">{outlet.name}</p>
+                <p className="font-semibold text-foreground">{outlet.name}</p>
                 {outletSubline && (
-                  <p className="text-sm text-zinc-500 dark:text-zinc-400">{outletSubline}</p>
+                  <p className="text-sm text-muted-foreground">{outletSubline}</p>
                 )}
               </div>
-              <button className="text-xs font-bold tracking-widest text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 transition-colors uppercase">
+              <button className="text-xs font-bold tracking-widest text-muted-foreground hover:text-foreground transition-colors uppercase">
                 Change
               </button>
             </div>
           ) : (
-            <p className="text-sm text-zinc-400 dark:text-zinc-500">No outlet assigned</p>
+            <p className="text-sm text-muted-foreground">No outlet assigned</p>
           )}
         </div>
       </div>

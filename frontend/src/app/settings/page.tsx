@@ -30,7 +30,7 @@ export default function SettingsPage() {
       case 'admin':
         if (userType !== 'admin') {
           return (
-            <div className="p-6 text-sm text-zinc-500">
+            <div className="p-6 text-sm text-muted-foreground">
               You do not have permission to view this page.
             </div>
           );
@@ -46,7 +46,7 @@ export default function SettingsPage() {
 
   return (
     <div className="flex h-full flex-col">
-      <header className="shrink-0 border-b border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
+      <header className="shrink-0 border-b border-border bg-card">
         <nav className="flex gap-1 px-4" aria-label="Settings tabs">
           {visibleTabs.map((t) => (
             <button
@@ -55,8 +55,8 @@ export default function SettingsPage() {
               className={cn(
                 'px-4 py-2 text-sm font-medium transition-colors',
                 tab === t.id
-                  ? 'border-b-2 border-zinc-900 text-zinc-900 dark:border-zinc-100 dark:text-zinc-100'
-                  : 'text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-300'
+                  ? 'border-b-2 border-foreground text-foreground'
+                  : 'text-muted-foreground hover:text-foreground'
               )}
             >
               {t.label}

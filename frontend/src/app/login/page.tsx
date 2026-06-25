@@ -84,7 +84,7 @@ export default function LoginPage() {
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-2">
-              <label htmlFor="email" className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+              <label htmlFor="email" className="text-sm font-medium text-muted-foreground">
                 Email
               </label>
               <Input
@@ -97,7 +97,7 @@ export default function LoginPage() {
               />
             </div>
             <div className="space-y-2">
-              <label htmlFor="password" className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+              <label htmlFor="password" className="text-sm font-medium text-muted-foreground">
                 Password
               </label>
               <Input
@@ -121,10 +121,10 @@ export default function LoginPage() {
 
           <div className="relative my-4">
             <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-zinc-200 dark:border-zinc-700" />
+              <span className="w-full border-t border-border" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white px-2 text-zinc-500 dark:bg-zinc-900 dark:text-zinc-400">
+              <span className="bg-card px-2 text-muted-foreground">
                 Or continue with
               </span>
             </div>
@@ -177,9 +177,9 @@ export default function LoginPage() {
             {isGoogleLoading ? 'Redirecting...' : 'Sign in with Google'}
           </Button>
 
-          <p className="mt-4 text-center text-sm text-zinc-600 dark:text-zinc-400">
+          <p className="mt-4 text-center text-sm text-muted-foreground">
             Don&apos;t have an account?{' '}
-            <Link href="/register" className="font-medium text-zinc-900 hover:underline dark:text-zinc-100">
+            <Link href="/register" className="font-medium text-foreground hover:underline">
               Sign Up
             </Link>
           </p>

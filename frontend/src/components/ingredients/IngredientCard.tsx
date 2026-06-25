@@ -39,7 +39,7 @@ export function IngredientCard({ ingredient, categories, onEdit, onArchive, onUn
               {ingredient.name}
             </CardTitle>
           </Link>
-          <p className="text-base text-zinc-500 dark:text-zinc-400 mt-0.5">
+          <p className="text-base text-muted-foreground mt-0.5">
             {formatCurrency(ingredient.cost_per_base_unit)} per unit
           </p>
         </div>
@@ -75,7 +75,7 @@ export function IngredientCard({ ingredient, categories, onEdit, onArchive, onUn
 
       {/* Quick Actions */}
       {showActions && (
-        <div className="absolute top-2 right-2 flex items-center gap-1 bg-white dark:bg-zinc-950 rounded-md shadow-sm border border-zinc-200 dark:border-zinc-800 p-1">
+        <div className="absolute top-2 right-2 flex items-center gap-1 bg-card rounded-md shadow-sm border border-border p-1">
           {onEdit && (
             <Button
               variant="ghost"

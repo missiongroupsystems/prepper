@@ -75,7 +75,7 @@ export default function PreviewMenuPage({ params }: PreviewMenuPageProps) {
         <div className="p-6 max-w-5xl mx-auto">
           <Link
             href="/menu"
-            className="inline-flex items-center gap-2 text-sm text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-300 mb-6"
+            className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6"
           >
             <ArrowLeft className="h-4 w-4" />
             Back
@@ -92,13 +92,13 @@ export default function PreviewMenuPage({ params }: PreviewMenuPageProps) {
         <div className="p-6 max-w-5xl mx-auto">
           <Link
             href="/menu"
-            className="inline-flex items-center gap-2 text-sm text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-300 mb-6"
+            className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6"
           >
             <ArrowLeft className="h-4 w-4" />
             Back
           </Link>
           <div className="flex items-center justify-center py-12">
-            <p className="text-zinc-500">Menu not found</p>
+            <p className="text-muted-foreground">Menu not found</p>
           </div>
         </div>
       </div>
@@ -111,7 +111,7 @@ export default function PreviewMenuPage({ params }: PreviewMenuPageProps) {
         {/* Back Link */}
         <Link
           href="/menu"
-          className="inline-flex items-center gap-2 text-sm text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-300 mb-6"
+          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6"
         >
           <ArrowLeft className="h-4 w-4" />
           Back
@@ -120,8 +120,8 @@ export default function PreviewMenuPage({ params }: PreviewMenuPageProps) {
         {/* Menu Header */}
         <div className="mb-6 flex items-start justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">{menu.name}</h1>
-            <p className="text-sm text-zinc-500 mt-1">
+            <h1 className="text-2xl font-bold text-foreground">{menu.name}</h1>
+            <p className="text-sm text-muted-foreground mt-1">
               Version {menu.version_no} •{' '}
               {menu.is_published ? 'Published' : 'Draft'}
             </p>
@@ -133,7 +133,7 @@ export default function PreviewMenuPage({ params }: PreviewMenuPageProps) {
               </Link>
             )}
           </div>
-          <div className="flex items-center gap-1 border border-zinc-200 dark:border-zinc-800 rounded-md p-1">
+          <div className="flex items-center gap-1 border border-border rounded-md p-1">
             <Button
               onClick={() => setViewMode('list')}
               size="sm"
@@ -155,17 +155,17 @@ export default function PreviewMenuPage({ params }: PreviewMenuPageProps) {
 
         {/* Menu Sections */}
           {menu.sections.length === 0 ? (
-            <p className="text-center text-zinc-500">No sections in this menu</p>
+            <p className="text-center text-muted-foreground">No sections in this menu</p>
           ) : (
             <div className={viewMode === 'card' ? 'space-y-8' : 'space-y-4'}>
               {menu.sections.map((section) => (
                 <div
                   key={section.id}
-                  className="border border-zinc-200 rounded-lg dark:border-zinc-800"
+                  className="border border-border rounded-lg"
                 >
                   <button
                     onClick={() => toggleSection(section.id)}
-                    className="w-full flex items-center justify-between p-4 hover:bg-zinc-50 dark:hover:bg-zinc-900"
+                    className="w-full flex items-center justify-between p-4 hover:bg-secondary"
                   >
                     <h2 className="font-semibold">{section.name}</h2>
                     {expandedSections.has(section.id) ? (
@@ -176,9 +176,9 @@ export default function PreviewMenuPage({ params }: PreviewMenuPageProps) {
                   </button>
 
                   {expandedSections.has(section.id) && (
-                    <div className="border-t border-zinc-200 p-4 dark:border-zinc-800">
+                    <div className="border-t border-border p-4">
                       {section.items.length === 0 ? (
-                        <p className="text-sm text-zinc-500">No items</p>
+                        <p className="text-sm text-muted-foreground">No items</p>
                       ) : viewMode === 'card' ? (
                         <div className="grid grid-cols-2 gap-4">
                           {section.items.map((item) => {
@@ -186,10 +186,10 @@ export default function PreviewMenuPage({ params }: PreviewMenuPageProps) {
                             const allergens = allergenMap?.get(item.recipe_id) ?? [];
                             const categoryNames = getCategoryNamesForRecipe(item.recipe_id);
                             return (
-                              <div key={item.id} className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg overflow-hidden">
+                              <div key={item.id} className="bg-card border border-border rounded-lg overflow-hidden">
                                 {/* Recipe Image */}
                                 {recipe?.image_url && (
-                                  <div className="relative w-full aspect-video bg-zinc-100 dark:bg-zinc-800">
+                                  <div className="relative w-full aspect-video bg-secondary">
                                     <Image
                                       src={recipe.image_url}
                                       alt={recipe.name}
@@ -199,32 +199,32 @@ export default function PreviewMenuPage({ params }: PreviewMenuPageProps) {
                                   </div>
                                 )}
                                 {!recipe?.image_url && (
-                                  <div className="w-full aspect-video bg-zinc-100 dark:bg-zinc-800" />
+                                  <div className="w-full aspect-video bg-secondary" />
                                 )}
 
                                 {/* Content */}
                                 <div className="p-4 space-y-3">
                                   {/* Recipe Name */}
                                   <div>
-                                    <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1">
+                                    <p className="text-xs font-medium text-muted-foreground mb-1">
                                       Recipe Name
                                     </p>
-                                    <p className="font-semibold text-zinc-900 dark:text-zinc-100">
+                                    <p className="font-semibold text-foreground">
                                       {item.recipe_name}
                                     </p>
                                   </div>
 
                                   {/* Description */}
                                   <div>
-                                    <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1">Description</p>
-                                    <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                                      {recipe?.description || <span className="italic text-zinc-400 dark:text-zinc-600">No description written</span>}
+                                    <p className="text-xs font-medium text-muted-foreground mb-1">Description</p>
+                                    <p className="text-sm text-muted-foreground">
+                                      {recipe?.description || <span className="italic text-muted-foreground">No description written</span>}
                                     </p>
                                   </div>
 
                                   {/* Categories */}
                                   <div>
-                                    <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1">
+                                    <p className="text-xs font-medium text-muted-foreground mb-1">
                                       Categories
                                     </p>
                                     <div className="flex flex-wrap gap-1">
@@ -240,7 +240,7 @@ export default function PreviewMenuPage({ params }: PreviewMenuPageProps) {
 
                                   {/* Allergens */}
                                   <div>
-                                    <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1">
+                                    <p className="text-xs font-medium text-muted-foreground mb-1">
                                       Allergens
                                     </p>
                                     <div className="flex flex-wrap gap-1">
@@ -256,41 +256,41 @@ export default function PreviewMenuPage({ params }: PreviewMenuPageProps) {
 
                                   {/* Key Highlights */}
                                   <div>
-                                    <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1">
+                                    <p className="text-xs font-medium text-muted-foreground mb-1">
                                       Key Highlights
                                     </p>
-                                    <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                                      {item.key_highlights || <span className="italic text-zinc-400 dark:text-zinc-600">No key highlights written</span>}
+                                    <p className="text-sm text-muted-foreground">
+                                      {item.key_highlights || <span className="italic text-muted-foreground">No key highlights written</span>}
                                     </p>
                                   </div>
 
                                   {/* Additional Info */}
                                   <div>
-                                    <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1">
+                                    <p className="text-xs font-medium text-muted-foreground mb-1">
                                       Additional Info
                                     </p>
-                                    <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                                      {item.additional_info || <span className="italic text-zinc-400 dark:text-zinc-600">No additional info written</span>}
+                                    <p className="text-sm text-muted-foreground">
+                                      {item.additional_info || <span className="italic text-muted-foreground">No additional info written</span>}
                                     </p>
                                   </div>
 
                                   {/* Substitution */}
                                   <div>
-                                    <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1">
+                                    <p className="text-xs font-medium text-muted-foreground mb-1">
                                       Substitution
                                     </p>
-                                    <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                                      {item.substitution || <span className="italic text-zinc-400 dark:text-zinc-600">No substitution available</span>}
+                                    <p className="text-sm text-muted-foreground">
+                                      {item.substitution || <span className="italic text-muted-foreground">No substitution available</span>}
                                     </p>
                                   </div>
 
                                   {/* Price */}
                                   {item.display_price && (
-                                    <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800">
-                                      <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1">
+                                    <div className="pt-2 border-t border-border">
+                                      <p className="text-xs font-medium text-muted-foreground mb-1">
                                         Price
                                       </p>
-                                      <p className="font-semibold text-zinc-900 dark:text-zinc-100">
+                                      <p className="font-semibold text-foreground">
                                         ${item.display_price.toFixed(2)}
                                       </p>
                                     </div>
@@ -307,22 +307,22 @@ export default function PreviewMenuPage({ params }: PreviewMenuPageProps) {
                             const allergens = allergenMap?.get(item.recipe_id) ?? [];
                             const categoryNames = getCategoryNamesForRecipe(item.recipe_id);
                             return (
-                            <li key={item.id} className="pb-3 border-b border-zinc-100 last:border-0 dark:border-zinc-800">
+                            <li key={item.id} className="pb-3 border-b border-border last:border-0">
                               <div className="flex justify-between items-start">
                                 <div className="flex-1 space-y-2">
                                   <p className="font-medium">{item.recipe_name}</p>
 
                                   {/* Description */}
                                   <div>
-                                    <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-0.5">Description</p>
-                                    <p className="text-sm text-zinc-500">
-                                      {listRecipe?.description || <span className="italic text-zinc-400 dark:text-zinc-600">No description written</span>}
+                                    <p className="text-xs font-medium text-muted-foreground mb-0.5">Description</p>
+                                    <p className="text-sm text-muted-foreground">
+                                      {listRecipe?.description || <span className="italic text-muted-foreground">No description written</span>}
                                     </p>
                                   </div>
 
                                   {/* Categories */}
                                   <div>
-                                    <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-0.5">Categories</p>
+                                    <p className="text-xs font-medium text-muted-foreground mb-0.5">Categories</p>
                                     <div className="flex flex-wrap gap-1">
                                       {categoryNames.length > 0 ? (
                                         categoryNames.map((name) => (
@@ -336,7 +336,7 @@ export default function PreviewMenuPage({ params }: PreviewMenuPageProps) {
 
                                   {/* Allergens */}
                                   <div>
-                                    <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-0.5">Allergens</p>
+                                    <p className="text-xs font-medium text-muted-foreground mb-0.5">Allergens</p>
                                     <div className="flex flex-wrap gap-1">
                                       {allergens.length > 0 ? (
                                         allergens.map((a) => (
@@ -350,25 +350,25 @@ export default function PreviewMenuPage({ params }: PreviewMenuPageProps) {
 
                                   {/* Key Highlights */}
                                   <div>
-                                    <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-0.5">Key Highlights</p>
-                                    <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                                      {item.key_highlights || <span className="italic text-zinc-400 dark:text-zinc-600">No key highlights written</span>}
+                                    <p className="text-xs font-medium text-muted-foreground mb-0.5">Key Highlights</p>
+                                    <p className="text-sm text-muted-foreground">
+                                      {item.key_highlights || <span className="italic text-muted-foreground">No key highlights written</span>}
                                     </p>
                                   </div>
 
                                   {/* Additional Info */}
                                   <div>
-                                    <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-0.5">Additional Info</p>
-                                    <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                                      {item.additional_info || <span className="italic text-zinc-400 dark:text-zinc-600">No additional info written</span>}
+                                    <p className="text-xs font-medium text-muted-foreground mb-0.5">Additional Info</p>
+                                    <p className="text-sm text-muted-foreground">
+                                      {item.additional_info || <span className="italic text-muted-foreground">No additional info written</span>}
                                     </p>
                                   </div>
 
                                   {/* Substitution */}
                                   <div>
-                                    <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-0.5">Substitution</p>
-                                    <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                                      {item.substitution || <span className="italic text-zinc-400 dark:text-zinc-600">No substitution available</span>}
+                                    <p className="text-xs font-medium text-muted-foreground mb-0.5">Substitution</p>
+                                    <p className="text-sm text-muted-foreground">
+                                      {item.substitution || <span className="italic text-muted-foreground">No substitution available</span>}
                                     </p>
                                   </div>
                                 </div>

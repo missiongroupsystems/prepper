@@ -70,7 +70,7 @@ export function AddItemPanel({
   return (
     <div className="mb-4">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+        <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
           {type === 'recipe' ? (
             <>
               <span className="text-purple-500">🍳</span>
@@ -107,7 +107,7 @@ export function AddItemPanel({
           <CardContent className="pt-4">
             <div className="space-y-3">
               <div>
-                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                <label className="block text-sm font-medium text-muted-foreground mb-1">
                   Search {type === 'recipe' ? 'Recipes' : 'Ingredients'}
                 </label>
                 <SearchInput
@@ -118,9 +118,9 @@ export function AddItemPanel({
                   className="w-full"
                 />
               </div>
-              <div className="max-h-48 overflow-y-auto border border-zinc-200 dark:border-zinc-700 rounded-md">
+              <div className="max-h-48 overflow-y-auto border border-border rounded-md">
                 {filteredItems.length === 0 ? (
-                  <div className="p-3 text-sm text-zinc-500 dark:text-zinc-400 text-center">
+                  <div className="p-3 text-sm text-muted-foreground text-center">
                     {searchQuery
                       ? `No ${type}s match your search`
                       : `No ${type}s available`}
@@ -131,12 +131,12 @@ export function AddItemPanel({
                       key={item.id}
                       type="button"
                       onClick={() => handleSelectItem(item.id)}
-                      className={`w-full text-left px-3 py-2 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800 border-b border-zinc-100 dark:border-zinc-800 last:border-b-0 ${
+                      className={`w-full text-left px-3 py-2 text-sm hover:bg-secondary border-b border-border last:border-b-0 ${
                         selectedItemId === item.id
                           ? type === 'recipe'
                             ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-900 dark:text-purple-100'
                             : 'bg-amber-100 dark:bg-amber-900/30 text-amber-900 dark:text-amber-100'
-                          : 'text-zinc-900 dark:text-zinc-100'
+                          : 'text-foreground'
                       }`}
                     >
                       <div className="flex items-center justify-between gap-2">
@@ -159,7 +159,7 @@ export function AddItemPanel({
                   Cancel
                 </Button>
                 {selectedItemId && (
-                  <span className="text-sm text-zinc-500 dark:text-zinc-400">
+                  <span className="text-sm text-muted-foreground">
                     Selected: {availableItems.find((item) => item.id === selectedItemId)?.name}
                   </span>
                 )}

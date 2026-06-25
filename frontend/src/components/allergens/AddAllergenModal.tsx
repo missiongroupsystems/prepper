@@ -41,7 +41,7 @@ export function AddAllergenModal({ isOpen, onClose }: AddAllergenModalProps) {
     <Modal isOpen={isOpen} onClose={onClose} title="Add New Allergen">
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1">
+          <label className="block text-xs font-medium text-muted-foreground mb-1">
             Allergen Name *
           </label>
           <Input
@@ -52,7 +52,7 @@ export function AddAllergenModal({ isOpen, onClose }: AddAllergenModalProps) {
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1">
+          <label className="block text-xs font-medium text-muted-foreground mb-1">
             Description (optional)
           </label>
           <Textarea
@@ -63,7 +63,7 @@ export function AddAllergenModal({ isOpen, onClose }: AddAllergenModalProps) {
           />
         </div>
 
-        <div className="flex justify-end gap-3 pt-4 border-t border-zinc-200 dark:border-zinc-700">
+        <div className="flex justify-end gap-3 pt-4 border-t border-border">
           <Button type="button" variant="outline" onClick={onClose}>
             Cancel
           </Button>

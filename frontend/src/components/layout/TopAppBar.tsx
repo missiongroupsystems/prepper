@@ -93,7 +93,7 @@ export function TopAppBar() {
 
   return (
     <>
-      <header className="shrink-0 border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950">
+      <header className="shrink-0 border-b border-border bg-card">
         <nav className="flex items-center gap-1 px-4 py-1" aria-label="Recipe tabs">
           {CANVAS_TABS.map((tab) => {
             if (tab.id !== 'canvas' && !recipe) {
@@ -107,7 +107,7 @@ export function TopAppBar() {
                   'px-3 py-1.5 text-sm font-medium rounded-md transition-all duration-150',
                   canvasTab === tab.id
                     ? 'bg-primary text-primary-foreground'
-                    : 'text-zinc-500 hover:text-zinc-700 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:text-zinc-300 dark:hover:bg-zinc-800'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
                 )}
               >
                 {tab.label}
@@ -130,25 +130,25 @@ export function TopAppBar() {
             ref={modalRef}
             tabIndex={-1}
             className={cn(
-              'relative z-10 w-full max-w-md rounded-lg bg-white p-6 shadow-xl',
-              'dark:bg-zinc-900 dark:border dark:border-zinc-800',
+              'relative z-10 w-full max-w-md rounded-lg bg-card p-6 shadow-xl',
+              'border border-border',
               'focus:outline-none'
             )}
           >
             <div className="flex items-start justify-between mb-4">
-              <h2 id="unsaved-modal-title" className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+              <h2 id="unsaved-modal-title" className="text-lg font-semibold text-foreground">
                 Unsaved Changes
               </h2>
               <button
                 onClick={handleStay}
-                className="rounded p-1 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 dark:hover:bg-zinc-800 dark:hover:text-zinc-300"
+                className="rounded p-1 text-muted-foreground hover:bg-secondary hover:text-foreground"
                 aria-label="Close modal"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
-            <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-6">
+            <p className="text-sm text-muted-foreground mb-6">
               You have unsaved changes. If you leave now, your work will be lost.
             </p>
 

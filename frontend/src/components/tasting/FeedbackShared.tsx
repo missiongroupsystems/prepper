@@ -68,7 +68,7 @@ export function StarRating({ rating, onChange }: { rating: number | null; onChan
           <Star
             className={`h-4 w-4 ${rating && star <= rating
                 ? 'fill-amber-400 text-amber-400'
-                : 'text-zinc-300 dark:text-zinc-600'
+                : 'text-muted-foreground'
               }`}
           />
         </button>
@@ -167,7 +167,7 @@ export function FeedbackForm({
     <form onSubmit={handleSubmit} className="space-y-4">
       {/* Overall Rating */}
       <div>
-        <label className="block text-xs text-zinc-500 dark:text-zinc-400 mb-1">Overall</label>
+        <label className="block text-xs text-muted-foreground mb-1">Overall</label>
         <StarRating rating={overallRating} onChange={setOverallRating} />
       </div>
 
@@ -179,7 +179,7 @@ export function FeedbackForm({
       )}
 
       <div>
-        <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+        <label className="block text-sm font-medium text-muted-foreground mb-1">
           Feedback
         </label>
         <Textarea
@@ -191,7 +191,7 @@ export function FeedbackForm({
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+        <label className="block text-sm font-medium text-muted-foreground mb-1">
           Suggested Actions
         </label>
         <Textarea
@@ -203,7 +203,7 @@ export function FeedbackForm({
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+        <label className="block text-sm font-medium text-muted-foreground mb-1">
           Suggested Status
         </label>
         <Select
@@ -283,7 +283,7 @@ export function FeedbackNoteCard({ note, currentUserId, onUpdate, onDelete, show
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             {note.taster_name && (
-              <span className="font-medium text-zinc-900 dark:text-zinc-100">
+              <span className="font-medium text-foreground">
                 {note.taster_name}
               </span>
             )}
@@ -302,13 +302,13 @@ export function FeedbackNoteCard({ note, currentUserId, onUpdate, onDelete, show
           <div className="flex items-center gap-2">
             <button
               onClick={() => setIsEditing(!isEditing)}
-              className="p-1.5 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500"
+              className="p-1.5 rounded-md hover:bg-secondary text-muted-foreground"
             >
               <Edit className="h-4 w-4" />
             </button>
             <button
               onClick={() => onDelete(note.id)}
-              className="p-1.5 rounded-md hover:bg-red-100 dark:hover:bg-red-900/30 text-zinc-500 hover:text-red-600"
+              className="p-1.5 rounded-md hover:bg-destructive/10 text-muted-foreground hover:text-destructive"
             >
               <Trash2 className="h-4 w-4" />
             </button>
@@ -339,16 +339,16 @@ export function FeedbackNoteCard({ note, currentUserId, onUpdate, onDelete, show
           <>
             {/* Overall Rating */}
             <div className="mb-4">
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Overall</p>
+              <p className="text-xs text-muted-foreground mb-1">Overall</p>
               <StarRating rating={note.overall_rating} />
             </div>
 
             {/* Collapsible Images Section */}
-            <div className="border-t border-zinc-200 dark:border-zinc-700 pt-3 mt-3">
+            <div className="border-t border-border pt-3 mt-3">
               <button
                 type="button"
                 onClick={() => setIsImagesExpanded(!isImagesExpanded)}
-                className="flex items-center gap-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
+                className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
               >
                 <span className={`transform transition-transform ${isImagesExpanded ? 'rotate-90' : ''}`}>
                   &#9654;
@@ -359,7 +359,7 @@ export function FeedbackNoteCard({ note, currentUserId, onUpdate, onDelete, show
               {isImagesExpanded && (
                 <div className="mt-3">
                   {isLoadingImages ? (
-                    <div className="text-sm text-zinc-500 dark:text-zinc-400">Loading images...</div>
+                    <div className="text-sm text-muted-foreground">Loading images...</div>
                   ) : noteImages && noteImages.length > 0 ? (
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
                       {noteImages.map((image: TastingNoteImageDisplay) => (
@@ -368,7 +368,7 @@ export function FeedbackNoteCard({ note, currentUserId, onUpdate, onDelete, show
                           href={image.image_url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="rounded-lg overflow-hidden bg-zinc-100 dark:bg-zinc-800 aspect-square hover:ring-2 ring-purple-500 transition-all"
+                          className="rounded-lg overflow-hidden bg-muted aspect-square hover:ring-2 ring-purple-500 transition-all"
                         >
                           <Image
                             src={image.image_url}
@@ -381,7 +381,7 @@ export function FeedbackNoteCard({ note, currentUserId, onUpdate, onDelete, show
                       ))}
                     </div>
                   ) : (
-                    <p className="text-sm text-zinc-500 dark:text-zinc-400">No images available</p>
+                    <p className="text-sm text-muted-foreground">No images available</p>
                   )}
                 </div>
               )}
@@ -389,19 +389,19 @@ export function FeedbackNoteCard({ note, currentUserId, onUpdate, onDelete, show
 
             {note.feedback && (
               <div className="mb-3 mt-3">
-                <p className="text-zinc-500 dark:text-zinc-400 font-medium text-sm mb-1">Feedback:</p>
-                <p className="text-sm text-zinc-600 dark:text-zinc-300">{note.feedback}</p>
+                <p className="text-muted-foreground font-medium text-sm mb-1">Feedback:</p>
+                <p className="text-sm text-muted-foreground">{note.feedback}</p>
               </div>
             )}
             {note.action_items && (
               <div className="mb-3 text-sm">
-                <p className="text-zinc-500 dark:text-zinc-400 font-medium mb-1">Suggested Actions:</p>
-                <p className="text-zinc-600 dark:text-zinc-300">{note.action_items}</p>
+                <p className="text-muted-foreground font-medium mb-1">Suggested Actions:</p>
+                <p className="text-muted-foreground">{note.action_items}</p>
               </div>
             )}
             {decisionConfig && (
               <div className="mb-3 text-sm">
-                <p className="text-zinc-500 dark:text-zinc-400 font-medium mb-1">Suggested Status:</p>
+                <p className="text-muted-foreground font-medium mb-1">Suggested Status:</p>
                 <Badge variant={decisionConfig.badgeVariant}>
                   {DecisionIcon && <DecisionIcon className="h-3 w-3 mr-1" />}
                   {decisionConfig.label}

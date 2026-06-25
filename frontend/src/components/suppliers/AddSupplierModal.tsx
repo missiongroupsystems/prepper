@@ -62,7 +62,7 @@ export function AddSupplierModal({ isOpen, onClose }: AddSupplierModalProps) {
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Supplier Name */}
         <div>
-          <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1">
+          <label className="block text-xs font-medium text-muted-foreground mb-1">
             Supplier Name *
           </label>
           <Input
@@ -73,11 +73,11 @@ export function AddSupplierModal({ isOpen, onClose }: AddSupplierModalProps) {
         </div>
 
         {/* More Information Dropdown */}
-        <div className="border-t border-zinc-200 dark:border-zinc-700 pt-4">
+        <div className="border-t border-border pt-4">
           <button
             type="button"
             onClick={() => setShowMoreInfo(!showMoreInfo)}
-            className="flex items-center justify-between w-full text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100"
+            className="flex items-center justify-between w-full text-sm font-medium text-muted-foreground hover:text-foreground"
           >
             <span>More Information</span>
             {showMoreInfo ? (
@@ -91,11 +91,11 @@ export function AddSupplierModal({ isOpen, onClose }: AddSupplierModalProps) {
             <div className="mt-4 space-y-3">
               {/* Phone Number */}
               <div>
-                <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1">
+                <label className="block text-xs font-medium text-muted-foreground mb-1">
                   Phone Number
                 </label>
                 <div className="flex items-center gap-2">
-                  <Phone className="h-4 w-4 text-zinc-400 shrink-0" />
+                  <Phone className="h-4 w-4 text-muted-foreground shrink-0" />
                   <Input
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
@@ -107,11 +107,11 @@ export function AddSupplierModal({ isOpen, onClose }: AddSupplierModalProps) {
 
               {/* Email */}
               <div>
-                <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1">
+                <label className="block text-xs font-medium text-muted-foreground mb-1">
                   Email
                 </label>
                 <div className="flex items-center gap-2">
-                  <Mail className="h-4 w-4 text-zinc-400 shrink-0" />
+                  <Mail className="h-4 w-4 text-muted-foreground shrink-0" />
                   <Input
                     type="email"
                     value={email}
@@ -124,11 +124,11 @@ export function AddSupplierModal({ isOpen, onClose }: AddSupplierModalProps) {
 
               {/* Address */}
               <div>
-                <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1">
+                <label className="block text-xs font-medium text-muted-foreground mb-1">
                   Address
                 </label>
                 <div className="flex items-center gap-2">
-                  <MapPin className="h-4 w-4 text-zinc-400 shrink-0" />
+                  <MapPin className="h-4 w-4 text-muted-foreground shrink-0" />
                   <Input
                     value={address}
                     onChange={(e) => setAddress(e.target.value)}
@@ -142,7 +142,7 @@ export function AddSupplierModal({ isOpen, onClose }: AddSupplierModalProps) {
         </div>
 
         {/* Footer */}
-        <div className="flex justify-end gap-3 pt-4 border-t border-zinc-200 dark:border-zinc-700">
+        <div className="flex justify-end gap-3 pt-4 border-t border-border">
           <Button type="button" variant="outline" onClick={onClose}>
             Cancel
           </Button>

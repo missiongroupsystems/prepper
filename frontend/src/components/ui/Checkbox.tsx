@@ -18,12 +18,12 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
           disabled={disabled}
           className={cn(
             'relative h-5 w-5 appearance-none rounded border-2 transition-all',
-            'border-zinc-300 dark:border-zinc-600',
-            'bg-white dark:bg-zinc-950',
+            'border-input',
+            'bg-card',
             'checked:bg-blue-500 checked:border-blue-500 dark:checked:bg-blue-600 dark:checked:border-blue-600',
-            'disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-zinc-100 dark:disabled:bg-zinc-900',
+            'disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-secondary',
             'hover:enabled:border-blue-400 dark:hover:enabled:border-blue-500',
-            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-zinc-950',
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2',
             'cursor-pointer',
             // Checkmark using ::after pseudo-element
             'after:content-[""] after:absolute after:hidden',
@@ -36,7 +36,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
           {...props}
         />
         {label && (
-          <label className="text-sm text-zinc-700 dark:text-zinc-300 cursor-pointer select-none">
+          <label className="text-sm text-muted-foreground cursor-pointer select-none">
             {label}
           </label>
         )}

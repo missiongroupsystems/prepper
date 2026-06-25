@@ -29,11 +29,11 @@ export function CategoryListRow({
       <CardContent className="py-2">
         <div className="flex items-center justify-between gap-4">
           <div className="flex-1 min-w-0">
-            <h3 className="text-base font-medium text-zinc-900 dark:text-zinc-100 truncate">
+            <h3 className="text-base font-medium text-foreground truncate">
               {category.name}
             </h3>
             {category.description && (
-              <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-0.5 line-clamp-2">
+              <p className="text-sm text-muted-foreground mt-0.5 line-clamp-2">
                 {category.description}
               </p>
             )}

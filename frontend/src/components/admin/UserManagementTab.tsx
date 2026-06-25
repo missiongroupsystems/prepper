@@ -117,7 +117,7 @@ export function UserManagementTab() {
         {/* Empty State */}
         {!isLoading && filteredUsers.length === 0 && (
           <div className="text-center py-12">
-            <p className="text-zinc-500 dark:text-zinc-400">
+            <p className="text-muted-foreground">
               {search ? 'No users match your search' : 'No users found'}
             </p>
           </div>
@@ -125,26 +125,26 @@ export function UserManagementTab() {
 
         {/* Users Table */}
         {!isLoading && filteredUsers.length > 0 && (
-          <div className="overflow-x-auto border border-zinc-200 dark:border-zinc-800 rounded-lg">
+          <div className="overflow-x-auto border border-border rounded-lg">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900">
-                  <th className="px-6 py-3 text-left text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                <tr className="border-b border-border bg-secondary">
+                  <th className="px-6 py-3 text-left text-sm font-medium text-foreground">
                     Username
                   </th>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                  <th className="px-6 py-3 text-left text-sm font-medium text-foreground">
                     Email
                   </th>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                  <th className="px-6 py-3 text-left text-sm font-medium text-foreground">
                     Phone
                   </th>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                  <th className="px-6 py-3 text-left text-sm font-medium text-foreground">
                     Role
                   </th>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                  <th className="px-6 py-3 text-left text-sm font-medium text-foreground">
                     Manager
                   </th>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                  <th className="px-6 py-3 text-left text-sm font-medium text-foreground">
                     Branch
                   </th>
                 </tr>
@@ -153,12 +153,12 @@ export function UserManagementTab() {
                 {filteredUsers.map((user) => (
                   <tr
                     key={user.id}
-                    className="border-b border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900/50"
+                    className="border-b border-border hover:bg-secondary"
                   >
-                    <td className="px-6 py-3 text-sm text-zinc-900 dark:text-zinc-100">
+                    <td className="px-6 py-3 text-sm text-foreground">
                       {user.username}
                     </td>
-                    <td className="px-6 py-3 text-sm text-zinc-600 dark:text-zinc-400">
+                    <td className="px-6 py-3 text-sm text-muted-foreground">
                       {user.email}
                     </td>
                     <td className="px-6 py-3 text-sm">
@@ -182,7 +182,7 @@ export function UserManagementTab() {
                           autoFocus
                           disabled={updateUser.isPending}
                           placeholder="Add phone..."
-                          className="px-2 py-1 text-sm w-full border border-blue-500 rounded bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-600 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="px-2 py-1 text-sm w-full border border-blue-500 rounded bg-card text-foreground placeholder:text-muted-foreground disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                       ) : (
                         <div
@@ -190,7 +190,7 @@ export function UserManagementTab() {
                             setEditingPhoneId(user.id);
                             setEditingPhoneValue(user.phone_number || '');
                           }}
-                          className="cursor-pointer text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-900 px-2 py-1 rounded"
+                          className="cursor-pointer text-muted-foreground hover:text-foreground hover:bg-secondary px-2 py-1 rounded"
                         >
                           {user.phone_number || '—'}
                         </div>
@@ -209,7 +209,7 @@ export function UserManagementTab() {
                     </td>
                     <td className="px-6 py-3 text-sm">
                       {user.user_type === 'admin' ? (
-                        <span className="text-zinc-500 dark:text-zinc-400">—</span>
+                        <span className="text-muted-foreground">—</span>
                       ) : (
                         <button
                           onClick={() => handleManagerToggle(user.id, user.is_manager)}
@@ -217,7 +217,7 @@ export function UserManagementTab() {
                           className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
                             user.is_manager
                               ? 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-100 hover:bg-amber-200 dark:hover:bg-amber-800'
-                              : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-700'
+                              : 'bg-secondary text-secondary-foreground hover:bg-muted'
                           }`}
                         >
                           {user.is_manager ? 'Manager' : 'Not Manager'}
@@ -226,7 +226,7 @@ export function UserManagementTab() {
                     </td>
                     <td className="px-6 py-3 text-sm">
                       {user.user_type === 'admin' ? (
-                        <span className="text-zinc-500 dark:text-zinc-400">—</span>
+                        <span className="text-muted-foreground">—</span>
                       ) : (
                         <select
                           value={user.outlet_id || ''}
@@ -237,7 +237,7 @@ export function UserManagementTab() {
                             )
                           }
                           disabled={updateUser.isPending}
-                          className="px-2 py-1 text-sm border border-zinc-200 dark:border-zinc-700 rounded bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="px-2 py-1 text-sm border border-input rounded bg-card text-foreground disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           <option value="">None</option>
                           {outlets?.map((outlet) => (

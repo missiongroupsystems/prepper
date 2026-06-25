@@ -50,16 +50,16 @@ export default function FinancePage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-zinc-500 dark:text-zinc-400">Total Sales</p>
-                  <p className="text-2xl font-bold text-zinc-300 dark:text-zinc-700 mt-1">
+                  <p className="text-sm text-muted-foreground">Total Sales</p>
+                  <p className="text-2xl font-bold text-muted-foreground mt-1">
                     $--,---
                   </p>
-                  <p className="text-xs text-zinc-400 dark:text-zinc-600 mt-1">
+                  <p className="text-xs text-muted-foreground mt-1">
                     vs last month
                   </p>
                 </div>
-                <div className="h-12 w-12 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
-                  <DollarSign className="h-6 w-6 text-zinc-400" />
+                <div className="h-12 w-12 rounded-full bg-secondary flex items-center justify-center">
+                  <DollarSign className="h-6 w-6 text-muted-foreground" />
                 </div>
               </div>
             </CardContent>
@@ -69,16 +69,16 @@ export default function FinancePage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-zinc-500 dark:text-zinc-400">Total COGS</p>
-                  <p className="text-2xl font-bold text-zinc-300 dark:text-zinc-700 mt-1">
+                  <p className="text-sm text-muted-foreground">Total COGS</p>
+                  <p className="text-2xl font-bold text-muted-foreground mt-1">
                     $--,---
                   </p>
-                  <p className="text-xs text-zinc-400 dark:text-zinc-600 mt-1">
+                  <p className="text-xs text-muted-foreground mt-1">
                     vs last month
                   </p>
                 </div>
-                <div className="h-12 w-12 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
-                  <PieChart className="h-6 w-6 text-zinc-400" />
+                <div className="h-12 w-12 rounded-full bg-secondary flex items-center justify-center">
+                  <PieChart className="h-6 w-6 text-muted-foreground" />
                 </div>
               </div>
             </CardContent>
@@ -88,16 +88,16 @@ export default function FinancePage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-zinc-500 dark:text-zinc-400">Gross Margin</p>
-                  <p className="text-2xl font-bold text-zinc-300 dark:text-zinc-700 mt-1">
+                  <p className="text-sm text-muted-foreground">Gross Margin</p>
+                  <p className="text-2xl font-bold text-muted-foreground mt-1">
                     --.-%
                   </p>
-                  <p className="text-xs text-zinc-400 dark:text-zinc-600 mt-1">
+                  <p className="text-xs text-muted-foreground mt-1">
                     vs last month
                   </p>
                 </div>
-                <div className="h-12 w-12 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
-                  <TrendingUp className="h-6 w-6 text-zinc-400" />
+                <div className="h-12 w-12 rounded-full bg-secondary flex items-center justify-center">
+                  <TrendingUp className="h-6 w-6 text-muted-foreground" />
                 </div>
               </div>
             </CardContent>
@@ -107,27 +107,27 @@ export default function FinancePage() {
         {/* Sales by Recipe Table - Placeholder */}
         <Card className="mb-6">
           <CardContent className="p-6">
-            <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-4">
+            <h2 className="text-lg font-semibold text-foreground mb-4">
               Sales + COGS by Recipe
             </h2>
 
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-zinc-200 dark:border-zinc-800">
-                    <th className="text-left py-3 px-4 text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                  <tr className="border-b border-border">
+                    <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">
                       Recipe
                     </th>
-                    <th className="text-right py-3 px-4 text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                    <th className="text-right py-3 px-4 text-sm font-medium text-muted-foreground">
                       Sold
                     </th>
-                    <th className="text-right py-3 px-4 text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                    <th className="text-right py-3 px-4 text-sm font-medium text-muted-foreground">
                       Revenue
                     </th>
-                    <th className="text-right py-3 px-4 text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                    <th className="text-right py-3 px-4 text-sm font-medium text-muted-foreground">
                       COGS
                     </th>
-                    <th className="text-right py-3 px-4 text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                    <th className="text-right py-3 px-4 text-sm font-medium text-muted-foreground">
                       Margin
                     </th>
                   </tr>
@@ -135,21 +135,21 @@ export default function FinancePage() {
                 <tbody>
                   {/* Placeholder rows */}
                   {Array.from({ length: 5 }).map((_, i) => (
-                    <tr key={i} className="border-b border-zinc-100 dark:border-zinc-800">
+                    <tr key={i} className="border-b border-border">
                       <td className="py-3 px-4">
-                        <div className="h-4 w-32 bg-zinc-100 dark:bg-zinc-800 rounded" />
+                        <div className="h-4 w-32 bg-secondary rounded" />
                       </td>
                       <td className="py-3 px-4 text-right">
-                        <div className="h-4 w-12 bg-zinc-100 dark:bg-zinc-800 rounded ml-auto" />
+                        <div className="h-4 w-12 bg-secondary rounded ml-auto" />
                       </td>
                       <td className="py-3 px-4 text-right">
-                        <div className="h-4 w-16 bg-zinc-100 dark:bg-zinc-800 rounded ml-auto" />
+                        <div className="h-4 w-16 bg-secondary rounded ml-auto" />
                       </td>
                       <td className="py-3 px-4 text-right">
-                        <div className="h-4 w-14 bg-zinc-100 dark:bg-zinc-800 rounded ml-auto" />
+                        <div className="h-4 w-14 bg-secondary rounded ml-auto" />
                       </td>
                       <td className="py-3 px-4 text-right">
-                        <div className="h-4 w-12 bg-zinc-100 dark:bg-zinc-800 rounded ml-auto" />
+                        <div className="h-4 w-12 bg-secondary rounded ml-auto" />
                       </td>
                     </tr>
                   ))}
@@ -157,7 +157,7 @@ export default function FinancePage() {
               </table>
             </div>
 
-            <p className="text-sm text-zinc-400 dark:text-zinc-500 text-center mt-6">
+            <p className="text-sm text-muted-foreground text-center mt-6">
               Data will appear once Atlas integration is complete
             </p>
           </CardContent>
@@ -166,21 +166,21 @@ export default function FinancePage() {
         {/* Margin Bandwidth Chart - Placeholder */}
         <Card>
           <CardContent className="p-6">
-            <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-4">
+            <h2 className="text-lg font-semibold text-foreground mb-4">
               Margin Bandwidth
             </h2>
 
-            <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-6">
+            <p className="text-sm text-muted-foreground mb-6">
               Showing margin range per recipe based on supplier price variations (best/worst case)
             </p>
 
-            <div className="h-64 bg-zinc-50 dark:bg-zinc-900 rounded-lg flex items-center justify-center">
+            <div className="h-64 bg-secondary rounded-lg flex items-center justify-center">
               <div className="text-center">
-                <PieChart className="h-12 w-12 text-zinc-300 dark:text-zinc-700 mx-auto mb-3" />
-                <p className="text-zinc-400 dark:text-zinc-500">
+                <PieChart className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+                <p className="text-muted-foreground">
                   Chart placeholder
                 </p>
-                <p className="text-xs text-zinc-400 dark:text-zinc-600 mt-1">
+                <p className="text-xs text-muted-foreground mt-1">
                   Requires sales data from Atlas
                 </p>
               </div>

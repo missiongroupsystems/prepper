@@ -125,7 +125,7 @@ export function ImageUploadPreview({
     <div className="space-y-4">
       {/* Upload area */}
       <div>
-        <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+        <label className="block text-sm font-medium text-muted-foreground mb-2">
           Add Images
         </label>
         <div className="relative">
@@ -145,14 +145,14 @@ export function ImageUploadPreview({
             onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); }}
             onDragLeave={(e) => { e.preventDefault(); setIsDragging(false); }}
             onDrop={async (e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); if (e.dataTransfer.files.length) await handleFiles(e.dataTransfer.files); }}
-            className={`w-full border-2 border-dashed rounded-lg p-6 text-center hover:border-zinc-400 dark:hover:border-zinc-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${isDragging ? 'border-blue-400 bg-blue-50/10' : 'border-zinc-300 dark:border-zinc-600'}`}
+            className={`w-full border-2 border-dashed rounded-lg p-6 text-center hover:border-muted-foreground transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${isDragging ? 'border-blue-400 bg-blue-50/10' : 'border-border'}`}
           >
             {isProcessing ? (
               <Loader2 className="h-6 w-6 text-purple-500 mx-auto mb-2 animate-spin" />
             ) : (
-              <Upload className="h-6 w-6 text-zinc-400 mx-auto mb-2" />
+              <Upload className="h-6 w-6 text-muted-foreground mx-auto mb-2" />
             )}
-            <p className="text-sm text-zinc-600 dark:text-zinc-400">
+            <p className="text-sm text-muted-foreground">
               {isProcessing ? 'Processing images...' : 'Click to select images or drag and drop'}
             </p>
           </button>
@@ -162,7 +162,7 @@ export function ImageUploadPreview({
       {/* New images (id: null) */}
       {selectedImages.some((img) => img.id === null) && (
         <div>
-          <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-2">
+          <p className="text-sm text-muted-foreground mb-2">
             New images ({selectedImages.filter((img) => img.id === null).length})
           </p>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
@@ -171,7 +171,7 @@ export function ImageUploadPreview({
                 image.id === null && (
                   <div
                     key={`new-${index}`}
-                    className="relative group rounded-lg overflow-hidden bg-zinc-100 dark:bg-zinc-800 aspect-square"
+                    className="relative group rounded-lg overflow-hidden bg-muted aspect-square"
                   >
                     <img
                       src={`data:image/png;base64,${image.data}`}
@@ -196,7 +196,7 @@ export function ImageUploadPreview({
       {/* Existing images (id: not null and not removed) */}
       {selectedImages.some((img) => img.id !== null && !img.removed) && (
         <div>
-          <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-2">
+          <p className="text-sm text-muted-foreground mb-2">
             Uploaded images ({selectedImages.filter((img) => img.id !== null && !img.removed).length})
           </p>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
@@ -205,7 +205,7 @@ export function ImageUploadPreview({
                 image.id !== null && !image.removed && (
                   <div
                     key={image.id}
-                    className="relative group rounded-lg overflow-hidden bg-zinc-100 dark:bg-zinc-800 aspect-square"
+                    className="relative group rounded-lg overflow-hidden bg-muted aspect-square"
                   >
                     <img
                       src={image.image_url}

@@ -356,40 +356,50 @@
     /* Native UI elements (scrollbars, inputs) respect theme */
     color-scheme: light dark;
 
+    /* Brand typeface seam — single family (Polymath stand-in for Euclid Circular B).
+       Swap both vars to "euclid-circular-b" when licensed; nothing else names a font. */
+    --brand-typeface-display: "polymath";
+    --brand-typeface-text: "polymath";
+
     /* -----------------------------------------
        CORE BRAND COLORS - Foundation
        All status/semantic colors reference these
        ----------------------------------------- */
 
-    /* Terracotta - Primary, warm kitchen feel */
+    /* Forest - Brand accent (Mission Design System) */
+    --color-forest: 147 33% 17%;
+    --color-forest-light: 147 25% 92%;
+    --color-forest-dark: 147 33% 12%;
+
+    /* Terracotta - legacy brand (retired Phase 1; retained for charts) */
     --color-terracotta: 15 65% 50%;
     --color-terracotta-light: 15 65% 95%;
     --color-terracotta-dark: 15 65% 38%;
 
-    /* Green - Success, approved, fresh */
-    --color-green: 140 50% 35%;
-    --color-green-light: 140 50% 92%;
-    --color-green-dark: 140 50% 25%;
+    /* Green → sage - Positive, approved, optimal (muted/warm) */
+    --color-green: 145 30% 38%;
+    --color-green-light: 145 28% 93%;
+    --color-green-dark: 145 30% 28%;
 
-    /* Teal - Info, testing, in-progress */
-    --color-teal: 160 50% 40%;
-    --color-teal-light: 160 50% 95%;
-    --color-teal-dark: 160 50% 30%;
+    /* Teal - Info, testing, in-progress (muted) */
+    --color-teal: 185 28% 40%;
+    --color-teal-light: 185 25% 94%;
+    --color-teal-dark: 185 28% 30%;
 
-    /* Amber - Warning, attention needed */
-    --color-amber: 35 80% 50%;
-    --color-amber-light: 35 80% 95%;
-    --color-amber-dark: 35 80% 35%;
+    /* Amber → ochre - Warning, attention needed (muted/warm) */
+    --color-amber: 38 48% 48%;
+    --color-amber-light: 38 45% 93%;
+    --color-amber-dark: 38 48% 36%;
 
-    /* Red - Error, archived, out of stock */
-    --color-red: 0 70% 47%;
-    --color-red-light: 0 70% 95%;
-    --color-red-dark: 0 70% 35%;
+    /* Red → brick - Error, archived, out of stock (muted/warm) */
+    --color-red: 8 45% 46%;
+    --color-red-light: 8 45% 94%;
+    --color-red-dark: 8 45% 35%;
 
-    /* Slate - Neutral, draft */
-    --color-slate: 220 10% 50%;
-    --color-slate-light: 220 10% 95%;
-    --color-slate-dark: 220 10% 35%;
+    /* Slate → warm grey - Neutral, draft */
+    --color-slate: 30 6% 52%;
+    --color-slate-light: 30 8% 94%;
+    --color-slate-dark: 30 6% 38%;
 
     /* Sage - Accent, herbs/freshness */
     --color-sage: 120 25% 45%;
@@ -400,51 +410,55 @@
        BASE SEMANTIC COLORS - Light Mode
        ----------------------------------------- */
 
-    /* Background & Foreground - Warm parchment */
-    --background: 40 30% 97%;
-    --foreground: 220 20% 13%;
+    /* Background & Foreground - Warm beige canvas, warm ink */
+    --background: 48 20% 96%;
+    --foreground: 40 6% 11%;
 
-    /* Primary Action - Terracotta */
-    --primary: var(--color-terracotta);
+    /* Primary Action - Forest green (Mission brand accent) */
+    --primary: var(--color-forest);
     --primary-foreground: 0 0% 98%;
 
-    /* Secondary - Warm cream */
-    --secondary: 35 20% 94%;
-    --secondary-foreground: 220 20% 13%;
+    /* Secondary - Warm beige tint */
+    --secondary: 45 18% 93%;
+    --secondary-foreground: 40 6% 11%;
 
     /* Muted - Warm grey for disabled states */
-    --muted: 35 15% 94%;
-    --muted-foreground: 0 0% 55%;
+    --muted: 44 14% 93%;
+    --muted-foreground: 48 5% 40%;
 
-    /* Accent - Warm highlight */
-    --accent: 35 20% 92%;
-    --accent-foreground: 220 20% 13%;
+    /* Accent - Warm neutral surface (NOT the brand; see design.md §2) */
+    --accent: 44 16% 91%;
+    --accent-foreground: 40 6% 11%;
 
     /* Tertiary - Sage for herbs/freshness accent */
     --tertiary: var(--color-sage);
     --tertiary-foreground: 0 0% 98%;
     --tertiary-light: var(--color-sage-light);
 
-    /* Card & Popover - Cream tint */
-    --card: 40 25% 96%;
-    --card-foreground: 220 20% 13%;
-    --popover: 40 25% 96%;
-    --popover-foreground: 220 20% 13%;
+    /* Card & Popover - White raised surfaces */
+    --card: 0 0% 100%;
+    --card-foreground: 40 6% 11%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 40 6% 11%;
 
     /* Destructive */
     --destructive: var(--color-red);
     --destructive-foreground: 0 0% 98%;
 
-    /* Border & Input - Warm borders */
-    --border: 35 15% 85%;
-    --input: 35 15% 85%;
-    --ring: var(--color-terracotta);
+    /* Border & Input - Warm hairlines */
+    --border: 42 12% 88%;
+    --input: 42 12% 88%;
+    --ring: var(--color-forest);
+
+    /* Hairlines - tinted ink at low opacity (Mission §2.3), use as hsl(var(--hairline)) */
+    --hairline: 40 6% 11% / 0.16;
+    --hairline-strong: 40 6% 11% / 0.28;
 
     /* Background Contrast */
     --background-contrast: 36 16% 93%;
 
     /* Border Radius */
-    --radius: 0.75rem;
+    --radius: 0.5rem;
 
     /* -----------------------------------------
        RECIPE LIFECYCLE STATUS COLORS
@@ -524,68 +538,75 @@
   .dark {
     color-scheme: dark;
 
-    /* Core Brand Colors - Adjusted for dark mode */
+    /* Core Brand Colors - Adjusted for dark mode (warm/muted) */
+    --color-forest: 150 28% 55%;
+    --color-forest-light: 150 24% 16%;
+    --color-forest-dark: 150 28% 68%;
+
     --color-terracotta: 15 65% 60%;
     --color-terracotta-light: 15 65% 15%;
     --color-terracotta-dark: 15 65% 70%;
 
-    --color-green: 140 50% 50%;
-    --color-green-light: 140 50% 15%;
-    --color-green-dark: 140 50% 65%;
+    --color-green: 145 28% 50%;
+    --color-green-light: 145 26% 16%;
+    --color-green-dark: 145 28% 65%;
 
-    --color-teal: 160 50% 50%;
-    --color-teal-light: 160 50% 15%;
-    --color-teal-dark: 160 50% 65%;
+    --color-teal: 185 26% 52%;
+    --color-teal-light: 185 24% 16%;
+    --color-teal-dark: 185 26% 65%;
 
-    --color-amber: 35 80% 55%;
-    --color-amber-light: 35 80% 15%;
-    --color-amber-dark: 35 80% 70%;
+    --color-amber: 38 46% 56%;
+    --color-amber-light: 38 44% 16%;
+    --color-amber-dark: 38 46% 70%;
 
-    --color-red: 0 70% 55%;
-    --color-red-light: 0 70% 15%;
-    --color-red-dark: 0 70% 70%;
+    --color-red: 8 45% 56%;
+    --color-red-light: 8 45% 16%;
+    --color-red-dark: 8 45% 70%;
 
-    --color-slate: 220 10% 60%;
-    --color-slate-light: 220 10% 15%;
-    --color-slate-dark: 220 10% 75%;
+    --color-slate: 30 6% 58%;
+    --color-slate-light: 30 8% 16%;
+    --color-slate-dark: 30 6% 75%;
 
-    --color-sage: 120 25% 55%;
-    --color-sage-light: 120 25% 15%;
-    --color-sage-dark: 120 25% 70%;
+    --color-sage: 120 22% 55%;
+    --color-sage-light: 120 22% 16%;
+    --color-sage-dark: 120 22% 70%;
 
-    /* Base Semantic Colors - Dark Mode */
-    --background: 220 20% 8%;
+    /* Base Semantic Colors - Dark Mode (warm-dark) */
+    --background: 40 6% 8%;
     --foreground: 0 0% 95%;
 
-    --primary: var(--color-terracotta);
-    --primary-foreground: 220 20% 8%;
+    --primary: var(--color-forest);
+    --primary-foreground: 40 6% 8%;
 
-    --secondary: 220 15% 15%;
+    --secondary: 40 5% 14%;
     --secondary-foreground: 0 0% 95%;
 
-    --muted: 220 15% 15%;
-    --muted-foreground: 0 0% 50%;
+    --muted: 40 5% 14%;
+    --muted-foreground: 40 4% 55%;
 
-    --accent: 220 15% 18%;
+    --accent: 40 5% 17%;
     --accent-foreground: 0 0% 95%;
 
     --tertiary: var(--color-sage);
     --tertiary-foreground: 0 0% 95%;
     --tertiary-light: var(--color-sage-light);
 
-    --card: 220 15% 12%;
+    --card: 42 6% 10%;
     --card-foreground: 0 0% 95%;
-    --popover: 220 15% 12%;
+    --popover: 42 6% 10%;
     --popover-foreground: 0 0% 95%;
 
     --destructive: var(--color-red);
     --destructive-foreground: 0 0% 95%;
 
-    --border: 220 15% 20%;
-    --input: 220 15% 20%;
-    --ring: var(--color-terracotta);
+    --border: 40 5% 20%;
+    --input: 40 5% 20%;
+    --ring: var(--color-forest);
 
-    --background-contrast: 220 20% 12%;
+    --hairline: 0 0% 100% / 0.14;
+    --hairline-strong: 0 0% 100% / 0.22;
+
+    --background-contrast: 40 6% 12%;
 
     /* Gradient - Adjusted for dark mode */
     --mono-gradient-start: 35 20% 50%;
@@ -621,10 +642,11 @@
   --color-input: hsl(var(--input));
   --color-ring: hsl(var(--ring));
 
-  /* Typography - Three-font primary arsenal */
-  --font-sans: "cofo-sans-variable", var(--font-manrope), system-ui, sans-serif;
-  --font-mono: "cofo-sans-mono-variable", var(--font-geist-mono), ui-monospace, monospace;
-  --font-display: "fractul-variable", var(--font-manrope), system-ui, sans-serif;
+  /* Typography - Single family (Polymath → Euclid) via the brand seam.
+     Mono folds into the text face; use Tailwind tabular-nums for numeric columns. */
+  --font-sans: var(--brand-typeface-text), var(--font-manrope), system-ui, sans-serif;
+  --font-mono: var(--brand-typeface-text), var(--font-geist-mono), ui-monospace, monospace;
+  --font-display: var(--brand-typeface-display), var(--font-manrope), system-ui, sans-serif;
 
   /* Border Radius Scale */
   --radius-sm: calc(var(--radius) - 4px);
@@ -653,12 +675,12 @@ html {
 body {
   background: hsl(var(--background));
   color: hsl(var(--foreground));
-  font-family: "cofo-sans-variable", var(--font-manrope), system-ui, sans-serif;
+  font-family: var(--brand-typeface-text), var(--font-manrope), system-ui, sans-serif;
 }
 
-/* Headings use Fractul display font */
+/* Headings use the single brand family — hierarchy via weight + size, not a separate cut */
 h1, h2, h3, h4, h5, h6 {
-  font-family: "fractul-variable", var(--font-manrope), system-ui, sans-serif;
+  font-family: var(--brand-typeface-display), var(--font-manrope), system-ui, sans-serif;
 }
 
 /* Focus visible for accessibility */
@@ -688,11 +710,11 @@ h1, h2, h3, h4, h5, h6 {
 
 .dark ::-webkit-scrollbar-thumb,
 :root:not(.light) ::-webkit-scrollbar-thumb {
-  background: hsl(220 15% 25%);
+  background: hsl(40 5% 28%);
 }
 
 .dark ::-webkit-scrollbar-thumb:hover,
 :root:not(.light) ::-webkit-scrollbar-thumb:hover {
-  background: hsl(220 15% 35%);
+  background: hsl(40 5% 38%);
 }
 

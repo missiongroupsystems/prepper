@@ -178,7 +178,7 @@ export const RecipeIngredientRow = memo(function RecipeIngredientRow({
       ref={setNodeRef}
       style={style}
       className={cn(
-        'flex items-center gap-3 rounded-lg border border-zinc-200 bg-white p-3 dark:border-zinc-700 dark:bg-zinc-800',
+        'flex items-center gap-3 rounded-lg border border-border bg-card p-3',
         isDragging && 'opacity-50 shadow-lg'
       )}
     >
@@ -186,7 +186,7 @@ export const RecipeIngredientRow = memo(function RecipeIngredientRow({
         <button
           {...listeners}
           {...attributes}
-          className="cursor-grab touch-none text-zinc-400 hover:text-zinc-600 active:cursor-grabbing"
+          className="cursor-grab touch-none text-muted-foreground hover:text-foreground active:cursor-grabbing"
         >
           <GripVertical className="h-4 w-4" />
         </button>
@@ -246,9 +246,9 @@ export const RecipeIngredientRow = memo(function RecipeIngredientRow({
           className="w-20"
           disabled={!canEdit}
         />
-        <span className="text-zinc-500 dark:text-zinc-400">/{baseUnit}</span>
+        <span className="text-muted-foreground">/{baseUnit}</span>
         {lineCost !== null && (
-          <span className="ml-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 tabular-nums">
+          <span className="ml-2 text-sm font-medium text-foreground tabular-nums">
             {formatCurrency(lineCost)}
           </span>
         )}
@@ -256,7 +256,7 @@ export const RecipeIngredientRow = memo(function RecipeIngredientRow({
 
       {canEdit && (
         <Button variant="ghost" size="icon" onClick={onRemove}>
-          <Trash2 className="h-4 w-4 text-zinc-400 hover:text-red-500" />
+          <Trash2 className="h-4 w-4 text-muted-foreground hover:text-destructive" />
         </Button>
       )}
     </div>

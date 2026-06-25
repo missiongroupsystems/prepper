@@ -121,7 +121,7 @@ function RndRecipeCard({ recipe, isOwned, onFork, isFork, isForking }: RndRecipe
                 </Button>
               )}
             </div>
-            <p className="text-base text-zinc-500 dark:text-zinc-400 mt-0.5">
+            <p className="text-base text-muted-foreground mt-0.5">
               {recipe.yield_quantity} {recipe.yield_unit}
             </p>
           </div>
@@ -135,7 +135,7 @@ function RndRecipeCard({ recipe, isOwned, onFork, isFork, isForking }: RndRecipe
               className="w-16 h-16 rounded-md object-cover"
             />
           ) : (
-            <div className="w-16 h-16 rounded-md bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-zinc-400">
+            <div className="w-16 h-16 rounded-md bg-secondary flex items-center justify-center text-muted-foreground">
               <ImagePlus className="h-6 w-6" />
             </div>
           )}
@@ -153,7 +153,7 @@ function RndRecipeCard({ recipe, isOwned, onFork, isFork, isForking }: RndRecipe
               </Badge>
             )}
             {isOwned && (
-              <Badge className="text-sm bg-black text-white dark:bg-white dark:text-black">Owned</Badge>
+              <Badge className="text-sm bg-foreground text-background">Owned</Badge>
             )}
           </div>
         </CardContent>
@@ -161,19 +161,19 @@ function RndRecipeCard({ recipe, isOwned, onFork, isFork, isForking }: RndRecipe
         <CardFooter>
           <div className="flex items-center justify-between w-full">
             <div className="text-base">
-              <span className="text-zinc-500 dark:text-zinc-400">Cost: </span>
-              <span className="font-medium text-zinc-900 dark:text-zinc-100">
+              <span className="text-muted-foreground">Cost: </span>
+              <span className="font-medium text-foreground">
                 {formatCurrency(recipe.cost_price != null && recipe.yield_quantity > 0 ? recipe.cost_price / recipe.yield_quantity : recipe.cost_price)}
               </span>
-              <span className="text-zinc-400 dark:text-zinc-500">/portion</span>
+              <span className="text-muted-foreground">/portion</span>
             </div>
-            <ExternalLink className="h-4 w-4 text-zinc-400" />
+            <ExternalLink className="h-4 w-4 text-muted-foreground" />
           </div>
         </CardFooter>
       </Link>
 
       {/* Feedback Summary Dropdown */}
-      <div className="border-t border-zinc-200 dark:border-zinc-700">
+      <div className="border-t border-border">
         <button
           onClick={(e) => {
             e.preventDefault();
@@ -181,22 +181,22 @@ function RndRecipeCard({ recipe, isOwned, onFork, isFork, isForking }: RndRecipe
             handleOpenDropdown();
           }}
           disabled={summarizeMutation.isPending}
-          className="w-full px-4 py-2 flex items-center justify-between hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors disabled:opacity-50"
+          className="w-full px-4 py-2 flex items-center justify-between hover:bg-secondary transition-colors disabled:opacity-50"
         >
-          <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">
+          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
             Feedback Summary
           </span>
           {summarizeMutation.isPending ? (
-            <RefreshCw className="h-4 w-4 text-zinc-500 dark:text-zinc-400 animate-spin" />
+            <RefreshCw className="h-4 w-4 text-muted-foreground animate-spin" />
           ) : isExpanded && displaySummary ? (
-            <ChevronUp className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
+            <ChevronUp className="h-4 w-4 text-muted-foreground" />
           ) : (
-            <ChevronDown className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
+            <ChevronDown className="h-4 w-4 text-muted-foreground" />
           )}
         </button>
 
         {isExpanded && (
-          <div className="pb-3 text-sm text-zinc-600 dark:text-zinc-300 bg-zinc-50 dark:bg-zinc-800/50 space-y-3 px-4">
+          <div className="pb-3 text-sm text-muted-foreground bg-secondary space-y-3 px-4">
             {displaySummary ? (
               <>
                 <p>{displaySummary}</p>
@@ -216,7 +216,7 @@ function RndRecipeCard({ recipe, isOwned, onFork, isFork, isForking }: RndRecipe
                 </Button>
               </>
             ) : (
-              <p className="text-zinc-500 dark:text-zinc-400">
+              <p className="text-muted-foreground">
                 {summarizeMutation.isPending ? 'Generating summary...' : 'No summary available'}
               </p>
             )}
@@ -325,7 +325,7 @@ function WipRecipeCard({ recipe, isOwned }: WipRecipeCardProps) {
           <CardHeader>
             <div className="flex-1 min-w-0">
               <CardTitle className="truncate text-xl">{recipe.name}</CardTitle>
-              <p className="text-base text-zinc-500 dark:text-zinc-400 mt-0.5">
+              <p className="text-base text-muted-foreground mt-0.5">
                 {recipe.yield_quantity} {recipe.yield_unit}
               </p>
             </div>
@@ -339,7 +339,7 @@ function WipRecipeCard({ recipe, isOwned }: WipRecipeCardProps) {
                 className="w-16 h-16 rounded-md object-cover"
               />
             ) : (
-              <div className="w-16 h-16 rounded-md bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-zinc-400">
+              <div className="w-16 h-16 rounded-md bg-secondary flex items-center justify-center text-muted-foreground">
                 <ImagePlus className="h-6 w-6" />
               </div>
             )}
@@ -351,7 +351,7 @@ function WipRecipeCard({ recipe, isOwned }: WipRecipeCardProps) {
                 {recipe.status.charAt(0).toUpperCase() + recipe.status.slice(1)}
               </Badge>
               {isOwned && (
-                <Badge className="text-sm bg-black text-white dark:bg-white dark:text-black">Owned</Badge>
+                <Badge className="text-sm bg-foreground text-background">Owned</Badge>
               )}
             </div>
 
@@ -385,13 +385,13 @@ function WipRecipeCard({ recipe, isOwned }: WipRecipeCardProps) {
           <CardFooter>
             <div className="flex items-center justify-between w-full">
               <div className="text-base">
-                <span className="text-zinc-500 dark:text-zinc-400">Cost: </span>
-                <span className="font-medium text-zinc-900 dark:text-zinc-100">
+                <span className="text-muted-foreground">Cost: </span>
+                <span className="font-medium text-foreground">
                   {formatCurrency(recipe.cost_price)}
                 </span>
-                <span className="text-zinc-400 dark:text-zinc-500">/portion</span>
+                <span className="text-muted-foreground">/portion</span>
               </div>
-              <ExternalLink className="h-4 w-4 text-zinc-400" />
+              <ExternalLink className="h-4 w-4 text-muted-foreground" />
             </div>
           </CardFooter>
         </Link>
@@ -413,7 +413,7 @@ function WipRecipeCard({ recipe, isOwned }: WipRecipeCardProps) {
           <div>
             <label
               htmlFor="session-name"
-              className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1"
+              className="block text-sm font-medium text-foreground mb-1"
             >
               Session Name
             </label>
@@ -483,11 +483,11 @@ function ReviewSessionCard({ session, readyForReviewRecipeIds }: ReviewSessionCa
         <CardHeader>
           <div className="flex-1 min-w-0">
             <CardTitle className="truncate text-xl">{session.name}</CardTitle>
-            <p className="text-base text-zinc-500 dark:text-zinc-400 mt-0.5">
+            <p className="text-base text-muted-foreground mt-0.5">
               {formattedDate}
             </p>
           </div>
-          <div className="w-16 h-16 rounded-md bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-zinc-400">
+          <div className="w-16 h-16 rounded-md bg-secondary flex items-center justify-center text-muted-foreground">
             <Wine className="h-6 w-6" />
           </div>
         </CardHeader>
@@ -511,7 +511,7 @@ function ReviewSessionCard({ session, readyForReviewRecipeIds }: ReviewSessionCa
             <div className="text-sm text-muted-foreground">
               {session.participants?.length ?? 0} attendee{session.participants?.length !== 1 ? 's' : ''}
             </div>
-            <ExternalLink className="h-4 w-4 text-zinc-400" />
+            <ExternalLink className="h-4 w-4 text-muted-foreground" />
           </div>
         </CardFooter>
       </Link>
@@ -696,7 +696,7 @@ function PipelinesTab() {
               <div className="flex-1 space-y-4 min-h-[200px]">
                 {filteredTodoRecipes.length === 0 ? (
                   <div className="flex flex-col items-center justify-center h-full py-12 text-center">
-                    <FlaskConical className="h-10 w-10 text-zinc-300 dark:text-zinc-700 mb-3" />
+                    <FlaskConical className="h-10 w-10 text-muted-foreground mb-3" />
                     <p className="text-sm text-muted-foreground">No dishes to work on</p>
                   </div>
                 ) : (
@@ -726,7 +726,7 @@ function PipelinesTab() {
               <div className="flex-1 space-y-4 min-h-[200px]">
                 {wipGroups.length === 0 ? (
                   <div className="flex flex-col items-center justify-center h-full py-12 text-center">
-                    <FlaskConical className="h-10 w-10 text-zinc-300 dark:text-zinc-700 mb-3" />
+                    <FlaskConical className="h-10 w-10 text-muted-foreground mb-3" />
                     <p className="text-sm text-muted-foreground">No work in progress</p>
                     <p className="text-xs text-muted-foreground mt-1">Fork a dish from To Do to start</p>
                   </div>
@@ -761,7 +761,7 @@ function PipelinesTab() {
               <div className="flex-1 space-y-4 min-h-[200px]">
                 {filteredSessions.length === 0 || readyForReviewRecipeIds.size === 0 ? (
                   <div className="flex flex-col items-center justify-center h-full py-12 text-center">
-                    <FlaskConical className="h-10 w-10 text-zinc-300 dark:text-zinc-700 mb-3" />
+                    <FlaskConical className="h-10 w-10 text-muted-foreground mb-3" />
                     <p className="text-sm text-muted-foreground">No tasting sessions</p>
                     <p className="text-xs text-muted-foreground mt-1">Create a session from a &apos;In Progress&apos; dish</p>
                   </div>
@@ -791,7 +791,7 @@ export default function RndPage() {
 
   return (
     <div className="flex h-full flex-col">
-      <header className="shrink-0 border-b border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
+      <header className="shrink-0 border-b border-border bg-card">
         <nav className="flex gap-1 px-4" aria-label="R&D tabs">
           {RND_TABS.map((t) => (
             <button
@@ -800,8 +800,8 @@ export default function RndPage() {
               className={cn(
                 'px-4 py-2 text-sm font-medium transition-colors',
                 tab === t.id
-                  ? 'border-b-2 border-zinc-900 text-zinc-900 dark:border-zinc-100 dark:text-zinc-100'
-                  : 'text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-300'
+                  ? 'border-b-2 border-foreground text-foreground'
+                  : 'text-muted-foreground hover:text-foreground'
               )}
             >
               {t.label}

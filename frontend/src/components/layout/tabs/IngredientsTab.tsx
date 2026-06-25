@@ -21,9 +21,9 @@ export function IngredientsTab() {
 
   if (!selectedRecipeId) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-white dark:bg-zinc-950">
+      <div className="flex-1 flex items-center justify-center bg-background">
         <div className="text-center">
-          <p className="text-zinc-500 dark:text-zinc-400">
+          <p className="text-muted-foreground">
             Select a recipe from the left panel to view its ingredients
           </p>
         </div>
@@ -33,7 +33,7 @@ export function IngredientsTab() {
 
   if (isLoading) {
     return (
-      <div className="flex-1 bg-white dark:bg-zinc-950 p-6">
+      <div className="flex-1 bg-background p-6">
         <div className="max-w-4xl mx-auto space-y-6">
           <Skeleton className="h-48 rounded-lg" />
           <Skeleton className="h-48 rounded-lg" />
@@ -44,7 +44,7 @@ export function IngredientsTab() {
 
   if (!recipe) {
     return (
-      <div className="flex-1 bg-white dark:bg-zinc-950 p-6">
+      <div className="flex-1 bg-background p-6">
         <div className="max-w-4xl mx-auto">
           <div className="rounded-lg bg-red-50 dark:bg-red-950 p-4 text-red-600 dark:text-red-400">
             Recipe not found or failed to load.
@@ -57,12 +57,12 @@ export function IngredientsTab() {
   const sortedSubRecipes = [...(subRecipes || [])].sort((a, b) => a.position - b.position);
 
   return (
-    <div className="flex-1 overflow-auto bg-white dark:bg-zinc-950">
+    <div className="flex-1 overflow-auto bg-background">
       <div className="p-6 max-w-4xl mx-auto space-y-6">
         {/* Base Ingredients Card */}
         <Card>
           <CardContent className="p-6">
-            <h2 className="text-lg font-semibold mb-4 text-zinc-900 dark:text-zinc-100">
+            <h2 className="text-lg font-semibold mb-4 text-foreground">
               Base Ingredients
             </h2>
 
@@ -71,23 +71,23 @@ export function IngredientsTab() {
                 {ingredients.map((ri) => (
                   <li
                     key={ri.id}
-                    className="flex items-center justify-between py-3 border-b border-zinc-100 dark:border-zinc-800 last:border-0"
+                    className="flex items-center justify-between py-3 border-b border-border last:border-0"
                   >
                     <div>
-                      <span className="font-medium text-zinc-900 dark:text-zinc-100">
+                      <span className="font-medium text-foreground">
                         {ri.ingredient?.name || `Ingredient #${ri.ingredient_id}`}
                       </span>
                     </div>
-                    <span className="text-zinc-500 dark:text-zinc-400">
+                    <span className="text-muted-foreground">
                       {ri.quantity} {ri.unit}
                     </span>
                   </li>
                 ))}
               </ul>
             ) : (
-              <div className="rounded-lg border-2 border-dashed border-zinc-200 p-8 text-center dark:border-zinc-700">
-                <p className="text-zinc-500">No base ingredients yet</p>
-                <p className="mt-1 text-sm text-zinc-400">
+              <div className="rounded-lg border-2 border-dashed border-border p-8 text-center">
+                <p className="text-muted-foreground">No base ingredients yet</p>
+                <p className="mt-1 text-sm text-muted-foreground">
                   Add ingredients in the Canvas tab
                 </p>
               </div>
@@ -98,7 +98,7 @@ export function IngredientsTab() {
         {/* Items (Sub-Recipes) Card */}
         <Card>
           <CardContent className="p-6">
-            <h2 className="text-lg font-semibold mb-4 text-zinc-900 dark:text-zinc-100">
+            <h2 className="text-lg font-semibold mb-4 text-foreground">
               Items
             </h2>
 
@@ -107,23 +107,23 @@ export function IngredientsTab() {
                 {sortedSubRecipes.map((sr) => (
                   <li
                     key={sr.id}
-                    className="flex items-center justify-between py-3 border-b border-zinc-100 dark:border-zinc-800 last:border-0"
+                    className="flex items-center justify-between py-3 border-b border-border last:border-0"
                   >
                     <div>
-                      <span className="font-medium text-zinc-900 dark:text-zinc-100">
+                      <span className="font-medium text-foreground">
                         {recipeMap.get(sr.child_recipe_id) || `Recipe #${sr.child_recipe_id}`}
                       </span>
                     </div>
-                    <span className="text-zinc-500 dark:text-zinc-400">
+                    <span className="text-muted-foreground">
                       {sr.quantity} {sr.unit}
                     </span>
                   </li>
                 ))}
               </ul>
             ) : (
-              <div className="rounded-lg border-2 border-dashed border-zinc-200 p-8 text-center dark:border-zinc-700">
-                <p className="text-zinc-500">No items yet</p>
-                <p className="mt-1 text-sm text-zinc-400">
+              <div className="rounded-lg border-2 border-dashed border-border p-8 text-center">
+                <p className="text-muted-foreground">No items yet</p>
+                <p className="mt-1 text-sm text-muted-foreground">
                   Add sub-recipes in the Canvas tab
                 </p>
               </div>

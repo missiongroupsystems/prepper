@@ -330,7 +330,7 @@ function IngredientsListTab() {
         {/* Empty State */}
         {!isLoading && filteredIngredients.length === 0 && (
           <div className="text-center py-12">
-            <p className="text-zinc-500 dark:text-zinc-400">
+            <p className="text-muted-foreground">
               {search || selectedCategories.length > 0 || selectedUnits.length > 0 || selectedHalal.length > 0 || selectedAllergens.length > 0
                 ? 'No ingredients match your filters'
                 : 'No ingredients yet'}
@@ -412,7 +412,7 @@ export default function IngredientsPage() {
   return (
     <div className="flex h-full flex-col">
       {/* Tab Navigation Header */}
-      <header className="shrink-0 border-b border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
+      <header className="shrink-0 border-b border-border bg-card">
         <nav className="flex gap-1 px-4" aria-label="Ingredient tabs">
           {INGREDIENT_TABS.map((tab) => (
             <button
@@ -421,8 +421,8 @@ export default function IngredientsPage() {
               className={cn(
                 'px-4 py-2 text-sm font-medium transition-colors',
                 ingredientTab === tab.id
-                  ? 'border-b-2 border-zinc-900 text-zinc-900 dark:border-zinc-100 dark:text-zinc-100'
-                  : 'text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-300'
+                  ? 'border-b-2 border-foreground text-foreground'
+                  : 'text-muted-foreground hover:text-foreground'
               )}
             >
               {tab.label}

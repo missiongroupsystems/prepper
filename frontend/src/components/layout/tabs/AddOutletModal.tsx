@@ -56,23 +56,23 @@ export function AddOutletModal({ isOpen, onClose, recipeId, outlets = [] }: AddO
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="relative w-full max-w-md rounded-lg bg-white p-6 shadow-lg dark:bg-zinc-900">
+      <div className="relative w-full max-w-md rounded-lg bg-card p-6 shadow-lg">
         {/* Close button */}
         <button
           onClick={onClose}
-          className="absolute right-4 top-4 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+          className="absolute right-4 top-4 text-muted-foreground hover:text-foreground"
         >
           <X className="h-5 w-5" />
         </button>
 
-        <h2 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+        <h2 className="mb-4 text-lg font-semibold text-foreground">
           Add Outlet
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Search filter */}
           <div>
-            <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+            <label className="block text-sm font-medium text-muted-foreground mb-1">
               Search Outlets
             </label>
             <Input
@@ -86,18 +86,18 @@ export function AddOutletModal({ isOpen, onClose, recipeId, outlets = [] }: AddO
 
           {/* Outlets dropdown */}
           <div>
-            <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+            <label className="block text-sm font-medium text-muted-foreground mb-1">
               Select Outlet
             </label>
             {filteredOutlets.length === 0 ? (
-              <div className="text-sm text-zinc-500">
+              <div className="text-sm text-muted-foreground">
                 {searchQuery ? 'No outlets match your search' : 'No outlets available'}
               </div>
             ) : (
               <select
                 value={selectedOutletId || ''}
                 onChange={(e) => setSelectedOutletId(e.target.value ? parseInt(e.target.value, 10) : null)}
-                className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder-zinc-400 focus:border-zinc-500 focus:outline-none dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100"
+                className="w-full rounded-md border border-input bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none"
               >
                 <option value="">Choose an outlet...</option>
                 {filteredOutlets.map((outlet) => (
@@ -111,7 +111,7 @@ export function AddOutletModal({ isOpen, onClose, recipeId, outlets = [] }: AddO
 
           {/* Price override */}
           <div>
-            <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+            <label className="block text-sm font-medium text-muted-foreground mb-1">
               Price Override (Optional)
             </label>
             <Input

@@ -103,7 +103,7 @@ export default function RecipeCategoryPage({ params }: RecipeCategoryPageProps) 
       <div className="p-6">
         <Link
           href="/recipes"
-          className="inline-flex items-center gap-2 text-sm text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-300 mb-6"
+          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to Recipes
@@ -121,7 +121,7 @@ export default function RecipeCategoryPage({ params }: RecipeCategoryPageProps) 
         {/* Back Link */}
         <Link
           href="/recipes"
-          className="inline-flex items-center gap-2 text-sm text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-300 mb-6"
+          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6"
         >
           <ArrowLeft className="h-4 w-4" />
           Back
@@ -140,7 +140,7 @@ export default function RecipeCategoryPage({ params }: RecipeCategoryPageProps) 
                 <div className="space-y-6">
                   {/* Category Name */}
                   <div>
-                    <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
+                    <h1 className="text-2xl font-bold text-foreground">
                       <EditableCell
                         value={category.name}
                         onSave={(value) => handleUpdateCategory({ name: value })}
@@ -150,10 +150,10 @@ export default function RecipeCategoryPage({ params }: RecipeCategoryPageProps) 
                   </div>
 
                   {/* Info Grid */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border-t border-zinc-100 dark:border-zinc-800 pt-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border-t border-border pt-6">
                     {/* Description */}
                     <div className="space-y-1 md:col-span-2">
-                      <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                      <label className="block text-xs font-medium text-muted-foreground">
                         Description
                       </label>
                       <div className="flex items-center gap-2">
@@ -171,7 +171,7 @@ export default function RecipeCategoryPage({ params }: RecipeCategoryPageProps) 
                   </div>
 
                   {/* Timestamps */}
-                  <div className="text-sm text-zinc-500 dark:text-zinc-400 border-t border-zinc-100 dark:border-zinc-800 pt-4">
+                  <div className="text-sm text-muted-foreground border-t border-border pt-4">
                     Created: {new Date(category.created_at).toLocaleDateString()}
                     {category.updated_at !== category.created_at && (
                       <span className="ml-4">
@@ -187,7 +187,7 @@ export default function RecipeCategoryPage({ params }: RecipeCategoryPageProps) 
             <Card>
               <CardContent className="p-6">
                 <div className="flex items-center gap-2 mb-4">
-                  <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+                  <h2 className="text-lg font-semibold text-foreground">
                     Recipes
                   </h2>
                 </div>
@@ -216,7 +216,7 @@ export default function RecipeCategoryPage({ params }: RecipeCategoryPageProps) 
                 >
                   <form onSubmit={handleAddRecipe} className="space-y-4">
                     <div>
-                      <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-2">
+                      <label className="block text-xs font-medium text-muted-foreground mb-2">
                         Search Recipe
                       </label>
                       <Input
@@ -226,7 +226,7 @@ export default function RecipeCategoryPage({ params }: RecipeCategoryPageProps) 
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className="mb-2"
                       />
-                      <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1">
+                      <label className="block text-xs font-medium text-muted-foreground mb-1">
                         Recipe
                       </label>
                       <Select
@@ -244,7 +244,7 @@ export default function RecipeCategoryPage({ params }: RecipeCategoryPageProps) 
                       />
                     </div>
 
-                    <div className="flex items-center justify-end gap-3 pt-4 border-t border-zinc-200 dark:border-zinc-700">
+                    <div className="flex items-center justify-end gap-3 pt-4 border-t border-border">
                       <Button
                         type="button"
                         variant="outline"
@@ -276,7 +276,7 @@ export default function RecipeCategoryPage({ params }: RecipeCategoryPageProps) 
                     maxWidth="max-w-md"
                   >
                     <div className="space-y-4">
-                      <p className="text-sm text-zinc-700 dark:text-zinc-300">
+                      <p className="text-sm text-muted-foreground">
                         Are you sure you want to remove{' '}
                         <span className="font-medium">
                           {recipes.find((r) => r.id === deleteConfirm.recipe_id)?.name || 'this recipe'}
@@ -284,7 +284,7 @@ export default function RecipeCategoryPage({ params }: RecipeCategoryPageProps) 
                         from this category? This will not delete the recipe itself.
                       </p>
 
-                      <div className="flex items-center justify-end gap-3 pt-4 border-t border-zinc-200 dark:border-zinc-700">
+                      <div className="flex items-center justify-end gap-3 pt-4 border-t border-border">
                         <Button
                           type="button"
                           variant="outline"
@@ -311,8 +311,8 @@ export default function RecipeCategoryPage({ params }: RecipeCategoryPageProps) 
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead>
-                        <tr className="border-b border-zinc-200 dark:border-zinc-700">
-                          <th className="text-left py-3 px-2 font-medium text-zinc-500 dark:text-zinc-400">
+                        <tr className="border-b border-border">
+                          <th className="text-left py-3 px-2 font-medium text-muted-foreground">
                             Recipe Name
                           </th>
                           <th className="py-3 px-2 w-12"></th>
@@ -324,9 +324,9 @@ export default function RecipeCategoryPage({ params }: RecipeCategoryPageProps) 
                           return (
                             <tr
                               key={recipeLink.id}
-                              className="border-b border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 group"
+                              className="border-b border-border hover:bg-secondary group"
                             >
-                              <td className="py-3 px-2 text-zinc-900 dark:text-zinc-100 font-medium">
+                              <td className="py-3 px-2 text-foreground font-medium">
                                 <Link
                                   href={`/recipes/${recipeLink.recipe_id}`}
                                   className="hover:text-purple-600 dark:hover:text-purple-400 hover:underline"
@@ -338,7 +338,7 @@ export default function RecipeCategoryPage({ params }: RecipeCategoryPageProps) 
                                 <div className="relative group/menu flex justify-end">
                                   <button
                                     onClick={() => setDeleteConfirm(recipeLink)}
-                                    className="text-zinc-400 hover:text-red-600 dark:hover:text-red-400 p-1"
+                                    className="text-muted-foreground hover:text-destructive p-1"
                                     title="Remove from category"
                                   >
                                     <Trash2 className="h-4 w-4" />
@@ -352,8 +352,8 @@ export default function RecipeCategoryPage({ params }: RecipeCategoryPageProps) 
                     </table>
                   </div>
                 ) : (
-                  <div className="text-center py-6 border border-dashed border-zinc-200 dark:border-zinc-700 rounded-lg">
-                    <p className="text-zinc-400 dark:text-zinc-500">
+                  <div className="text-center py-6 border border-dashed border-border rounded-lg">
+                    <p className="text-muted-foreground">
                       No recipes in this category yet
                     </p>
                   </div>

@@ -92,7 +92,7 @@ export default function MenuPage() {
           </div>
         ) : (
           <div className="text-center py-16">
-            <p className="text-zinc-500 mb-4">No draft menus yet.</p>
+            <p className="text-muted-foreground mb-4">No draft menus yet.</p>
             <Button onClick={handleNewDraft} disabled={createSketch.isPending}>
               Create your first draft
             </Button>

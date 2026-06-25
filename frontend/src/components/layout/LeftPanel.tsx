@@ -72,8 +72,8 @@ function RecipeCard({
               !canEdit
                 ? 'invisible'
                 : confirmDelete
-                  ? 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400'
-                  : 'text-zinc-400 opacity-0 hover:bg-zinc-200 hover:text-zinc-600 group-hover:opacity-100 dark:hover:bg-zinc-700 dark:hover:text-zinc-300'
+                  ? 'bg-destructive/10 text-destructive'
+                  : 'text-muted-foreground opacity-0 hover:bg-secondary hover:text-foreground group-hover:opacity-100'
             )}
             disabled={!canEdit}
             title={!canEdit ? undefined : confirmDelete ? 'Click again to confirm' : 'Delete recipe'}
@@ -83,12 +83,12 @@ function RecipeCard({
         </div>
       </div>
       <div className="flex items-center justify-between">
-        <p className="text-sm text-zinc-500">
+        <p className="text-sm text-muted-foreground">
           {recipe.yield_quantity} {recipe.yield_unit}
         </p>
         <div className="flex items-center gap-2">
           {isOwned && (
-            <Badge className="bg-black text-white dark:bg-white dark:text-black">Owned</Badge>
+            <Badge className="bg-foreground text-background">Owned</Badge>
           )}
           {/* Spacer to align with delete button above */}
           <div className="w-6" />

@@ -23,25 +23,25 @@ export function Pagination({
   const end = Math.min(start + currentPageSize - 1, totalCount);
 
   return (
-    <div className="flex items-center justify-between border-t border-zinc-200 dark:border-zinc-700 px-2 py-3 text-sm">
-      <span className="text-zinc-500 dark:text-zinc-400">
+    <div className="flex items-center justify-between border-t border-border px-2 py-3 text-sm">
+      <span className="text-muted-foreground">
         {start}–{end} of {totalCount}
       </span>
       <div className="flex items-center gap-1">
         <button
           onClick={() => onPageChange(pageNumber - 1)}
           disabled={pageNumber <= 1}
-          className="p-1 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 disabled:opacity-30 disabled:cursor-not-allowed"
+          className="p-1 rounded hover:bg-secondary disabled:opacity-30 disabled:cursor-not-allowed"
         >
           <ChevronLeft className="h-4 w-4" />
         </button>
-        <span className="px-2 text-zinc-600 dark:text-zinc-300">
+        <span className="px-2 text-muted-foreground">
           {pageNumber} / {totalPages}
         </span>
         <button
           onClick={() => onPageChange(pageNumber + 1)}
           disabled={pageNumber >= totalPages}
-          className="p-1 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 disabled:opacity-30 disabled:cursor-not-allowed"
+          className="p-1 rounded hover:bg-secondary disabled:opacity-30 disabled:cursor-not-allowed"
         >
           <ChevronRight className="h-4 w-4" />
         </button>

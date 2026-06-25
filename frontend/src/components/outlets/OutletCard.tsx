@@ -29,12 +29,12 @@ export function OutletCard({ outlet, parentOutletName, onArchive, onUnarchive }:
           <CardTitle className="truncate">
             {outlet.name}
           </CardTitle>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+          <p className="text-xs text-muted-foreground mt-1">
             {outlet.code}
           </p>
         </div>
 
-        <div className="w-12 h-12 rounded-md bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-zinc-400">
+        <div className="w-12 h-12 rounded-md bg-secondary flex items-center justify-center text-muted-foreground">
           <Store className="h-5 w-5" />
         </div>
       </CardHeader>
@@ -48,7 +48,7 @@ export function OutletCard({ outlet, parentOutletName, onArchive, onUnarchive }:
             )}
           </div>
           {parentOutletName && (
-            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+            <p className="text-xs text-muted-foreground">
               Brand: {parentOutletName}
             </p>
           )}
@@ -57,10 +57,10 @@ export function OutletCard({ outlet, parentOutletName, onArchive, onUnarchive }:
 
       {/* Quick Actions */}
       {showActions && (
-        <div className="absolute top-2 right-2 flex items-center gap-1 bg-white dark:bg-zinc-950 rounded-md shadow-sm border border-zinc-200 dark:border-zinc-800 p-1">
+        <div className="absolute top-2 right-2 flex items-center gap-1 bg-card rounded-md shadow-sm border border-border p-1">
           <Link
             href={`/outlets/${outlet.id}`}
-            className="inline-flex items-center justify-center h-7 w-7 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200 transition-colors"
+            className="inline-flex items-center justify-center h-7 w-7 rounded hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"
             title="Edit"
           >
             <Edit2 className="h-3.5 w-3.5" />

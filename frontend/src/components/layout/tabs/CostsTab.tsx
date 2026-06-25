@@ -23,7 +23,7 @@ function IngredientCostTable({ recipeId }: { recipeId: number }) {
 
   if (error || !costing) {
     return (
-      <div className="text-sm text-zinc-500 dark:text-zinc-400">
+      <div className="text-sm text-muted-foreground">
         No cost data available. Add ingredients to see cost breakdown.
       </div>
     );
@@ -31,7 +31,7 @@ function IngredientCostTable({ recipeId }: { recipeId: number }) {
 
   if (costing.breakdown.length === 0) {
     return (
-      <div className="text-sm text-zinc-500 dark:text-zinc-400">
+      <div className="text-sm text-muted-foreground">
         No ingredients added yet.
       </div>
     );
@@ -41,20 +41,20 @@ function IngredientCostTable({ recipeId }: { recipeId: number }) {
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b border-zinc-200 dark:border-zinc-700">
-            <th className="py-3 pr-4 text-left font-medium text-zinc-500 dark:text-zinc-400">
+          <tr className="border-b border-border">
+            <th className="py-3 pr-4 text-left font-medium text-muted-foreground">
               Ingredient
             </th>
-            <th className="px-4 py-3 text-right font-medium text-zinc-500 dark:text-zinc-400">
+            <th className="px-4 py-3 text-right font-medium text-muted-foreground">
               Quantity
             </th>
-            <th className="px-4 py-3 text-right font-medium text-zinc-500 dark:text-zinc-400">
+            <th className="px-4 py-3 text-right font-medium text-muted-foreground">
               Unit Cost
             </th>
-            <th className="px-4 py-3 text-right font-medium text-zinc-500 dark:text-zinc-400">
+            <th className="px-4 py-3 text-right font-medium text-muted-foreground">
               Wastage %
             </th>
-            <th className="py-3 pl-4 text-right font-medium text-zinc-500 dark:text-zinc-400">
+            <th className="py-3 pl-4 text-right font-medium text-muted-foreground">
               Line Cost
             </th>
           </tr>
@@ -63,23 +63,23 @@ function IngredientCostTable({ recipeId }: { recipeId: number }) {
           {costing.breakdown.map((item) => (
             <tr
               key={item.ingredient_id}
-              className="border-b border-zinc-100 dark:border-zinc-800"
+              className="border-b border-border"
             >
-              <td className="py-3 pr-4 text-zinc-900 dark:text-zinc-100">
+              <td className="py-3 pr-4 text-foreground">
                 {item.ingredient_name}
               </td>
-              <td className="px-4 py-3 text-right text-zinc-600 dark:text-zinc-300">
+              <td className="px-4 py-3 text-right text-muted-foreground">
                 {item.quantity} {item.unit}
               </td>
-              <td className="px-4 py-3 text-right text-zinc-600 dark:text-zinc-300">
+              <td className="px-4 py-3 text-right text-muted-foreground">
                 {item.cost_per_base_unit != null
                   ? `${formatCurrency(item.cost_per_base_unit)}/${item.base_unit}`
                   : '—'}
               </td>
-              <td className={`px-4 py-3 text-right ${item.wastage_percentage > 0 ? 'font-medium text-orange-600 dark:text-orange-400' : 'text-zinc-600 dark:text-zinc-300'}`}>
+              <td className={`px-4 py-3 text-right ${item.wastage_percentage > 0 ? 'font-medium text-orange-600 dark:text-orange-400' : 'text-muted-foreground'}`}>
                 {item.wastage_percentage > 0 ? `${item.wastage_percentage.toFixed(1)}%` : '—'}
               </td>
-              <td className="py-3 pl-4 text-right font-medium text-zinc-900 dark:text-zinc-100">
+              <td className="py-3 pl-4 text-right font-medium text-foreground">
                 {item.line_cost != null ? formatCurrency(item.line_cost) : '—'}
               </td>
             </tr>
@@ -87,14 +87,14 @@ function IngredientCostTable({ recipeId }: { recipeId: number }) {
         </tbody>
         {costing.ingredient_cost != null && (
           <tfoot>
-            <tr className="border-t border-zinc-200 dark:border-zinc-700">
+            <tr className="border-t border-border">
               <td
                 colSpan={4}
-                className="py-3 pr-4 text-right font-medium text-zinc-500 dark:text-zinc-400"
+                className="py-3 pr-4 text-right font-medium text-muted-foreground"
               >
                 Subtotal
               </td>
-              <td className="py-3 pl-4 text-right font-semibold text-zinc-900 dark:text-zinc-100">
+              <td className="py-3 pl-4 text-right font-semibold text-foreground">
                 {formatCurrency(costing.ingredient_cost)}
               </td>
             </tr>
@@ -122,7 +122,7 @@ function SubRecipeCostTable({ recipeId }: { recipeId: number }) {
 
   if (error || !costing) {
     return (
-      <div className="text-sm text-zinc-500 dark:text-zinc-400">
+      <div className="text-sm text-muted-foreground">
         No cost data available.
       </div>
     );
@@ -130,7 +130,7 @@ function SubRecipeCostTable({ recipeId }: { recipeId: number }) {
 
   if (costing.sub_recipe_breakdown.length === 0) {
     return (
-      <div className="text-sm text-zinc-500 dark:text-zinc-400">
+      <div className="text-sm text-muted-foreground">
         No sub-recipes added yet.
       </div>
     );
@@ -140,17 +140,17 @@ function SubRecipeCostTable({ recipeId }: { recipeId: number }) {
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b border-zinc-200 dark:border-zinc-700">
-            <th className="py-3 pr-4 text-left font-medium text-zinc-500 dark:text-zinc-400">
+          <tr className="border-b border-border">
+            <th className="py-3 pr-4 text-left font-medium text-muted-foreground">
               Recipe
             </th>
-            <th className="px-4 py-3 text-right font-medium text-zinc-500 dark:text-zinc-400">
+            <th className="px-4 py-3 text-right font-medium text-muted-foreground">
               Quantity
             </th>
-            <th className="px-4 py-3 text-right font-medium text-zinc-500 dark:text-zinc-400">
+            <th className="px-4 py-3 text-right font-medium text-muted-foreground">
               Cost per Unit
             </th>
-            <th className="py-3 pl-4 text-right font-medium text-zinc-500 dark:text-zinc-400">
+            <th className="py-3 pl-4 text-right font-medium text-muted-foreground">
               Line Cost
             </th>
           </tr>
@@ -179,12 +179,12 @@ function SubRecipeCostTable({ recipeId }: { recipeId: number }) {
             return (
               <tr
                 key={item.link_id}
-                className="border-b border-zinc-100 dark:border-zinc-800"
+                className="border-b border-border"
               >
-                <td className="py-3 pr-4 text-zinc-900 dark:text-zinc-100">
+                <td className="py-3 pr-4 text-foreground">
                   {item.recipe_name}
                 </td>
-                <td className="px-4 py-3 text-right text-zinc-600 dark:text-zinc-300">
+                <td className="px-4 py-3 text-right text-muted-foreground">
                   <div>{item.quantity} {item.unit}</div>
                   {showScaleContext && (
                     <div className="text-xs text-amber-600 dark:text-amber-400">
@@ -192,10 +192,10 @@ function SubRecipeCostTable({ recipeId }: { recipeId: number }) {
                     </div>
                   )}
                 </td>
-                <td className="px-4 py-3 text-right text-zinc-600 dark:text-zinc-300">
+                <td className="px-4 py-3 text-right text-muted-foreground">
                   {unitCost != null ? `${formatCurrency(unitCost)}${unitCostLabel}` : '—'}
                 </td>
-                <td className="py-3 pl-4 text-right font-medium text-zinc-900 dark:text-zinc-100">
+                <td className="py-3 pl-4 text-right font-medium text-foreground">
                   {item.line_cost != null ? formatCurrency(item.line_cost) : '—'}
                 </td>
               </tr>
@@ -204,14 +204,14 @@ function SubRecipeCostTable({ recipeId }: { recipeId: number }) {
         </tbody>
         {costing.sub_recipe_cost != null && (
           <tfoot>
-            <tr className="border-t border-zinc-200 dark:border-zinc-700">
+            <tr className="border-t border-border">
               <td
                 colSpan={3}
-                className="py-3 pr-4 text-right font-medium text-zinc-500 dark:text-zinc-400"
+                className="py-3 pr-4 text-right font-medium text-muted-foreground"
               >
                 Subtotal
               </td>
-              <td className="py-3 pl-4 text-right font-semibold text-zinc-900 dark:text-zinc-100">
+              <td className="py-3 pl-4 text-right font-semibold text-foreground">
                 {formatCurrency(costing.sub_recipe_cost)}
               </td>
             </tr>
@@ -228,7 +228,7 @@ function CostSummary({ recipeId }: { recipeId: number }) {
 
   if (isLoading) {
     return (
-      <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-700 dark:bg-zinc-800">
+      <div className="rounded-lg border border-border bg-secondary p-4">
         <Skeleton className="h-5 w-40" />
         <Skeleton className="mt-2 h-5 w-32" />
       </div>
@@ -241,38 +241,38 @@ function CostSummary({ recipeId }: { recipeId: number }) {
 
   return (
     <div className="space-y-4">
-      <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-700 dark:bg-zinc-800">
+      <div className="rounded-lg border border-border bg-secondary p-4">
         {costing.ingredient_cost != null && (
           <div className="flex items-center justify-between">
-            <span className="text-sm text-zinc-500">Ingredient cost:</span>
+            <span className="text-sm text-muted-foreground">Ingredient cost:</span>
             <span className="font-medium">{formatCurrency(costing.ingredient_cost)}</span>
           </div>
         )}
         {costing.sub_recipe_cost != null && costing.sub_recipe_cost > 0 && (
           <div className="mt-2 flex items-center justify-between">
-            <span className="text-sm text-zinc-500">Sub-recipe cost:</span>
+            <span className="text-sm text-muted-foreground">Sub-recipe cost:</span>
             <span className="font-medium">{formatCurrency(costing.sub_recipe_cost)}</span>
           </div>
         )}
-        <div className="mt-2 flex items-center justify-between border-t border-zinc-200 pt-2 dark:border-zinc-700">
-          <span className="text-sm text-zinc-500">Total batch cost:</span>
+        <div className="mt-2 flex items-center justify-between border-t border-border pt-2">
+          <span className="text-sm text-muted-foreground">Total batch cost:</span>
           <span className="font-semibold">
             {costing.total_batch_cost != null ? formatCurrency(costing.total_batch_cost) : '—'}
           </span>
         </div>
         <div className="mt-2 flex items-center justify-between">
           <div className="flex items-center gap-1">
-            <span className="text-sm text-zinc-500">Cost per portion:</span>
+            <span className="text-sm text-muted-foreground">Cost per portion:</span>
             <div className="relative">
               <button
                 onMouseEnter={() => setShowTooltip(true)}
                 onMouseLeave={() => setShowTooltip(false)}
-                className="text-zinc-400 hover:text-zinc-600"
+                className="text-muted-foreground hover:text-foreground"
               >
                 <Info className="h-3.5 w-3.5" />
               </button>
               {showTooltip && (
-                <div className="absolute bottom-full left-1/2 z-10 mb-2 w-48 -translate-x-1/2 rounded-md bg-zinc-900 p-2 text-xs text-white shadow-lg dark:bg-zinc-700">
+                <div className="absolute bottom-full left-1/2 z-10 mb-2 w-48 -translate-x-1/2 rounded-md bg-popover p-2 text-xs text-popover-foreground shadow-lg">
                   Calculated from ingredient and item costs with yield of{' '}
                   {costing.yield_quantity} {costing.yield_unit}.
                 </div>
@@ -307,9 +307,9 @@ export function CostsTab() {
 
   if (!selectedRecipeId) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-white dark:bg-zinc-950">
+      <div className="flex-1 flex items-center justify-center bg-background">
         <div className="text-center">
-          <p className="text-zinc-500 dark:text-zinc-400">
+          <p className="text-muted-foreground">
             Select a recipe from the left panel to view its costs
           </p>
         </div>
@@ -319,7 +319,7 @@ export function CostsTab() {
 
   if (isLoading) {
     return (
-      <div className="flex-1 bg-white dark:bg-zinc-950 p-6">
+      <div className="flex-1 bg-background p-6">
         <div className="max-w-4xl mx-auto">
           <Skeleton className="h-64 rounded-lg" />
         </div>
@@ -329,7 +329,7 @@ export function CostsTab() {
 
   if (error || !recipe) {
     return (
-      <div className="flex-1 bg-white dark:bg-zinc-950 p-6">
+      <div className="flex-1 bg-background p-6">
         <div className="max-w-4xl mx-auto">
           <div className="rounded-lg bg-red-50 dark:bg-red-950 p-4 text-red-600 dark:text-red-400">
             Recipe not found or failed to load.
@@ -340,12 +340,12 @@ export function CostsTab() {
   }
 
   return (
-    <div className="flex-1 overflow-auto bg-white dark:bg-zinc-950">
+    <div className="flex-1 overflow-auto bg-background">
       <div className="p-6 max-w-4xl mx-auto space-y-6">
         {/* Ingredient Cost Breakdown Section */}
         <Card>
           <CardContent className="p-6">
-            <h2 className="text-lg font-semibold mb-4 text-zinc-900 dark:text-zinc-100">
+            <h2 className="text-lg font-semibold mb-4 text-foreground">
               Ingredient Costs
             </h2>
             <IngredientCostTable recipeId={recipe.id} />
@@ -355,7 +355,7 @@ export function CostsTab() {
         {/* Sub-Recipe Cost Breakdown Section */}
         <Card>
           <CardContent className="p-6">
-            <h2 className="text-lg font-semibold mb-4 text-zinc-900 dark:text-zinc-100">
+            <h2 className="text-lg font-semibold mb-4 text-foreground">
               Sub-Dishes Costs
             </h2>
             <SubRecipeCostTable recipeId={recipe.id} />
@@ -365,7 +365,7 @@ export function CostsTab() {
         {/* Cost Summary Section */}
         <Card>
           <CardContent className="p-6">
-            <h2 className="text-lg font-semibold mb-4 text-zinc-900 dark:text-zinc-100">
+            <h2 className="text-lg font-semibold mb-4 text-foreground">
               Cost Summary
             </h2>
             <CostSummary recipeId={recipe.id} />

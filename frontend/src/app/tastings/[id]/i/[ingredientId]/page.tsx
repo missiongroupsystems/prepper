@@ -93,7 +93,7 @@ function StarRating({ rating, onChange }: { rating: number | null; onChange?: (v
           <Star
             className={`h-4 w-4 ${rating && star <= rating
                 ? 'fill-amber-400 text-amber-400'
-                : 'text-zinc-300 dark:text-zinc-600'
+                : 'text-muted-foreground'
               }`}
           />
         </button>
@@ -175,7 +175,7 @@ function FeedbackForm({
     <form onSubmit={handleSubmit} className="space-y-4">
       {/* Overall Rating */}
       <div>
-        <label className="block text-xs text-zinc-500 dark:text-zinc-400 mb-1">Overall</label>
+        <label className="block text-xs text-muted-foreground mb-1">Overall</label>
         <StarRating rating={overallRating} onChange={setOverallRating} />
       </div>
 
@@ -187,7 +187,7 @@ function FeedbackForm({
       )}
 
       <div>
-        <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+        <label className="block text-sm font-medium text-foreground mb-1">
           Feedback
         </label>
         <Textarea
@@ -199,7 +199,7 @@ function FeedbackForm({
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+        <label className="block text-sm font-medium text-foreground mb-1">
           Suggested Actions
         </label>
         <Textarea
@@ -211,7 +211,7 @@ function FeedbackForm({
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+        <label className="block text-sm font-medium text-foreground mb-1">
           Suggested Status
         </label>
         <Select
@@ -289,7 +289,7 @@ function FeedbackNoteCard({ note, onUpdate, onDelete, currentUserId }: FeedbackN
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             {note.taster_name && (
-              <span className="font-medium text-zinc-900 dark:text-zinc-100">
+              <span className="font-medium text-foreground">
                 {note.taster_name}
               </span>
             )}
@@ -305,13 +305,13 @@ function FeedbackNoteCard({ note, onUpdate, onDelete, currentUserId }: FeedbackN
           <div className="flex items-center gap-2">
             <button
               onClick={() => setIsEditing(!isEditing)}
-              className="p-1.5 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500"
+              className="p-1.5 rounded-md hover:bg-secondary text-muted-foreground"
             >
               <Edit className="h-4 w-4" />
             </button>
             <button
               onClick={() => onDelete(note.id)}
-              className="p-1.5 rounded-md hover:bg-red-100 dark:hover:bg-red-900/30 text-zinc-500 hover:text-red-600"
+              className="p-1.5 rounded-md hover:bg-red-100 dark:hover:bg-red-900/30 text-muted-foreground hover:text-red-600"
             >
               <Trash2 className="h-4 w-4" />
             </button>
@@ -342,16 +342,16 @@ function FeedbackNoteCard({ note, onUpdate, onDelete, currentUserId }: FeedbackN
           <>
             {/* Overall Rating */}
             <div className="mb-4">
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Overall</p>
+              <p className="text-xs text-muted-foreground mb-1">Overall</p>
               <StarRating rating={note.overall_rating} />
             </div>
 
             {/* Collapsible Images Section */}
-            <div className="border-t border-zinc-200 dark:border-zinc-700 pt-3 mt-3">
+            <div className="border-t border-border pt-3 mt-3">
               <button
                 type="button"
                 onClick={() => setIsImagesExpanded(!isImagesExpanded)}
-                className="flex items-center gap-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
+                className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
               >
                 <span className={`transform transition-transform ${isImagesExpanded ? 'rotate-90' : ''}`}>
                   ▶
@@ -362,7 +362,7 @@ function FeedbackNoteCard({ note, onUpdate, onDelete, currentUserId }: FeedbackN
               {isImagesExpanded && (
                 <div className="mt-3">
                   {isLoadingImages ? (
-                    <div className="text-sm text-zinc-500 dark:text-zinc-400">Loading images...</div>
+                    <div className="text-sm text-muted-foreground">Loading images...</div>
                   ) : noteImages && noteImages.length > 0 ? (
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
                       {noteImages.map((image: TastingNoteImageDisplay) => (
@@ -371,7 +371,7 @@ function FeedbackNoteCard({ note, onUpdate, onDelete, currentUserId }: FeedbackN
                           href={image.image_url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="rounded-lg overflow-hidden bg-zinc-100 dark:bg-zinc-800 aspect-square hover:ring-2 ring-amber-500 transition-all"
+                          className="rounded-lg overflow-hidden bg-secondary aspect-square hover:ring-2 ring-amber-500 transition-all"
                         >
                           <Image
                             src={image.image_url}
@@ -384,7 +384,7 @@ function FeedbackNoteCard({ note, onUpdate, onDelete, currentUserId }: FeedbackN
                       ))}
                     </div>
                   ) : (
-                    <p className="text-sm text-zinc-500 dark:text-zinc-400">No images available</p>
+                    <p className="text-sm text-muted-foreground">No images available</p>
                   )}
                 </div>
               )}
@@ -392,19 +392,19 @@ function FeedbackNoteCard({ note, onUpdate, onDelete, currentUserId }: FeedbackN
 
             {note.feedback && (
               <div className="mb-3 mt-3">
-                <p className="text-zinc-500 dark:text-zinc-400 font-medium text-sm mb-1">Feedback:</p>
-                <p className="text-sm text-zinc-600 dark:text-zinc-300">{note.feedback}</p>
+                <p className="text-muted-foreground font-medium text-sm mb-1">Feedback:</p>
+                <p className="text-sm text-muted-foreground">{note.feedback}</p>
               </div>
             )}
             {note.action_items && (
               <div className="mb-3 text-sm">
-                <p className="text-zinc-500 dark:text-zinc-400 font-medium mb-1">Suggested Actions:</p>
-                <p className="text-zinc-600 dark:text-zinc-300">{note.action_items}</p>
+                <p className="text-muted-foreground font-medium mb-1">Suggested Actions:</p>
+                <p className="text-muted-foreground">{note.action_items}</p>
               </div>
             )}
             {decisionConfig && (
               <div className="mb-3 text-sm">
-                <p className="text-zinc-500 dark:text-zinc-400 font-medium mb-1">Suggested Status:</p>
+                <p className="text-muted-foreground font-medium mb-1">Suggested Status:</p>
                 <Badge variant={decisionConfig.badgeVariant}>
                   {DecisionIcon && <DecisionIcon className="h-3 w-3 mr-1" />}
                   {decisionConfig.label}
@@ -532,7 +532,7 @@ export default function IngredientTastingPage() {
         <div className="mb-6">
           <Link
             href={`/tastings/${sessionId}`}
-            className="inline-flex items-center gap-1 text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
+            className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft className="h-4 w-4" />
             Back to Session
@@ -543,23 +543,23 @@ export default function IngredientTastingPage() {
         <div className="mb-8">
           <div className="flex items-center gap-2 mb-2">
             <Droplet className="h-6 w-6 text-amber-500" />
-            <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">{ingredient.name}</h1>
+            <h1 className="text-2xl font-bold text-foreground">{ingredient.name}</h1>
           </div>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-2">{session.name}</p>
-          <div className="flex flex-wrap items-center gap-4 text-sm text-zinc-600 dark:text-zinc-300 mb-3">
+          <p className="text-sm text-muted-foreground mb-2">{session.name}</p>
+          <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground mb-3">
             <div className="flex items-center gap-1.5">
-              <Calendar className="h-4 w-4 text-zinc-400" />
+              <Calendar className="h-4 w-4 text-muted-foreground" />
               <span>{formatDate(session.date)}</span>
             </div>
             {session.location && (
               <div className="flex items-center gap-1.5">
-                <MapPin className="h-4 w-4 text-zinc-400" />
+                <MapPin className="h-4 w-4 text-muted-foreground" />
                 <span>{session.location}</span>
               </div>
             )}
             {session.participants && session.participants.length > 0 && (
               <div className="flex items-center gap-1.5">
-                <Users className="h-4 w-4 text-zinc-400" />
+                <Users className="h-4 w-4 text-muted-foreground" />
                 <span>{session.participants.map(p => p.username).join(', ')}</span>
               </div>
             )}
@@ -587,7 +587,7 @@ export default function IngredientTastingPage() {
 
         {/* Feedback Section */}
         <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+          <h2 className="text-lg font-semibold text-foreground">
             Feedback ({ingredientNotes.length})
           </h2>
           {!showAddForm && isInvited && (
@@ -618,9 +618,9 @@ export default function IngredientTastingPage() {
 
         {/* Feedback Notes List */}
         {ingredientNotes.length === 0 && !showAddForm ? (
-          <div className="text-center py-12 border border-dashed border-zinc-200 dark:border-zinc-700 rounded-lg">
-            <p className="text-zinc-500 dark:text-zinc-400">No feedback recorded yet</p>
-            <p className="text-sm text-zinc-400 dark:text-zinc-500 mt-1">
+          <div className="text-center py-12 border border-dashed border-border rounded-lg">
+            <p className="text-muted-foreground">No feedback recorded yet</p>
+            <p className="text-sm text-muted-foreground mt-1">
               Add feedback to record tasting notes
             </p>
           </div>

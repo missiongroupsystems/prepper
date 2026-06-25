@@ -36,7 +36,7 @@ export function RecipeCategoryFilterButtons({
 
   return (
     <div className="flex flex-wrap items-center gap-2 mb-4">
-      <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mr-1">
+      <span className="text-xs font-medium text-muted-foreground mr-1">
         Category:
       </span>
       {visible.map((category) => (
@@ -47,7 +47,7 @@ export function RecipeCategoryFilterButtons({
             'px-3 py-1 text-xs font-medium rounded-full transition-colors',
             selectedCategories.includes(category.id)
               ? 'bg-primary text-primary-foreground'
-              : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
+              : 'bg-secondary text-muted-foreground hover:bg-muted'
           )}
         >
           {category.name}
@@ -56,7 +56,7 @@ export function RecipeCategoryFilterButtons({
       {hasMore && (
         <button
           onClick={() => setShowAll((prev) => !prev)}
-          className="px-3 py-1 text-xs font-medium rounded-full text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200 underline transition-colors"
+          className="px-3 py-1 text-xs font-medium rounded-full text-muted-foreground hover:text-foreground underline transition-colors"
         >
           {showAll ? 'See less' : `+${categories.length - CATEGORY_VISIBLE_LIMIT} more`}
         </button>

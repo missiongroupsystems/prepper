@@ -14,10 +14,10 @@ interface RecipeCategoryListRowProps {
 export function RecipeCategoryListRow({ category, onArchive, onUnarchive }: RecipeCategoryListRowProps) {
   const router = useRouter();
   return (
-    <div className="flex items-center justify-between p-4 border border-zinc-200 dark:border-zinc-700 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-900/30 transition-colors">
+    <div className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-secondary transition-colors">
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <h3 className="font-medium text-zinc-900 dark:text-zinc-100 truncate">
+          <h3 className="font-medium text-foreground truncate">
             {category.name}
           </h3>
           {!category.is_active && (
@@ -25,11 +25,11 @@ export function RecipeCategoryListRow({ category, onArchive, onUnarchive }: Reci
           )}
         </div>
         {category.description && (
-          <p className="text-sm text-zinc-600 dark:text-zinc-300 line-clamp-1 mt-0.5">
+          <p className="text-sm text-muted-foreground line-clamp-1 mt-0.5">
             {category.description}
           </p>
         )}
-        <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-1">
+        <p className="text-xs text-muted-foreground mt-1">
           Created {new Date(category.created_at).toLocaleDateString()}
         </p>
       </div>

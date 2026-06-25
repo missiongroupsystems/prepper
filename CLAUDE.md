@@ -69,6 +69,7 @@ API routes under `/api/v1`. Swagger at `http://localhost:8000/docs`.
 
 ## Safety
 - Never commit or push — user owns all git actions.
+- Commit messages: single line, conventional format `type(scope): summary` — no body, no `Co-Authored-By` trailer (see `/commit`).
 - Ask before destructive actions (applied migrations, bulk deletes).
 - Never print secrets.
 - Cycle detection on outlet hierarchies and sub-recipes — don't bypass.

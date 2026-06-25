@@ -40,9 +40,19 @@ Based on the changes, check if any of these docs need updating:
 Only update docs that are actually stale — don't touch docs that are already accurate.
 
 ## Step 3: Generate commit message
-- Generate a concise commit message following the repo's existing style
-- Output the commit message clearly so I can copy it
-- Do NOT run git commit or git push — I will do that manually
+Follow the repo convention **exactly** — a single line, conventional-commit format, no body:
+
+```
+type(scope): short lowercase summary
+```
+
+- **One line only.** No body paragraphs, no bullet lists, no `Co-Authored-By` trailer — the log is uniformly single-line (verify with `git log --oneline`).
+- **Types:** `feat`, `fix`, `style`, `refactor`, `docs`, `chore`.
+- **Scope:** the area touched — e.g. `canvas`, `tastings`, `costing`, `recipes`, `design-system`, `migration`, `auth`, `menu-sketch`.
+- For several related changes, use comma-separated clauses on the one line
+  (e.g. `style(canvas): migrate to design tokens, warm active/drop states, a11y fixes`).
+- Output the commit message clearly so I can copy it.
+- Do NOT run git commit or git push — I will do that manually.
 
 ## Step 4: Summary
 Show a brief summary of the suggested commit message and any docs that were updated.

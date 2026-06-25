@@ -162,7 +162,7 @@ export default function RecipeTastingPage() {
         <div className="mb-6">
           <Link
             href={`/tastings/${sessionId}`}
-            className="inline-flex items-center gap-1 text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
+            className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft className="h-4 w-4" />
             Back to Session
@@ -173,23 +173,23 @@ export default function RecipeTastingPage() {
         <div className="mb-8">
           <div className="flex items-center gap-2 mb-2">
             <ChefHat className="h-6 w-6 text-purple-500" />
-            <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">{recipe.name}</h1>
+            <h1 className="text-2xl font-bold text-foreground">{recipe.name}</h1>
           </div>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-2">{session.name}</p>
-          <div className="flex flex-wrap items-center gap-4 text-sm text-zinc-600 dark:text-zinc-300">
+          <p className="text-sm text-muted-foreground mb-2">{session.name}</p>
+          <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
             <div className="flex items-center gap-1.5">
-              <Calendar className="h-4 w-4 text-zinc-400" />
+              <Calendar className="h-4 w-4 text-muted-foreground" />
               <span>{formatDate(session.date)}</span>
             </div>
             {session.location && (
               <div className="flex items-center gap-1.5">
-                <MapPin className="h-4 w-4 text-zinc-400" />
+                <MapPin className="h-4 w-4 text-muted-foreground" />
                 <span>{session.location}</span>
               </div>
             )}
             {session.participants && session.participants.length > 0 && (
               <div className="flex items-center gap-1.5">
-                <Users className="h-4 w-4 text-zinc-400" />
+                <Users className="h-4 w-4 text-muted-foreground" />
                 <span>{session.participants.map((p) => p.username).join(', ')}</span>
               </div>
             )}
@@ -198,7 +198,7 @@ export default function RecipeTastingPage() {
           {/* Allergens */}
           {allergens.length > 0 && (
             <div className="mt-4 flex flex-wrap items-center gap-2">
-              <span className="text-sm font-medium text-zinc-600 dark:text-zinc-300">Allergens:</span>
+              <span className="text-sm font-medium text-muted-foreground">Allergens:</span>
               {allergens.map((allergen) => (
                 <Badge key={allergen.id} variant="warning" className="text-xs">{allergen.name}</Badge>
               ))}
@@ -206,14 +206,14 @@ export default function RecipeTastingPage() {
           )}
 
           {/* Recipe Description */}
-          <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">
+          <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
             {recipe.description?.trim() || 'No description'}
           </p>
         </div>
 
         {/* Feedback Section */}
         <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+          <h2 className="text-lg font-semibold text-foreground">
             Feedback ({recipeNotes.length})
           </h2>
           {!showAddForm && isInvited && (
@@ -244,9 +244,9 @@ export default function RecipeTastingPage() {
 
         {/* Feedback Notes List */}
         {recipeNotes.length === 0 && !showAddForm ? (
-          <div className="text-center py-12 border border-dashed border-zinc-200 dark:border-zinc-700 rounded-lg">
-            <p className="text-zinc-500 dark:text-zinc-400">No feedback recorded yet</p>
-            <p className="text-sm text-zinc-400 dark:text-zinc-500 mt-1">
+          <div className="text-center py-12 border border-dashed border-border rounded-lg">
+            <p className="text-muted-foreground">No feedback recorded yet</p>
+            <p className="text-sm text-muted-foreground mt-1">
               Add feedback to record tasting notes
             </p>
           </div>

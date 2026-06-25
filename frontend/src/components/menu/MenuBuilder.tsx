@@ -83,23 +83,23 @@ function MultiAddContent({
   const existingIds = new Set(sectionItems.map((i) => i.recipe_id));
 
   return (
-    <div className="mt-3 border border-zinc-200 dark:border-zinc-700 rounded-lg overflow-hidden">
+    <div className="mt-3 border border-border rounded-lg overflow-hidden">
       {/* Search */}
-      <div className="p-3 border-b border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900">
+      <div className="p-3 border-b border-border bg-secondary">
         <div className="relative">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-400 pointer-events-none" />
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
           <input
             type="text"
             placeholder="Search recipes..."
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
             autoFocus
-            className="w-full pl-8 pr-8 py-1.5 text-sm bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-1 focus:ring-zinc-400"
+            className="w-full pl-8 pr-8 py-1.5 text-sm bg-card border border-input rounded-md focus:outline-none focus:ring-1 focus:ring-ring"
           />
           {search && (
             <button
               onClick={() => onSearchChange('')}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600"
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
             >
               <X className="h-3.5 w-3.5" />
             </button>
@@ -108,9 +108,9 @@ function MultiAddContent({
       </div>
 
       {/* Recipe list */}
-      <div className="max-h-52 overflow-y-auto divide-y divide-zinc-100 dark:divide-zinc-800">
+      <div className="max-h-52 overflow-y-auto divide-y divide-border">
         {recipes.length === 0 && (
-          <p className="p-3 text-sm text-zinc-400 text-center">No recipes found</p>
+          <p className="p-3 text-sm text-muted-foreground text-center">No recipes found</p>
         )}
         {recipes.map((recipe) => {
           const alreadyAdded = existingIds.has(recipe.id);
@@ -123,29 +123,29 @@ function MultiAddContent({
               className={[
                 'w-full flex items-center gap-3 px-3 py-2 text-left text-sm transition-colors',
                 alreadyAdded
-                  ? 'opacity-40 cursor-not-allowed bg-white dark:bg-zinc-950'
+                  ? 'opacity-40 cursor-not-allowed bg-card'
                   : selected
-                  ? 'bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800'
-                  : 'bg-white dark:bg-zinc-950 hover:bg-zinc-50 dark:hover:bg-zinc-900',
+                  ? 'bg-secondary hover:bg-secondary'
+                  : 'bg-card hover:bg-secondary',
               ].join(' ')}
             >
               <div
                 className={[
                   'flex-shrink-0 h-4 w-4 rounded border flex items-center justify-center transition-colors',
                   selected && !alreadyAdded
-                    ? 'bg-zinc-900 border-zinc-900 dark:bg-zinc-100 dark:border-zinc-100'
-                    : 'border-zinc-300 dark:border-zinc-600',
+                    ? 'bg-primary border-primary'
+                    : 'border-input',
                 ].join(' ')}
               >
                 {selected && !alreadyAdded && (
-                  <svg className="h-2.5 w-2.5 text-white dark:text-zinc-900" viewBox="0 0 10 10" fill="none">
+                  <svg className="h-2.5 w-2.5 text-primary-foreground" viewBox="0 0 10 10" fill="none">
                     <path d="M2 5l2.5 2.5L8 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 )}
               </div>
               <span className="flex-1 truncate">{recipe.name}</span>
               {alreadyAdded && (
-                <span className="text-xs text-zinc-400 shrink-0">Added</span>
+                <span className="text-xs text-muted-foreground shrink-0">Added</span>
               )}
             </button>
           );
@@ -154,11 +154,11 @@ function MultiAddContent({
 
       {/* Load more */}
       {hasNextPage && (
-        <div className="border-t border-zinc-100 dark:border-zinc-800 px-3 py-2">
+        <div className="border-t border-border px-3 py-2">
           <button
             onClick={onLoadMore}
             disabled={isFetchingNextPage}
-            className="text-xs text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 disabled:opacity-50"
+            className="text-xs text-muted-foreground hover:text-foreground disabled:opacity-50"
           >
             {isFetchingNextPage ? 'Loading…' : 'View more'}
           </button>
@@ -166,8 +166,8 @@ function MultiAddContent({
       )}
 
       {/* Footer */}
-      <div className="border-t border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 px-3 py-2.5 flex items-center justify-between gap-2">
-        <span className="text-xs text-zinc-500">
+      <div className="border-t border-border bg-secondary px-3 py-2.5 flex items-center justify-between gap-2">
+        <span className="text-xs text-muted-foreground">
           {selectedIds.size > 0 ? `${selectedIds.size} selected` : 'Select recipes to add'}
         </span>
         <div className="flex gap-2">
@@ -230,13 +230,13 @@ function DraggableSection({
     <div
       ref={setNodeRef}
       style={style}
-      className="border border-zinc-200 rounded-lg p-4 dark:border-zinc-800"
+      className="border border-border rounded-lg p-4"
     >
       <div className="flex gap-2 mb-4">
         <div
           {...attributes}
           {...listeners}
-          className="flex items-center justify-center cursor-grab active:cursor-grabbing p-1 text-zinc-400 hover:text-zinc-600"
+          className="flex items-center justify-center cursor-grab active:cursor-grabbing p-1 text-muted-foreground hover:text-foreground"
         >
           <GripVertical className="h-5 w-5" />
         </div>
@@ -350,11 +350,11 @@ function DraggableItem({
       <div
         ref={setNodeRef}
         style={style}
-        className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg overflow-hidden"
+        className="bg-card border border-border rounded-lg overflow-hidden"
       >
         {/* Recipe Image */}
         {recipe?.image_url && (
-          <div className="relative w-full aspect-video bg-zinc-100 dark:bg-zinc-800">
+          <div className="relative w-full aspect-video bg-secondary">
             <Image
               src={recipe.image_url}
               alt={recipe.name}
@@ -371,7 +371,7 @@ function DraggableItem({
             <div
               {...attributes}
               {...listeners}
-              className="flex items-center justify-center cursor-grab active:cursor-grabbing text-zinc-400 hover:text-zinc-600 flex-shrink-0"
+              className="flex items-center justify-center cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground flex-shrink-0"
             >
               <GripVertical className="h-4 w-4" />
             </div>
@@ -387,7 +387,7 @@ function DraggableItem({
 
           {/* Recipe Name */}
           <div>
-            <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1">
+            <p className="text-xs font-medium text-muted-foreground mb-1">
               Recipe Name
             </p>
             <input
@@ -395,7 +395,7 @@ function DraggableItem({
               placeholder="Search recipes..."
               value={recipeSearch}
               onChange={(e) => setRecipeSearch(e.target.value)}
-              className="w-full px-2 py-1 text-sm border border-zinc-200 dark:border-zinc-700 rounded-md mb-1 bg-white dark:bg-zinc-900 focus:outline-none"
+              className="w-full px-2 py-1 text-sm border border-input rounded-md mb-1 bg-card focus:outline-none"
             />
             <Select
               value={item.recipe_id.toString()}
@@ -413,7 +413,7 @@ function DraggableItem({
           {/* Allergens */}
           {(allergenMap?.get(item.recipe_id) ?? []).length > 0 && (
             <div>
-              <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1">
+              <p className="text-xs font-medium text-muted-foreground mb-1">
                 Allergens
               </p>
               <div className="flex flex-wrap gap-1">
@@ -426,7 +426,7 @@ function DraggableItem({
 
           {/* Price */}
           <div>
-            <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1">
+            <p className="text-xs font-medium text-muted-foreground mb-1">
               Price
             </p>
             <Input
@@ -448,7 +448,7 @@ function DraggableItem({
             <button
               type="button"
               onClick={() => setHighlightsOpen(!highlightsOpen)}
-              className="flex items-center gap-1.5 w-full text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1 hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors"
+              className="flex items-center gap-1.5 w-full text-xs font-medium text-muted-foreground mb-1 hover:text-foreground transition-colors"
             >
               <ChevronDown className={`h-3.5 w-3.5 transition-transform duration-200 ${highlightsOpen ? '' : '-rotate-90'}`} />
               Key Highlights
@@ -469,7 +469,7 @@ function DraggableItem({
             <button
               type="button"
               onClick={() => setAdditionalOpen(!additionalOpen)}
-              className="flex items-center gap-1.5 w-full text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1 hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors"
+              className="flex items-center gap-1.5 w-full text-xs font-medium text-muted-foreground mb-1 hover:text-foreground transition-colors"
             >
               <ChevronDown className={`h-3.5 w-3.5 transition-transform duration-200 ${additionalOpen ? '' : '-rotate-90'}`} />
               Additional Info
@@ -490,7 +490,7 @@ function DraggableItem({
             <button
               type="button"
               onClick={() => setSubstitutionOpen(!substitutionOpen)}
-              className="flex items-center gap-1.5 w-full text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1 hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors"
+              className="flex items-center gap-1.5 w-full text-xs font-medium text-muted-foreground mb-1 hover:text-foreground transition-colors"
             >
               <ChevronDown className={`h-3.5 w-3.5 transition-transform duration-200 ${substitutionOpen ? '' : '-rotate-90'}`} />
               Substitution
@@ -515,13 +515,13 @@ function DraggableItem({
     <div
       ref={setNodeRef}
       style={style}
-      className="bg-zinc-50 dark:bg-zinc-900 p-3 rounded border border-zinc-200 dark:border-zinc-800 space-y-3"
+      className="bg-secondary p-3 rounded border border-border space-y-3"
     >
       <div className="flex gap-2">
         <div
           {...attributes}
           {...listeners}
-          className="flex items-center justify-center cursor-grab active:cursor-grabbing p-1 text-zinc-400 hover:text-zinc-600 flex-shrink-0"
+          className="flex items-center justify-center cursor-grab active:cursor-grabbing p-1 text-muted-foreground hover:text-foreground flex-shrink-0"
         >
           <GripVertical className="h-4 w-4" />
         </div>
@@ -532,7 +532,7 @@ function DraggableItem({
               placeholder="Search recipes..."
               value={recipeSearch}
               onChange={(e) => setRecipeSearch(e.target.value)}
-              className="w-full px-2 py-1 text-sm border border-zinc-200 dark:border-zinc-700 rounded-md bg-white dark:bg-zinc-900 focus:outline-none"
+              className="w-full px-2 py-1 text-sm border border-input rounded-md bg-card focus:outline-none"
             />
             <Select
               value={item.recipe_id.toString()}
@@ -882,7 +882,7 @@ export function MenuBuilder({ mode, menu }: MenuBuilderProps) {
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-6">
       {/* Menu Metadata */}
-      <div className="space-y-4 border-b border-zinc-200 pb-6 dark:border-zinc-800">
+      <div className="space-y-4 border-b border-border pb-6">
         <div>
           <label className="block text-sm font-medium mb-2">Menu Name *</label>
           <Input
@@ -902,12 +902,12 @@ export function MenuBuilder({ mode, menu }: MenuBuilderProps) {
           <button
             type="button"
             onClick={() => setOutletsOpen(!outletsOpen)}
-            className="flex items-center gap-2 text-sm font-medium mb-2 hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors"
+            className="flex items-center gap-2 text-sm font-medium mb-2 hover:text-foreground transition-colors"
           >
             <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${outletsOpen ? '' : '-rotate-90'}`} />
             Outlets *
             {selectedOutletIds.length > 0 && (
-              <span className="text-xs text-zinc-400 font-normal">({selectedOutletIds.length} selected)</span>
+              <span className="text-xs text-muted-foreground font-normal">({selectedOutletIds.length} selected)</span>
             )}
           </button>
           {outletsOpen && (
@@ -936,7 +936,7 @@ export function MenuBuilder({ mode, menu }: MenuBuilderProps) {
         <div className="flex items-center justify-between">
           <h3 className="font-semibold">Sections (drag to reorder)</h3>
           <div className="flex gap-2">
-            <div className="flex items-center gap-1 border border-zinc-200 dark:border-zinc-800 rounded-md p-1">
+            <div className="flex items-center gap-1 border border-border rounded-md p-1">
               <Button
                 onClick={() => setViewMode('list')}
                 size="sm"
@@ -1007,7 +1007,7 @@ export function MenuBuilder({ mode, menu }: MenuBuilderProps) {
       </div>
 
       {/* Actions */}
-      <div className="flex gap-3 justify-end border-t border-zinc-200 pt-6 dark:border-zinc-800">
+      <div className="flex gap-3 justify-end border-t border-border pt-6">
         <Button variant="outline" onClick={() => router.push('/recipes')}>
           Cancel
         </Button>

@@ -119,7 +119,7 @@ export default function DesignSystemPage() {
         <Section title="Branding">
           <Subsection title="Logo Inline">
             <div className="flex flex-col gap-6">
-              <div className="p-6 rounded-lg bg-white border border-border">
+              <div className="p-6 rounded-lg bg-card border border-border">
                 <Image
                   src="/logo/Reciperep logo inline 840x180.png"
                   alt="Reciperep Logo Inline"
@@ -143,7 +143,7 @@ export default function DesignSystemPage() {
 
           <Subsection title="Logo Icon">
             <div className="flex gap-6">
-              <div className="p-4 rounded-lg bg-white border border-border">
+              <div className="p-4 rounded-lg bg-card border border-border">
                 <Image
                   src="/logo/Reciperep logoicon 260x260.png"
                   alt="Reciperep Logo Icon"
@@ -168,7 +168,7 @@ export default function DesignSystemPage() {
           <Subsection title="Favicon">
             <div className="flex gap-6 items-end">
               <div className="flex flex-col items-center gap-2">
-                <div className="p-2 rounded-lg bg-white border border-border">
+                <div className="p-2 rounded-lg bg-card border border-border">
                   <Image
                     src="/logo/reciperep-favicon-512x512.png"
                     alt="Reciperep Favicon"
@@ -180,7 +180,7 @@ export default function DesignSystemPage() {
                 <span className="text-xs text-muted-foreground">32px</span>
               </div>
               <div className="flex flex-col items-center gap-2">
-                <div className="p-2 rounded-lg bg-white border border-border">
+                <div className="p-2 rounded-lg bg-card border border-border">
                   <Image
                     src="/logo/reciperep-favicon-512x512.png"
                     alt="Reciperep Favicon"
@@ -192,7 +192,7 @@ export default function DesignSystemPage() {
                 <span className="text-xs text-muted-foreground">48px</span>
               </div>
               <div className="flex flex-col items-center gap-2">
-                <div className="p-2 rounded-lg bg-white border border-border">
+                <div className="p-2 rounded-lg bg-card border border-border">
                   <Image
                     src="/logo/reciperep-favicon-512x512.png"
                     alt="Reciperep Favicon"

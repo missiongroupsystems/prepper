@@ -33,7 +33,7 @@ export function AllergenListRow({
           <div className="flex-1 min-w-0">
             <p className="font-medium text-sm">{allergen.name}</p>
             {allergen.description && (
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate">
+              <p className="text-xs text-muted-foreground truncate">
                 {allergen.description}
               </p>
             )}

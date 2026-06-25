@@ -30,10 +30,10 @@ export const RecipeListRow = memo(function RecipeListRow({ recipe, costPerPortio
         <CardContent className="py-2">
           <div className="flex items-center justify-between gap-4">
             <div className="flex-1 min-w-0">
-              <h3 className="text-base font-medium text-zinc-900 dark:text-zinc-100 truncate hover:text-blue-600 dark:hover:text-blue-400">
+              <h3 className="text-base font-medium text-foreground truncate hover:text-blue-600 dark:hover:text-blue-400">
                 {recipe.name}
               </h3>
-              <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-0.5">
+              <p className="text-sm text-muted-foreground mt-0.5">
                 {recipe.yield_quantity} {recipe.yield_unit}
               </p>
             </div>
@@ -61,15 +61,15 @@ export const RecipeListRow = memo(function RecipeListRow({ recipe, costPerPortio
               </div>
 
               <div className="text-right">
-                <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                  <span className="font-medium text-zinc-900 dark:text-zinc-100">
+                <p className="text-sm text-muted-foreground">
+                  <span className="font-medium text-foreground">
                     {formatCurrency(costPerPortion ?? (recipe.cost_price != null && recipe.yield_quantity > 0 ? recipe.cost_price / recipe.yield_quantity : recipe.cost_price))}
                   </span>
-                  <span className="text-zinc-500 dark:text-zinc-500">/portion</span>
+                  <span className="text-muted-foreground">/portion</span>
                 </p>
               </div>
 
-              <ExternalLink className="h-4 w-4 text-zinc-400 flex-shrink-0" />
+              <ExternalLink className="h-4 w-4 text-muted-foreground flex-shrink-0" />
             </div>
           </div>
         </CardContent>

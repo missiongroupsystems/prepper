@@ -28,7 +28,7 @@ const DECISION_CONFIG: Record<TastingDecision, { label: string; icon: typeof Che
 };
 
 function StarRating({ rating }: { rating: number | null }) {
-  if (!rating) return <span className="text-zinc-400">-</span>;
+  if (!rating) return <span className="text-muted-foreground">-</span>;
   return (
     <div className="flex items-center gap-0.5">
       {[1, 2, 3, 4, 5].map((star) => (
@@ -36,7 +36,7 @@ function StarRating({ rating }: { rating: number | null }) {
           key={star}
           className={`h-3.5 w-3.5 ${star <= rating
               ? 'fill-amber-400 text-amber-400'
-              : 'text-zinc-300 dark:text-zinc-600'
+              : 'text-muted-foreground'
             }`}
         />
       ))}
@@ -175,9 +175,9 @@ export function OverviewTab() {
 
   if (!selectedRecipeId) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-white dark:bg-zinc-950">
+      <div className="flex-1 flex items-center justify-center bg-background">
         <div className="text-center">
-          <p className="text-zinc-500 dark:text-zinc-400">
+          <p className="text-muted-foreground">
             Select a recipe from the left panel to view its overview
           </p>
         </div>
@@ -187,7 +187,7 @@ export function OverviewTab() {
 
   if (recipeError) {
     return (
-      <div className="flex-1 bg-white dark:bg-zinc-950 p-6">
+      <div className="flex-1 bg-background p-6">
         <div className="max-w-5xl mx-auto">
           <div className="rounded-lg bg-red-50 dark:bg-red-950 p-4 text-red-600 dark:text-red-400">
             Recipe not found or failed to load.
@@ -198,7 +198,7 @@ export function OverviewTab() {
   }
 
   return (
-    <div className="flex-1 overflow-auto bg-white dark:bg-zinc-950">
+    <div className="flex-1 overflow-auto bg-background">
       <div className="p-6 max-w-5xl mx-auto">
         {isLoading ? (
           <div className="space-y-6">
@@ -226,7 +226,7 @@ export function OverviewTab() {
                         className="w-24 h-24 md:w-32 md:h-32 rounded-lg object-cover"
                       />
                     ) : (
-                      <div className="w-24 h-24 md:w-32 md:h-32 rounded-lg bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-zinc-400">
+                      <div className="w-24 h-24 md:w-32 md:h-32 rounded-lg bg-secondary flex items-center justify-center text-muted-foreground">
                         <ImagePlus className="h-8 w-8" />
                       </div>
                     )}
@@ -254,24 +254,24 @@ export function OverviewTab() {
                                 if (e.key === 'Escape') { setIsEditingName(false); setNameValue(recipe?.name || ''); }
                               }}
                               autoFocus
-                              className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 bg-transparent border-b-2 border-[hsl(var(--primary))] focus:outline-none flex-1 min-w-0"
+                              className="text-2xl font-bold text-foreground bg-transparent border-b-2 border-[hsl(var(--primary))] focus:outline-none flex-1 min-w-0"
                             />
                             <button onClick={handleSaveName} disabled={isUpdating} className="text-green-600 hover:text-green-700 disabled:opacity-50 shrink-0">
                               <Check className="h-5 w-5" />
                             </button>
-                            <button onClick={() => { setIsEditingName(false); setNameValue(recipe?.name || ''); }} className="text-zinc-400 hover:text-zinc-600 shrink-0">
+                            <button onClick={() => { setIsEditingName(false); setNameValue(recipe?.name || ''); }} className="text-muted-foreground hover:text-foreground shrink-0">
                               <X className="h-5 w-5" />
                             </button>
                           </div>
                         ) : (
                           <div className="flex items-center gap-2 group">
-                            <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
+                            <h1 className="text-2xl font-bold text-foreground">
                               {recipe.name}
                             </h1>
                             {canEditRecipe && (
                               <button
                                 onClick={() => setIsEditingName(true)}
-                                className="opacity-0 group-hover:opacity-100 transition-opacity text-zinc-400 hover:text-zinc-600"
+                                className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-foreground"
                                 title="Edit name"
                               >
                                 <Edit2 className="h-4 w-4" />
@@ -279,15 +279,15 @@ export function OverviewTab() {
                             )}
                           </div>
                         )}
-                        <p className="text-zinc-500 dark:text-zinc-400 mt-1">
+                        <p className="text-muted-foreground mt-1">
                           Yield: {recipe.yield_quantity} {recipe.yield_unit}
                         </p>
-                        <p className="text-sm text-zinc-400 dark:text-zinc-500 mt-1">
+                        <p className="text-sm text-muted-foreground mt-1">
                           Based on: {recipe.root_id
                             ? (allRecipes?.find((r) => r.id === recipe.root_id)?.name || `Recipe #${recipe.root_id}`)
                             : 'N/A'}
                         </p>
-                        <p className="text-sm text-zinc-400 dark:text-zinc-500 mt-0.5">
+                        <p className="text-sm text-muted-foreground mt-0.5">
                           Version: {recipe.version}
                         </p>
                       </div>
@@ -314,14 +314,14 @@ export function OverviewTab() {
                     {/* Allergens */}
                     {allergens.length > 0 && (
                       <div className="flex flex-wrap items-center gap-1.5 mt-2">
-                        <span className="text-xs font-medium text-zinc-500">Allergens:</span>
+                        <span className="text-xs font-medium text-muted-foreground">Allergens:</span>
                         {allergens.map((allergen) => (
                           <Badge key={allergen.id} variant="warning">{allergen.name}</Badge>
                         ))}
                       </div>
                     )}
 
-                    <div className="mt-4 space-y-1 text-sm text-zinc-500 dark:text-zinc-400">
+                    <div className="mt-4 space-y-1 text-sm text-muted-foreground">
                       <div>
                         Created: {new Date(recipe.created_at).toLocaleDateString()}
                         {recipe.updated_at !== recipe.created_at && (
@@ -332,12 +332,12 @@ export function OverviewTab() {
                       </div>
                       {recipe.created_by && (
                         <div>
-                          Created by: <span className="font-medium text-zinc-600 dark:text-zinc-300">{creator?.username || '-'}</span>
+                          Created by: <span className="font-medium text-foreground">{creator?.username || '-'}</span>
                         </div>
                       )}
                       {recipe.owner_id && (
                         <div>
-                          Owner: <span className="font-medium text-zinc-600 dark:text-zinc-300">{owner?.username || '-'}</span>
+                          Owner: <span className="font-medium text-foreground">{owner?.username || '-'}</span>
                         </div>
                       )}
                     </div>
@@ -349,7 +349,7 @@ export function OverviewTab() {
             {/* Category Section */}
             <Card className="mb-6">
               <CardContent className="p-6">
-                <h2 className="text-lg font-semibold mb-4 text-zinc-900 dark:text-zinc-100">
+                <h2 className="text-lg font-semibold mb-4 text-foreground">
                   Category
                 </h2>
                 <div className="space-y-4">
@@ -386,7 +386,7 @@ export function OverviewTab() {
                         ) : null;
                       })
                     ) : (
-                      <p className="text-sm text-zinc-400 dark:text-zinc-500 italic">
+                      <p className="text-sm text-muted-foreground italic">
                         No categories added yet
                       </p>
                     )}
@@ -406,7 +406,7 @@ export function OverviewTab() {
 
                       {/* Dropdown Menu */}
                       {isTagDropdownOpen && (
-                        <div className="absolute top-full left-0 mt-2 bg-white dark:bg-zinc-800 border border-[hsl(var(--border))] rounded-lg shadow-lg z-50 min-w-48">
+                        <div className="absolute top-full left-0 mt-2 bg-card border border-[hsl(var(--border))] rounded-lg shadow-lg z-50 min-w-48">
                           {allCategories.length > 0 ? (
                             <>
                               {/* Search Input */}
@@ -442,7 +442,7 @@ export function OverviewTab() {
                                         setIsTagDropdownOpen(false);
                                       }}
                                       disabled={isAddingTag}
-                                      className="w-full text-left px-4 py-2 hover:bg-[hsl(var(--primary)/0.1)] dark:hover:bg-[hsl(var(--primary)/0.15)] text-sm text-zinc-900 dark:text-zinc-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                      className="w-full text-left px-4 py-2 hover:bg-[hsl(var(--primary)/0.1)] dark:hover:bg-[hsl(var(--primary)/0.15)] text-sm text-foreground transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
                                       {category.name}
                                     </button>
@@ -465,7 +465,7 @@ export function OverviewTab() {
                                       + Create &ldquo;{tagSearchFilter}&rdquo;
                                     </button>
                                   ) : (
-                                    <div className="px-4 py-3 text-center text-sm text-zinc-500 dark:text-zinc-400">
+                                    <div className="px-4 py-3 text-center text-sm text-muted-foreground">
                                       All categories added
                                     </div>
                                   )
@@ -473,7 +473,7 @@ export function OverviewTab() {
                               </div>
                             </>
                           ) : (
-                            <div className="px-4 py-3 text-center text-sm text-zinc-500 dark:text-zinc-400">
+                            <div className="px-4 py-3 text-center text-sm text-muted-foreground">
                               No categories available
                             </div>
                           )}
@@ -490,7 +490,7 @@ export function OverviewTab() {
               <CardContent className="p-6">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1">
-                    <h2 className="text-lg font-semibold mb-4 text-zinc-900 dark:text-zinc-100">
+                    <h2 className="text-lg font-semibold mb-4 text-foreground">
                       Description
                     </h2>
                     {isEditingDescription ? (
@@ -527,11 +527,11 @@ export function OverviewTab() {
                     ) : (
                       <div>
                         {recipe?.description ? (
-                          <p className="text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap">
+                          <p className="text-foreground whitespace-pre-wrap">
                             {recipe.description}
                           </p>
                         ) : (
-                          <p className="text-zinc-400 dark:text-zinc-500 italic">
+                          <p className="text-muted-foreground italic">
                             No description added yet
                           </p>
                         )}
@@ -556,7 +556,7 @@ export function OverviewTab() {
               {/* Ingredients Card */}
               <Card>
                 <CardContent className="p-6">
-                  <h2 className="text-lg font-semibold mb-4 text-zinc-900 dark:text-zinc-100">
+                  <h2 className="text-lg font-semibold mb-4 text-foreground">
                     Ingredients
                   </h2>
 
@@ -565,21 +565,21 @@ export function OverviewTab() {
                       {ingredients.map((ri) => (
                         <li
                           key={ri.id}
-                          className="flex items-center justify-between py-2 border-b border-zinc-100 dark:border-zinc-800 last:border-0"
+                          className="flex items-center justify-between py-2 border-b border-border last:border-0"
                         >
                           <div>
-                            <span className="font-medium text-zinc-900 dark:text-zinc-100">
+                            <span className="font-medium text-foreground">
                               {ri.ingredient?.name || `Ingredient #${ri.ingredient_id}`}
                             </span>
                           </div>
-                          <span className="text-zinc-500 dark:text-zinc-400">
+                          <span className="text-muted-foreground">
                             {ri.quantity} {ri.unit}
                           </span>
                         </li>
                       ))}
                     </ul>
                   ) : (
-                    <p className="text-zinc-400 dark:text-zinc-500">
+                    <p className="text-muted-foreground">
                       No ingredients added yet
                     </p>
                   )}
@@ -589,7 +589,7 @@ export function OverviewTab() {
               {/* Sub Recipes Card */}
               <Card>
                 <CardContent className="p-6">
-                  <h2 className="text-lg font-semibold mb-4 text-zinc-900 dark:text-zinc-100">
+                  <h2 className="text-lg font-semibold mb-4 text-foreground">
                     Sub Recipes
                   </h2>
 
@@ -600,21 +600,21 @@ export function OverviewTab() {
                         .map((sr) => (
                           <li
                             key={sr.id}
-                            className="flex items-center justify-between py-2 border-b border-zinc-100 dark:border-zinc-800 last:border-0"
+                            className="flex items-center justify-between py-2 border-b border-border last:border-0"
                           >
                             <div>
-                              <span className="font-medium text-zinc-900 dark:text-zinc-100">
+                              <span className="font-medium text-foreground">
                                 {recipeMap.get(sr.child_recipe_id) || `Recipe #${sr.child_recipe_id}`}
                               </span>
                             </div>
-                            <span className="text-zinc-500 dark:text-zinc-400">
+                            <span className="text-muted-foreground">
                               {sr.quantity} {sr.unit}
                             </span>
                           </li>
                         ))}
                     </ul>
                   ) : (
-                    <p className="text-zinc-400 dark:text-zinc-500">
+                    <p className="text-muted-foreground">
                       No sub-recipes added yet
                     </p>
                   )}
@@ -624,29 +624,29 @@ export function OverviewTab() {
               {/* Costing Card */}
               <Card>
                 <CardContent className="p-6">
-                  <h2 className="text-lg font-semibold mb-4 text-zinc-900 dark:text-zinc-100">
+                  <h2 className="text-lg font-semibold mb-4 text-foreground">
                     Costing
                   </h2>
 
                   {costing ? (
                     <div className="space-y-4">
-                      <div className="flex justify-between items-center py-2 border-b border-zinc-100 dark:border-zinc-800">
-                        <span className="text-zinc-500 dark:text-zinc-400">Batch Cost</span>
-                        <span className="font-semibold text-zinc-900 dark:text-zinc-100">
+                      <div className="flex justify-between items-center py-2 border-b border-border">
+                        <span className="text-muted-foreground">Batch Cost</span>
+                        <span className="font-semibold text-foreground">
                           {formatCurrency(costing.total_batch_cost)}
                         </span>
                       </div>
 
-                      <div className="flex justify-between items-center py-2 border-b border-zinc-100 dark:border-zinc-800">
-                        <span className="text-zinc-500 dark:text-zinc-400">Cost per Portion</span>
-                        <span className="font-semibold text-xl text-zinc-900 dark:text-zinc-100">
+                      <div className="flex justify-between items-center py-2 border-b border-border">
+                        <span className="text-muted-foreground">Cost per Portion</span>
+                        <span className="font-semibold text-xl text-foreground">
                           {formatCurrency(costing.cost_per_portion)}
                         </span>
                       </div>
 
                       {recipe.selling_price_est && costing.cost_per_portion && (
                         <div className="flex justify-between items-center py-2">
-                          <span className="text-zinc-500 dark:text-zinc-400">Margin</span>
+                          <span className="text-muted-foreground">Margin</span>
                           <span className="font-semibold text-green-600 dark:text-green-400">
                             {((1 - costing.cost_per_portion / recipe.selling_price_est) * 100).toFixed(1)}%
                           </span>
@@ -654,7 +654,7 @@ export function OverviewTab() {
                       )}
                     </div>
                   ) : (
-                    <p className="text-zinc-400 dark:text-zinc-500">
+                    <p className="text-muted-foreground">
                       No costing data available
                     </p>
                   )}
@@ -665,7 +665,7 @@ export function OverviewTab() {
             {/* Instructions Card */}
             <Card>
               <CardContent className="p-6">
-                <h2 className="text-lg font-semibold mb-4 text-zinc-900 dark:text-zinc-100">
+                <h2 className="text-lg font-semibold mb-4 text-foreground">
                   Instructions
                 </h2>
 
@@ -673,12 +673,12 @@ export function OverviewTab() {
                   <ol className="space-y-4">
                     {recipe.instructions_structured.steps.map((step, index) => (
                       <li key={index} className="flex gap-4">
-                        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800 text-sm font-medium text-zinc-600 dark:text-zinc-400">
+                        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-secondary text-sm font-medium text-muted-foreground">
                           {step.order || index + 1}
                         </span>
                         <div className="flex-1 pt-0.5">
-                          <p className="text-zinc-700 dark:text-zinc-300">{step.text}</p>
-                          <div className="mt-2 flex items-center gap-4 text-sm text-zinc-500 dark:text-zinc-400">
+                          <p className="text-foreground">{step.text}</p>
+                          <div className="mt-2 flex items-center gap-4 text-sm text-muted-foreground">
                             {step.timer_seconds && (
                               <span className="flex items-center gap-1">
                                 <Clock className="h-4 w-4" />
@@ -698,12 +698,12 @@ export function OverviewTab() {
                   </ol>
                 ) : recipe.instructions_raw ? (
                   <div className="prose prose-zinc dark:prose-invert max-w-none">
-                    <p className="whitespace-pre-wrap text-zinc-700 dark:text-zinc-300">
+                    <p className="whitespace-pre-wrap text-foreground">
                       {recipe.instructions_raw}
                     </p>
                   </div>
                 ) : (
-                  <p className="text-zinc-400 dark:text-zinc-500">
+                  <p className="text-muted-foreground">
                     No instructions added yet
                   </p>
                 )}
@@ -715,7 +715,7 @@ export function OverviewTab() {
               <CardContent className="p-6">
                 <div className="flex items-center gap-2 mb-4">
                   <Wine className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-                  <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+                  <h2 className="text-lg font-semibold text-foreground">
                     Tasting History
                   </h2>
                 </div>
@@ -723,9 +723,9 @@ export function OverviewTab() {
                 {tastingSummary && tastingSummary.total_tastings > 0 && tastingNotes && tastingNotes.length > 0 ? (
                   <div className="space-y-4">
                     {/* Summary Section - AI Generated */}
-                    <div className="p-4 rounded-lg bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700">
+                    <div className="p-4 rounded-lg bg-secondary border border-border">
                       <div className="flex items-center justify-between mb-3">
-                        <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Feedback Summary</p>
+                        <p className="text-sm font-semibold text-foreground">Feedback Summary</p>
                         {(canEditRecipe || userType === 'admin') && (
                           <button
                             onClick={() => { summaryForRecipeIdRef.current = selectedRecipeId; summarizeFeedback(selectedRecipeId!); }}
@@ -739,20 +739,20 @@ export function OverviewTab() {
                       </div>
                       {isSummarizingFeedback ? (
                         <div className="space-y-2">
-                          <div className="h-4 bg-zinc-200 dark:bg-zinc-700 rounded animate-pulse" />
-                          <div className="h-4 bg-zinc-200 dark:bg-zinc-700 rounded animate-pulse w-5/6" />
-                          <div className="h-4 bg-zinc-200 dark:bg-zinc-700 rounded animate-pulse w-4/6" />
+                          <div className="h-4 bg-muted rounded animate-pulse" />
+                          <div className="h-4 bg-muted rounded animate-pulse w-5/6" />
+                          <div className="h-4 bg-muted rounded animate-pulse w-4/6" />
                         </div>
                       ) : feedbackSummaryError ? (
-                        <p className="text-sm text-zinc-600 dark:text-zinc-300 italic">
+                        <p className="text-sm text-muted-foreground italic">
                           Unable to generate summary. Please try again.
                         </p>
                       ) : recipe?.summary_feedback ? (
-                        <p className="text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed">
+                        <p className="text-sm text-foreground leading-relaxed">
                           {recipe.summary_feedback}
                         </p>
                       ) : (
-                        <p className="text-sm text-zinc-600 dark:text-zinc-400 italic">
+                        <p className="text-sm text-muted-foreground italic">
                           No summary generated yet.
                         </p>
                       )}
@@ -762,32 +762,32 @@ export function OverviewTab() {
                     <div>
                       <button
                         onClick={() => setIsFeedbacksOpen(!isFeedbacksOpen)}
-                        className="w-full flex items-center justify-between p-3 rounded-lg bg-zinc-50 dark:bg-zinc-800/50 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                        className="w-full flex items-center justify-between p-3 rounded-lg bg-secondary hover:bg-muted transition-colors"
                       >
-                        <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                        <span className="text-sm font-semibold text-foreground">
                           Feedbacks ({tastingNotes?.length || 0})
                         </span>
                         <ChevronDown
-                          className={`h-5 w-5 text-zinc-500 transition-transform ${isFeedbacksOpen ? 'rotate-180' : ''
+                          className={`h-5 w-5 text-muted-foreground transition-transform ${isFeedbacksOpen ? 'rotate-180' : ''
                             }`}
                         />
                       </button>
 
                       {isFeedbacksOpen && (
-                        <div className="mt-3 space-y-3 pl-3 border-l-2 border-zinc-200 dark:border-zinc-700">
+                        <div className="mt-3 space-y-3 pl-3 border-l-2 border-border">
                           {tastingNotes?.map((note) => {
                             const config = note.decision ? DECISION_CONFIG[note.decision] : null;
                             const Icon = config?.icon;
                             return (
                               <div
                                 key={note.id}
-                                className="flex items-start gap-3 p-3 rounded-lg bg-zinc-50 dark:bg-zinc-800/50"
+                                className="flex items-start gap-3 p-3 rounded-lg bg-secondary"
                               >
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-center gap-2 mb-1">
                                     <Link
                                       href={`/tastings/${note.session_id}`}
-                                      className="text-sm font-medium text-zinc-900 dark:text-zinc-100 hover:text-purple-600 dark:hover:text-purple-400"
+                                      className="text-sm font-medium text-foreground hover:text-purple-600 dark:hover:text-purple-400"
                                     >
                                       {note.session_name}
                                     </Link>
@@ -798,7 +798,7 @@ export function OverviewTab() {
                                       </Badge>
                                     )}
                                   </div>
-                                  <div className="flex items-center gap-3 text-sm text-zinc-500 dark:text-zinc-400">
+                                  <div className="flex items-center gap-3 text-sm text-muted-foreground">
                                     {note.session_date && (
                                       <span>{formatTastingDate(note.session_date)}</span>
                                     )}
@@ -807,7 +807,7 @@ export function OverviewTab() {
                                     )}
                                   </div>
                                   {note.feedback && (
-                                    <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-300">
+                                    <p className="mt-2 text-sm text-muted-foreground">
                                       &ldquo;{note.feedback}&rdquo;
                                     </p>
                                   )}
@@ -821,8 +821,8 @@ export function OverviewTab() {
                   </div>
                 ) : (
                   <div className="text-center py-8">
-                    <Wine className="h-8 w-8 mx-auto mb-2 text-zinc-300 dark:text-zinc-600" />
-                    <p className="text-zinc-400 dark:text-zinc-500">
+                    <Wine className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+                    <p className="text-muted-foreground">
                       No tastings recorded yet
                     </p>
                     <Link href="/tastings/new" className="mt-2 inline-block">

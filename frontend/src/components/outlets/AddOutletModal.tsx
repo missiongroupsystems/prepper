@@ -70,7 +70,7 @@ export function AddOutletModal({ isOpen, onClose }: AddOutletModalProps) {
     <Modal isOpen={isOpen} onClose={onClose} title="Add New Outlet">
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1">
+          <label className="block text-xs font-medium text-muted-foreground mb-1">
             Outlet Name *
           </label>
           <Input
@@ -81,7 +81,7 @@ export function AddOutletModal({ isOpen, onClose }: AddOutletModalProps) {
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1">
+          <label className="block text-xs font-medium text-muted-foreground mb-1">
             Code *
           </label>
           <Input
@@ -92,7 +92,7 @@ export function AddOutletModal({ isOpen, onClose }: AddOutletModalProps) {
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1">
+          <label className="block text-xs font-medium text-muted-foreground mb-1">
             Outlet Type
           </label>
           <Select
@@ -103,13 +103,13 @@ export function AddOutletModal({ isOpen, onClose }: AddOutletModalProps) {
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1">
+          <label className="block text-xs font-medium text-muted-foreground mb-1">
             Parent Outlet (optional)
           </label>
           <select
             value={parentOutletId}
             onChange={(e) => setParentOutletId(e.target.value)}
-            className="w-full px-3 py-2 border border-zinc-200 dark:border-zinc-700 rounded-md bg-white dark:bg-zinc-950 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-input rounded-md bg-card text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="">-- None --</option>
             {allOutlets
@@ -123,7 +123,7 @@ export function AddOutletModal({ isOpen, onClose }: AddOutletModalProps) {
         </div>
 
         {/* Footer */}
-        <div className="flex justify-end gap-3 pt-4 border-t border-zinc-200 dark:border-zinc-700">
+        <div className="flex justify-end gap-3 pt-4 border-t border-border">
           <Button type="button" variant="outline" onClick={onClose}>
             Cancel
           </Button>

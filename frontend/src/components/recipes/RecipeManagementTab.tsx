@@ -235,7 +235,7 @@ export function RecipeManagementTab() {
   if (error) {
     return (
       <div className="p-6">
-        <div className="rounded-lg bg-red-50 dark:bg-red-950 p-4 text-red-600 dark:text-red-400">
+        <div className="rounded-lg bg-destructive/10 p-4 text-destructive">
           Failed to load recipes. Please try again.
         </div>
       </div>
@@ -322,10 +322,10 @@ export function RecipeManagementTab() {
         {/* Empty State */}
         {!isLoading && filteredRecipes.length === 0 && (
           <div className="text-center py-12">
-            <p className="text-zinc-500 dark:text-zinc-400">
+            <p className="text-muted-foreground">
               {search ? 'No dishes match your search' : 'No dishes yet'}
             </p>
-            <p className="text-sm text-zinc-400 dark:text-zinc-500 mt-2">
+            <p className="text-sm text-muted-foreground mt-2">
               Create your first dish in the Canvas
             </p>
           </div>

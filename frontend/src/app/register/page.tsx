@@ -100,7 +100,7 @@ export default function RegisterPage() {
         <CardContent>
           <form onSubmit={handleRegister} className="space-y-4">
             <div className="space-y-2">
-              <label htmlFor="name" className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+              <label htmlFor="name" className="text-sm font-medium text-muted-foreground">
                 Name
               </label>
               <Input
@@ -113,7 +113,7 @@ export default function RegisterPage() {
               />
             </div>
             <div className="space-y-2">
-              <label htmlFor="email" className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+              <label htmlFor="email" className="text-sm font-medium text-muted-foreground">
                 Email
               </label>
               <Input
@@ -126,7 +126,7 @@ export default function RegisterPage() {
               />
             </div>
             <div className="space-y-2">
-              <label htmlFor="phone" className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+              <label htmlFor="phone" className="text-sm font-medium text-muted-foreground">
                 Phone Number (optional)
               </label>
               <Input
@@ -138,7 +138,7 @@ export default function RegisterPage() {
               />
             </div>
             <div className="space-y-2">
-              <label htmlFor="password" className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+              <label htmlFor="password" className="text-sm font-medium text-muted-foreground">
                 Password
               </label>
               <Input
@@ -151,7 +151,7 @@ export default function RegisterPage() {
               />
             </div>
             <div className="space-y-2">
-              <label htmlFor="confirmPassword" className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+              <label htmlFor="confirmPassword" className="text-sm font-medium text-muted-foreground">
                 Confirm Password
               </label>
               <Input
@@ -172,9 +172,9 @@ export default function RegisterPage() {
               {isLoading ? 'Creating account...' : 'Create account'}
             </Button>
           </form>
-          <p className="mt-4 text-center text-sm text-zinc-600 dark:text-zinc-400">
+          <p className="mt-4 text-center text-sm text-muted-foreground">
             Already have an account?{' '}
-            <Link href="/login" className="font-medium text-zinc-900 hover:underline dark:text-zinc-100">
+            <Link href="/login" className="font-medium text-foreground hover:underline">
               Login
             </Link>
           </p>

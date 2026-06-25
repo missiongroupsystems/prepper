@@ -99,7 +99,7 @@ export function RecipeImageCarousel({ recipeId, recipeName, ingredients }: Recip
   return (
     <div className="space-y-4">
       {/* Carousel */}
-      <div className="relative bg-zinc-100 dark:bg-zinc-800 rounded-lg overflow-hidden mx-auto max-w-sm max-h-96">
+      <div className="relative bg-secondary rounded-lg overflow-hidden mx-auto max-w-sm max-h-96">
         {hasImages ? (
           <>
             <Image
@@ -143,7 +143,7 @@ export function RecipeImageCarousel({ recipeId, recipeName, ingredients }: Recip
             )}
           </>
         ) : (
-          <div className="w-full aspect-square flex items-center justify-center text-zinc-400">
+          <div className="w-full aspect-square flex items-center justify-center text-muted-foreground">
             <div className="text-center">
               <ImagePlus className="h-12 w-12 mx-auto mb-2" />
               <p className="text-sm">No images yet</p>
@@ -154,7 +154,7 @@ export function RecipeImageCarousel({ recipeId, recipeName, ingredients }: Recip
 
       {/* Image counter and action buttons */}
       {hasImages && (
-        <div className="flex items-center justify-between text-sm text-zinc-600 dark:text-zinc-400">
+        <div className="flex items-center justify-between text-sm text-muted-foreground">
           <span>
             {validIndex + 1} of {images.length}
           </span>

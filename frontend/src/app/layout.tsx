@@ -32,8 +32,8 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        {/* Adobe Typekit - Primary fonts */}
-        <link rel="stylesheet" href="https://use.typekit.net/syo6zfp.css" />
+        {/* Adobe Typekit - Polymath (single brand family; Euclid Circular B stand-in) */}
+        <link rel="stylesheet" href="https://use.typekit.net/weg5tjh.css" />
         {/* Prevent FOUC: apply theme class before first paint (critical for mobile) */}
         <script
           dangerouslySetInnerHTML={{
