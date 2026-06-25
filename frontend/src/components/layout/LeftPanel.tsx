@@ -182,7 +182,7 @@ export function LeftPanel() {
     <aside className="flex h-full w-72 flex-col border-r border-border bg-secondary">
       {/* Header */}
       <div className="flex items-center justify-between border-b border-border px-4 py-3">
-        <h2 className="font-semibold text-foreground">Dishes</h2>
+        <h2 className="font-medium text-foreground">Dishes</h2>
         <Button size="sm" onClick={handleCreate} disabled={createRecipe.isPending}>
           <Plus className="h-4 w-4" />
           New

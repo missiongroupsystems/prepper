@@ -23,7 +23,7 @@ export function DishFeedbackModal({ dishName, notes, onClose }: DishFeedbackModa
         {/* Header */}
         <div className="shrink-0 flex items-center justify-between border-b border-border px-4 py-3">
           <div>
-            <h3 className="text-sm font-semibold text-foreground truncate pr-4">
+            <h3 className="text-sm font-medium text-foreground truncate pr-4">
               {dishName || 'Unnamed dish'}
             </h3>
             <p className="text-[11px] text-muted-foreground">Tasting feedback</p>

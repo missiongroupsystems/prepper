@@ -65,7 +65,7 @@ export function CommentsPanel({ sections, itemsBySection, commentsByItemId }: Co
     <div className="flex h-full flex-col border-l border-border bg-card">
       {/* Header */}
       <div className="shrink-0 border-b border-border px-4 py-3 space-y-2">
-        <h3 className="text-sm font-semibold text-foreground">Comments</h3>
+        <h3 className="text-sm font-medium text-foreground">Comments</h3>
         <label className="flex cursor-pointer items-center gap-2">
           <input
             type="checkbox"
@@ -91,7 +91,7 @@ export function CommentsPanel({ sections, itemsBySection, commentsByItemId }: Co
 
           return (
             <div key={item.id} className="space-y-1.5">
-              <p className="truncate text-xs font-semibold text-foreground">
+              <p className="truncate text-xs font-medium text-foreground">
                 {item.recipe_name || 'Unnamed dish'}
               </p>
 

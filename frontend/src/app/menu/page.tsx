@@ -57,7 +57,7 @@ export default function MenuPage() {
               >
                 <div>
                   <div className="flex items-center gap-2">
-                    <h3 className="font-semibold truncate">{sketch.name || 'Untitled'}</h3>
+                    <h3 className="font-medium truncate">{sketch.name || 'Untitled'}</h3>
                     <Badge variant="secondary" className="shrink-0">
                       v{sketch.version}
                     </Badge>

@@ -228,11 +228,11 @@ export default function SupplierPage({ params }: SupplierPageProps) {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1">
-                        <h1 className="text-2xl font-bold text-foreground">
+                        <h1 className="text-2xl font-medium text-foreground">
                           <EditableCell
                             value={supplier.name}
                             onSave={(value) => handleUpdateSupplier({ name: value })}
-                            className="text-2xl font-bold"
+                            className="text-2xl font-medium"
                           />
                         </h1>
                       </div>
@@ -325,7 +325,7 @@ export default function SupplierPage({ params }: SupplierPageProps) {
               <CardContent className="p-6">
                 <div className="flex items-center gap-2 mb-4">
                   <Package className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-                  <h2 className="text-lg font-semibold text-foreground">
+                  <h2 className="text-lg font-medium text-foreground">
                     Ingredients
                   </h2>
                 </div>

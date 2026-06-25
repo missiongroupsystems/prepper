@@ -147,7 +147,7 @@ export function NotesEditor({ initialContent, onChange, onSave }: NotesEditorPro
             className="relative z-10 w-full max-w-sm rounded-lg border border-border bg-card p-4 shadow-xl"
           >
             <div className="mb-3 flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-foreground">Insert link</h3>
+              <h3 className="text-sm font-medium text-foreground">Insert link</h3>
               <button
                 type="button"
                 onClick={() => setLinkModalOpen(false)}

@@ -14,7 +14,7 @@ export function PageHeader({ title, description, children, className }: PageHead
     <div className={cn('mb-6', className)}>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">
+          <h1 className="text-2xl font-medium text-foreground">
             {title}
           </h1>
           {description && (

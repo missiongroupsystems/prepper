@@ -162,7 +162,7 @@ function AllergensSection({ ingredientId }: AllergensSectionProps) {
   return (
     <Card>
       <CardContent className="pt-6">
-        <h3 className="font-semibold mb-4">Allergens</h3>
+        <h3 className="font-medium mb-4">Allergens</h3>
 
         {/* Allergens Table */}
         {ingredientAllergens.length > 0 ? (
@@ -513,11 +513,11 @@ export default function IngredientPage({ params }: IngredientPageProps) {
                 <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1">
-                        <h1 className="text-2xl font-bold text-foreground">
+                        <h1 className="text-2xl font-medium text-foreground">
                           <EditableCell
                             value={ingredient.name}
                             onSave={(value) => handleUpdateIngredient({ name: value })}
-                            className="text-2xl font-bold"
+                            className="text-2xl font-medium"
                           />
                         </h1>
                       </div>
@@ -639,7 +639,7 @@ export default function IngredientPage({ params }: IngredientPageProps) {
               <CardContent className="p-6">
                 <div className="flex items-center gap-2 mb-4">
                   <Truck className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-                  <h2 className="text-lg font-semibold text-foreground">
+                  <h2 className="text-lg font-medium text-foreground">
                     Suppliers
                   </h2>
                 </div>

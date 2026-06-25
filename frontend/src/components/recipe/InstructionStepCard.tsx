@@ -104,7 +104,7 @@ export function InstructionStepCard({
           </button>
         )}
 
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-secondary text-sm font-semibold">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-secondary text-sm font-medium">
           {stepNumber}
         </div>
 

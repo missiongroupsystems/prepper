@@ -37,7 +37,7 @@ function EmptyState() {
       <div className="rounded-full bg-muted p-6">
         <ChefHat className="h-12 w-12 text-muted-foreground" />
       </div>
-      <h2 className="mt-6 text-xl font-semibold text-foreground">No recipe selected</h2>
+      <h2 className="mt-6 text-xl font-medium text-foreground">No recipe selected</h2>
       <p className="mt-2 max-w-sm text-muted-foreground">
         Select a recipe from the left panel or create a new one to get started.
       </p>

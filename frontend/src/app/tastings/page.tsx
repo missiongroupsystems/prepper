@@ -208,7 +208,7 @@ export default function TastingsPage() {
           <div className="mb-8">
             <div className="flex items-center gap-2 mb-4">
               <Clock className="h-5 w-5 text-purple-500" />
-              <h2 className="text-lg font-semibold text-foreground">
+              <h2 className="text-lg font-medium text-foreground">
                 Upcoming & Today
               </h2>
               <span className="text-sm text-muted-foreground">
@@ -228,7 +228,7 @@ export default function TastingsPage() {
           <div>
             <div className="flex items-center gap-2 mb-4">
               <History className="h-5 w-5 text-muted-foreground" />
-              <h2 className="text-lg font-semibold text-foreground">
+              <h2 className="text-lg font-medium text-foreground">
                 Past Sessions
               </h2>
               <span className="text-sm text-muted-foreground">

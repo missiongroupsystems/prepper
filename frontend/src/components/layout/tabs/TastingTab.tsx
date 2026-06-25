@@ -35,7 +35,7 @@ function TastingNoteCard({ note }: { note: TastingNoteWithRecipe }) {
 
           {note.feedback && (
             <div className="mb-3">
-              <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">
+              <div className="text-xs font-medium text-muted-foreground mb-1">
                 Feedback
               </div>
               <p className="text-sm text-muted-foreground">{note.feedback}</p>
@@ -44,7 +44,7 @@ function TastingNoteCard({ note }: { note: TastingNoteWithRecipe }) {
 
           {note.action_items && (
             <div>
-              <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">
+              <div className="text-xs font-medium text-muted-foreground mb-1">
                 Action Items
               </div>
               <p className="text-sm text-muted-foreground">{note.action_items}</p>
@@ -141,7 +141,7 @@ export function TastingTab() {
   return (
     <div className="flex-1 overflow-auto bg-background">
       <div className="p-6 max-w-2xl mx-auto">
-        <h2 className="text-lg font-semibold mb-4 text-foreground">
+        <h2 className="text-lg font-medium mb-4 text-foreground">
           Tasting Notes
         </h2>
         <TastingNotesList recipeId={recipe.id} />

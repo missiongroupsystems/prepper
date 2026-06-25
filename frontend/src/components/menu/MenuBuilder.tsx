@@ -934,7 +934,7 @@ export function MenuBuilder({ mode, menu }: MenuBuilderProps) {
       {/* Sections */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="font-semibold">Sections (drag to reorder)</h3>
+          <h3 className="font-medium">Sections (drag to reorder)</h3>
           <div className="flex gap-2">
             <div className="flex items-center gap-1 border border-border rounded-md p-1">
               <Button

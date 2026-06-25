@@ -543,7 +543,7 @@ export default function IngredientTastingPage() {
         <div className="mb-8">
           <div className="flex items-center gap-2 mb-2">
             <Droplet className="h-6 w-6 text-amber-500" />
-            <h1 className="text-2xl font-bold text-foreground">{ingredient.name}</h1>
+            <h1 className="text-2xl font-medium text-foreground">{ingredient.name}</h1>
           </div>
           <p className="text-sm text-muted-foreground mb-2">{session.name}</p>
           <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground mb-3">
@@ -587,7 +587,7 @@ export default function IngredientTastingPage() {
 
         {/* Feedback Section */}
         <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-foreground">
+          <h2 className="text-lg font-medium text-foreground">
             Feedback ({ingredientNotes.length})
           </h2>
           {!showAddForm && isInvited && (

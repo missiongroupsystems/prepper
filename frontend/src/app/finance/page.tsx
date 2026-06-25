@@ -32,7 +32,7 @@ export default function FinancePage() {
             <div className="flex items-start gap-3">
               <Building2 className="h-5 w-5 text-amber-600 dark:text-amber-500 mt-0.5" />
               <div>
-                <h3 className="font-semibold text-amber-800 dark:text-amber-300">
+                <h3 className="font-medium text-amber-800 dark:text-amber-300">
                   Atlas Integration Required
                 </h3>
                 <p className="text-sm text-amber-700 dark:text-amber-400 mt-1">
@@ -51,7 +51,7 @@ export default function FinancePage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Total Sales</p>
-                  <p className="text-2xl font-bold text-muted-foreground mt-1">
+                  <p className="text-2xl font-medium text-muted-foreground mt-1">
                     $--,---
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">
@@ -70,7 +70,7 @@ export default function FinancePage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Total COGS</p>
-                  <p className="text-2xl font-bold text-muted-foreground mt-1">
+                  <p className="text-2xl font-medium text-muted-foreground mt-1">
                     $--,---
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">
@@ -89,7 +89,7 @@ export default function FinancePage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Gross Margin</p>
-                  <p className="text-2xl font-bold text-muted-foreground mt-1">
+                  <p className="text-2xl font-medium text-muted-foreground mt-1">
                     --.-%
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">
@@ -107,7 +107,7 @@ export default function FinancePage() {
         {/* Sales by Recipe Table - Placeholder */}
         <Card className="mb-6">
           <CardContent className="p-6">
-            <h2 className="text-lg font-semibold text-foreground mb-4">
+            <h2 className="text-lg font-medium text-foreground mb-4">
               Sales + COGS by Recipe
             </h2>
 
@@ -166,7 +166,7 @@ export default function FinancePage() {
         {/* Margin Bandwidth Chart - Placeholder */}
         <Card>
           <CardContent className="p-6">
-            <h2 className="text-lg font-semibold text-foreground mb-4">
+            <h2 className="text-lg font-medium text-foreground mb-4">
               Margin Bandwidth
             </h2>
 

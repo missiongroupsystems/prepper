@@ -70,7 +70,7 @@ export function AddItemPanel({
   return (
     <div className="mb-4">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+        <h2 className="text-lg font-medium text-foreground flex items-center gap-2">
           {type === 'recipe' ? (
             <>
               <span className="text-purple-500">🍳</span>

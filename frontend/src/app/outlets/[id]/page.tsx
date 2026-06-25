@@ -276,11 +276,11 @@ export default function OutletPage({ params }: OutletPageProps) {
                 <div className="space-y-6">
                   {/* Outlet Name */}
                   <div>
-                    <h1 className="text-2xl font-bold text-foreground">
+                    <h1 className="text-2xl font-medium text-foreground">
                       <EditableCell
                         value={outlet.name}
                         onSave={(value) => handleUpdateOutlet({ name: value })}
-                        className="text-2xl font-bold"
+                        className="text-2xl font-medium"
                       />
                     </h1>
                   </div>
@@ -393,7 +393,7 @@ export default function OutletPage({ params }: OutletPageProps) {
             <Card>
               <CardContent className="p-6">
                 <div className="flex items-center gap-2 mb-4">
-                  <h2 className="text-lg font-semibold text-foreground">
+                  <h2 className="text-lg font-medium text-foreground">
                     Outlet Recipe
                   </h2>
                 </div>
@@ -635,7 +635,7 @@ export default function OutletPage({ params }: OutletPageProps) {
               <Card>
                 <CardContent className="p-6">
                   <div className="flex items-center gap-2 mb-4">
-                    <h2 className="text-lg font-semibold text-muted-foreground">
+                    <h2 className="text-lg font-medium text-muted-foreground">
                       Recipes from Parent Outlet
                     </h2>
                     <span className="text-xs text-muted-foreground italic">

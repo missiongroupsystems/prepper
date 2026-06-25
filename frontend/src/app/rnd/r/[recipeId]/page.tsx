@@ -330,7 +330,7 @@ function ActionablesList({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-foreground">
+        <h2 className="text-lg font-medium text-foreground">
           Follow Ups ({uncheckedCount} tasks left)
         </h2>
       </div>
@@ -480,7 +480,7 @@ function OverviewTab({
 
             <div className="flex-1 min-w-0">
               <div className="flex-1 min-w-0">
-                <h1 className="text-2xl font-bold text-foreground">
+                <h1 className="text-2xl font-medium text-foreground">
                   {recipe.name}
                 </h1>
                 <p className="text-muted-foreground mt-1">
@@ -562,7 +562,7 @@ function OverviewTab({
         >
           <div className="flex items-center gap-2">
             <ClipboardList className="h-5 w-5 text-amber-600 dark:text-amber-400" />
-            <h2 className="text-lg font-semibold text-foreground">
+            <h2 className="text-lg font-medium text-foreground">
               Follow Ups
             </h2>
           </div>
@@ -600,7 +600,7 @@ function OverviewTab({
         >
           <div className="flex items-center gap-2">
             <Wine className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-            <h2 className="text-lg font-semibold text-foreground">
+            <h2 className="text-lg font-medium text-foreground">
               Tasting History
             </h2>
           </div>
@@ -695,7 +695,7 @@ function OverviewTab({
           onClick={() => setIsMoreInfoOpen(!isMoreInfoOpen)}
           className="w-full p-6 flex items-center justify-between hover:bg-secondary transition-colors"
         >
-          <h2 className="text-lg font-semibold text-foreground">
+          <h2 className="text-lg font-medium text-foreground">
             More Info
           </h2>
           <ChevronDown
@@ -713,7 +713,7 @@ function OverviewTab({
               <div className="grid gap-6 md:grid-cols-3 mb-6">
                 {/* Ingredients Card */}
                 <div>
-                  <h3 className="text-base font-semibold mb-4 text-foreground">
+                  <h3 className="text-base font-medium mb-4 text-foreground">
                     Ingredients
                   </h3>
 
@@ -744,7 +744,7 @@ function OverviewTab({
 
                 {/* Sub Recipes */}
                 <div>
-                  <h3 className="text-base font-semibold mb-4 text-foreground">
+                  <h3 className="text-base font-medium mb-4 text-foreground">
                     Sub Recipes
                   </h3>
 
@@ -777,7 +777,7 @@ function OverviewTab({
 
                 {/* Costing */}
                 <div>
-                  <h3 className="text-base font-semibold mb-4 text-foreground">
+                  <h3 className="text-base font-medium mb-4 text-foreground">
                     Costing
                   </h3>
 
@@ -785,14 +785,14 @@ function OverviewTab({
                     <div className="space-y-4">
                       <div className="flex justify-between items-center py-2 border-b border-border">
                         <span className="text-muted-foreground">Batch Cost</span>
-                        <span className="font-semibold text-foreground">
+                        <span className="font-medium text-foreground">
                           {formatCurrency(costing.total_batch_cost)}
                         </span>
                       </div>
 
                       <div className="flex justify-between items-center py-2 border-b border-border">
                         <span className="text-muted-foreground">Cost per Portion</span>
-                        <span className="font-semibold text-xl text-foreground">
+                        <span className="font-medium text-xl text-foreground">
                           {formatCurrency(costing.cost_per_portion)}
                         </span>
                       </div>
@@ -800,7 +800,7 @@ function OverviewTab({
                       {recipe.selling_price_est && costing.cost_per_portion && (
                         <div className="flex justify-between items-center py-2">
                           <span className="text-muted-foreground">Margin</span>
-                          <span className="font-semibold text-green-600 dark:text-green-400">
+                          <span className="font-medium text-green-600 dark:text-green-400">
                             {((1 - costing.cost_per_portion / recipe.selling_price_est) * 100).toFixed(1)}%
                           </span>
                         </div>
@@ -816,7 +816,7 @@ function OverviewTab({
 
               {/* Instructions */}
               <div className="border-t border-border pt-6">
-                <h3 className="text-base font-semibold mb-4 text-foreground">
+                <h3 className="text-base font-medium mb-4 text-foreground">
                   Instructions
                 </h3>
 
@@ -935,7 +935,7 @@ function VersionsTab({
         {/* Header */}
         <div className="flex items-center gap-2 p-4 border-b border-border">
           <History className="h-5 w-5 text-muted-foreground" />
-          <h2 className="text-lg font-semibold text-foreground">
+          <h2 className="text-lg font-medium text-foreground">
             Iteration History
           </h2>
           <Badge variant="secondary" className="ml-auto">

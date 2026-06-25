@@ -107,7 +107,7 @@ export function OutletsTab({ outlets = [] }: OutletsTabProps) {
     <div className="flex-1 overflow-auto bg-background">
       <div className="p-6 max-w-4xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-foreground">
+          <h2 className="text-lg font-medium text-foreground">
             Associated Outlets
           </h2>
           <Button onClick={() => setIsModalOpen(true)} className="flex items-center gap-2">

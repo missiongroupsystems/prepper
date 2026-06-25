@@ -70,7 +70,7 @@ export function DishCommentsModal({ itemId, dishName, comments, onClose }: DishC
           {/* Header */}
           <div className="shrink-0 border-b border-border px-4 py-3 space-y-2">
             <div className="flex items-center justify-between">
-              <h3 className="truncate pr-4 text-sm font-semibold text-foreground">
+              <h3 className="truncate pr-4 text-sm font-medium text-foreground">
                 {dishName || 'Unnamed dish'}
               </h3>
               <button

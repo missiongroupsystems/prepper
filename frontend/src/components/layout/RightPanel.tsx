@@ -180,7 +180,7 @@ function DraggableRecipeCard({
             {recipe.name}
           </h3>
           {isCurrentRecipe && (
-            <span className="text-[10px] font-medium uppercase text-muted-foreground shrink-0">current</span>
+            <span className="text-[10px] font-medium text-muted-foreground shrink-0">current</span>
           )}
         </div>
         <div className="flex items-center gap-1.5 mt-0.5">
@@ -459,7 +459,7 @@ export function RightPanel({ outlets }: RightPanelProps) {
       {/* Header */}
       {!isCollapsed && (
         <div className="flex items-center justify-between border-b border-border px-3 py-2.5">
-          <h2 className="text-sm font-semibold text-foreground">Library</h2>
+          <h2 className="text-sm font-medium text-foreground">Library</h2>
           <div className="flex items-center gap-1">
             <div className="flex items-center gap-1.5 mr-1">
               <Switch
@@ -624,7 +624,7 @@ export function RightPanel({ outlets }: RightPanelProps) {
             {showIngredients && (
               <div>
                 {activeTab === 'all' && (
-                  <h3 className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground px-1">Ingredients</h3>
+                  <h3 className="mb-1.5 text-[11px] font-medium text-muted-foreground px-1">Ingredients</h3>
                 )}
                 {filteredIngredients.length === 0 ? (
                   <div className="px-1">
@@ -678,7 +678,7 @@ export function RightPanel({ outlets }: RightPanelProps) {
             {showRecipes && (
               <div>
                 {activeTab === 'all' && (
-                  <h3 className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground px-1">Items</h3>
+                  <h3 className="mb-1.5 text-[11px] font-medium text-muted-foreground px-1">Items</h3>
                 )}
                 {filteredRecipes.length === 0 ? (
                   <p className="text-xs text-muted-foreground px-1">

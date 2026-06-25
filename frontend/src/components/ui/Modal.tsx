@@ -116,7 +116,7 @@ export function Modal({
         <div className="flex items-start justify-between mb-6">
           <h2
             id="modal-title"
-            className="text-lg font-semibold text-foreground"
+            className="text-lg font-medium text-foreground"
           >
             {title}
           </h2>

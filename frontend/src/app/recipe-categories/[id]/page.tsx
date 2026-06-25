@@ -140,11 +140,11 @@ export default function RecipeCategoryPage({ params }: RecipeCategoryPageProps) 
                 <div className="space-y-6">
                   {/* Category Name */}
                   <div>
-                    <h1 className="text-2xl font-bold text-foreground">
+                    <h1 className="text-2xl font-medium text-foreground">
                       <EditableCell
                         value={category.name}
                         onSave={(value) => handleUpdateCategory({ name: value })}
-                        className="text-2xl font-bold"
+                        className="text-2xl font-medium"
                       />
                     </h1>
                   </div>
@@ -187,7 +187,7 @@ export default function RecipeCategoryPage({ params }: RecipeCategoryPageProps) 
             <Card>
               <CardContent className="p-6">
                 <div className="flex items-center gap-2 mb-4">
-                  <h2 className="text-lg font-semibold text-foreground">
+                  <h2 className="text-lg font-medium text-foreground">
                     Recipes
                   </h2>
                 </div>

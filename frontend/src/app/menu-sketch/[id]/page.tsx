@@ -129,7 +129,7 @@ function DishPreviewCell({
     <div className={`relative px-4 py-3 space-y-2${item.is_highlight ? ' bg-amber-500/10 dark:bg-amber-500/25' : ''}`}>
       {/* Dish name + icons + prices + badges on one row */}
       <div className="flex items-center gap-2">
-        <p className="flex-1 text-base font-semibold text-foreground leading-snug">
+        <p className="flex-1 text-base font-medium text-foreground leading-snug">
           {item.recipe_name || '—'}
         </p>
         {(item.icons ?? []).length > 0 && (
@@ -239,7 +239,7 @@ function MenuSketchPreview({
   return (
     <div className="mx-auto max-w-5xl px-6 py-8 space-y-8 text-sm">
       {name && (
-        <h1 className="text-center text-2xl font-bold tracking-wide text-foreground uppercase">
+        <h1 className="text-center text-2xl font-medium text-foreground">
           {name}
         </h1>
       )}
@@ -249,7 +249,7 @@ function MenuSketchPreview({
         return (
           <div key={section.id} className="rounded-xl overflow-hidden border border-border shadow-sm">
             {/* Section header */}
-            <div className="text-center font-bold tracking-widest uppercase text-sm py-2.5 px-4 bg-muted text-foreground">
+            <div className="text-center font-medium text-sm py-2.5 px-4 bg-muted text-foreground">
               {section.name || 'Unnamed Section'}
             </div>
 
@@ -258,7 +258,7 @@ function MenuSketchPreview({
               {[0, 1].map((col) => (
                 <div key={col} className="flex items-center gap-2 px-4 py-1.5">
                   <span className="flex-1" />
-                  <div className="flex shrink-0 gap-3 text-right text-xs font-semibold text-muted-foreground tabular-nums">
+                  <div className="flex shrink-0 gap-3 text-right text-xs font-medium text-muted-foreground tabular-nums">
                     <span className="w-14 text-right">Price</span>
                     {display.cost && <span className="w-14 text-right">Cost</span>}
                     {display.costMargins && <span className="w-12 text-right">%</span>}
@@ -1321,7 +1321,7 @@ function SectionCard({
             }
           }}
           onKeyDown={(e) => { if (e.key === 'Enter') e.currentTarget.blur(); }}
-          className="flex-1 bg-transparent text-sm font-semibold text-foreground placeholder:text-muted-foreground focus:outline-none"
+          className="flex-1 bg-transparent text-sm font-medium text-foreground placeholder:text-muted-foreground focus:outline-none"
           placeholder="Section name…"
         />
         <button
@@ -1344,7 +1344,7 @@ function SectionCard({
           {/* Column headers (list view) */}
           {viewMode === 'list' && orderedItems.length > 0 && (
             <div
-              className="grid items-center text-[10px] font-medium uppercase tracking-wider text-muted-foreground"
+              className="grid items-center text-[10px] font-medium text-muted-foreground"
               style={{ gridTemplateColumns: '44px 1fr 2fr 88px 72px 52px' }}
             >
               <span />
@@ -1631,12 +1631,12 @@ export default function MenuSketchEditorPage() {
             onChange={(e) => setName(e.target.value)}
             onBlur={handleNameSave}
             onKeyDown={(e) => { if (e.key === 'Enter') handleNameSave(); if (e.key === 'Escape') { setName(sketch.name); setEditingName(false); } }}
-            className="w-48 rounded border border-border bg-muted px-2 py-0.5 text-sm font-semibold text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+            className="w-48 rounded border border-border bg-muted px-2 py-0.5 text-sm font-medium text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
           />
         ) : (
           <button
             onClick={() => setEditingName(true)}
-            className="flex items-center gap-1 rounded px-2 py-0.5 text-sm font-semibold text-foreground hover:bg-muted"
+            className="flex items-center gap-1 rounded px-2 py-0.5 text-sm font-medium text-foreground hover:bg-muted"
           >
             {name || 'Untitled'}
             <Pencil className="h-3 w-3 text-muted-foreground" />

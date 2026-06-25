@@ -361,7 +361,7 @@ export function VersionsTab() {
       {/* Header */}
       <div className="flex items-center gap-2 p-4 border-b border-border">
         <History className="h-5 w-5 text-muted-foreground" />
-        <h2 className="text-lg font-semibold text-foreground">
+        <h2 className="text-lg font-medium text-foreground">
           Iteration History
         </h2>
         <Badge variant="secondary" className="ml-auto">

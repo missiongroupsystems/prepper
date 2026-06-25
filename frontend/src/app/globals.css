@@ -678,10 +678,20 @@ body {
   font-family: var(--brand-typeface-text), var(--font-manrope), system-ui, sans-serif;
 }
 
-/* Headings use the single brand family — hierarchy via weight + size, not a separate cut */
+/* Headings use the single brand family — hierarchy via weight + size, not a separate cut.
+   Weight is 500 and letter-spacing is optical + centralised here (design.md §3.3);
+   components must NOT add font-bold/semibold or tracking-* to headings. */
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--brand-typeface-display), var(--font-manrope), system-ui, sans-serif;
+  font-weight: 500;
+  text-wrap: pretty;
 }
+h1 { letter-spacing: -0.018em; }
+h2 { letter-spacing: -0.014em; }
+h3 { letter-spacing: -0.01em; }
+h4, h5, h6 { letter-spacing: -0.006em; }
+
+p { text-wrap: pretty; }
 
 /* Focus visible for accessibility */
 :focus-visible {

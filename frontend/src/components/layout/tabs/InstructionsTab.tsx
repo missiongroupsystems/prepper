@@ -52,7 +52,7 @@ export function InstructionsTab() {
       <div className="p-6 max-w-4xl mx-auto">
         <Card>
           <CardContent className="p-6">
-            <h2 className="text-lg font-semibold mb-4 text-foreground">
+            <h2 className="text-lg font-medium mb-4 text-foreground">
               Instructions
             </h2>
             <Instructions recipe={recipe} canEdit={canEdit} />

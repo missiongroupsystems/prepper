@@ -120,7 +120,7 @@ export default function PreviewMenuPage({ params }: PreviewMenuPageProps) {
         {/* Menu Header */}
         <div className="mb-6 flex items-start justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">{menu.name}</h1>
+            <h1 className="text-2xl font-medium text-foreground">{menu.name}</h1>
             <p className="text-sm text-muted-foreground mt-1">
               Version {menu.version_no} •{' '}
               {menu.is_published ? 'Published' : 'Draft'}
@@ -167,7 +167,7 @@ export default function PreviewMenuPage({ params }: PreviewMenuPageProps) {
                     onClick={() => toggleSection(section.id)}
                     className="w-full flex items-center justify-between p-4 hover:bg-secondary"
                   >
-                    <h2 className="font-semibold">{section.name}</h2>
+                    <h2 className="font-medium">{section.name}</h2>
                     {expandedSections.has(section.id) ? (
                       <ChevronUp className="h-5 w-5" />
                     ) : (
@@ -209,7 +209,7 @@ export default function PreviewMenuPage({ params }: PreviewMenuPageProps) {
                                     <p className="text-xs font-medium text-muted-foreground mb-1">
                                       Recipe Name
                                     </p>
-                                    <p className="font-semibold text-foreground">
+                                    <p className="font-medium text-foreground">
                                       {item.recipe_name}
                                     </p>
                                   </div>
@@ -290,7 +290,7 @@ export default function PreviewMenuPage({ params }: PreviewMenuPageProps) {
                                       <p className="text-xs font-medium text-muted-foreground mb-1">
                                         Price
                                       </p>
-                                      <p className="font-semibold text-foreground">
+                                      <p className="font-medium text-foreground">
                                         ${item.display_price.toFixed(2)}
                                       </p>
                                     </div>
@@ -373,7 +373,7 @@ export default function PreviewMenuPage({ params }: PreviewMenuPageProps) {
                                   </div>
                                 </div>
                                 {item.display_price && (
-                                  <p className="font-semibold ml-4">${item.display_price.toFixed(2)}</p>
+                                  <p className="font-medium ml-4">${item.display_price.toFixed(2)}</p>
                                 )}
                               </div>
                             </li>

@@ -20,10 +20,10 @@ function timeAgo(dateStr: string): string {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <p className="text-[11px] font-semibold tracking-widest text-muted-foreground uppercase mb-1">
+      <p className="text-[11px] font-medium text-muted-foreground mb-1">
         {label}
       </p>
-      <div className="text-base font-semibold text-foreground pb-3 border-b border-border">
+      <div className="text-base font-medium text-foreground pb-3 border-b border-border">
         {children}
       </div>
     </div>
@@ -49,7 +49,7 @@ export function UserProfileTab() {
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
             <UserIcon className="h-6 w-6 text-muted-foreground" />
-            <h1 className="text-2xl font-bold text-foreground">Account Information</h1>
+            <h1 className="text-2xl font-medium text-foreground">Account Information</h1>
           </div>
           {userLoading ? (
             <Skeleton className="h-4 w-32 rounded" />
@@ -84,7 +84,7 @@ export function UserProfileTab() {
 
         {/* Assigned Outlet */}
         <div>
-          <p className="text-[11px] font-semibold tracking-widest text-muted-foreground uppercase mb-3">
+          <p className="text-[11px] font-medium text-muted-foreground mb-3">
             Assigned Outlet
           </p>
 
@@ -96,12 +96,12 @@ export function UserProfileTab() {
                 <Store className="h-5 w-5 text-muted-foreground" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-semibold text-foreground">{outlet.name}</p>
+                <p className="font-medium text-foreground">{outlet.name}</p>
                 {outletSubline && (
                   <p className="text-sm text-muted-foreground">{outletSubline}</p>
                 )}
               </div>
-              <button className="text-xs font-bold tracking-widest text-muted-foreground hover:text-foreground transition-colors uppercase">
+              <button className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">
                 Change
               </button>
             </div>

@@ -136,7 +136,7 @@ export function TopAppBar() {
             )}
           >
             <div className="flex items-start justify-between mb-4">
-              <h2 id="unsaved-modal-title" className="text-lg font-semibold text-foreground">
+              <h2 id="unsaved-modal-title" className="text-lg font-medium text-foreground">
                 Unsaved Changes
               </h2>
               <button

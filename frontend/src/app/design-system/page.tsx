@@ -35,7 +35,7 @@ import { useTheme } from '@/lib/theme';
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="mb-12">
-      <h2 className="text-xl font-semibold text-foreground mb-6 pb-2 border-b border-border">
+      <h2 className="text-xl font-medium text-foreground mb-6 pb-2 border-b border-border">
         {title}
       </h2>
       {children}
@@ -73,7 +73,7 @@ export default function DesignSystemPage() {
       <div className="mx-auto max-w-6xl px-4 py-6 sm:p-6 md:p-8 lg:p-12">
         {/* Header */}
         <div className="mb-12">
-          <h1 className="text-3xl font-bold text-foreground mb-2">Reciperep Design System</h1>
+          <h1 className="text-3xl font-medium text-foreground mb-2">Reciperep Design System</h1>
           <p className="text-muted-foreground">
             A kitchen-first design system with warm, terracotta-inspired colors and three-font typography.
           </p>
@@ -568,7 +568,7 @@ export default function DesignSystemPage() {
           <Subsection title="Gradients">
             <div className="flex flex-wrap gap-6 items-center">
               <div className="w-40 h-24 rounded-lg mono-gradient" />
-              <p className="mono-gradient-text text-2xl font-bold">
+              <p className="mono-gradient-text text-2xl font-medium">
                 Gradient Text
               </p>
             </div>

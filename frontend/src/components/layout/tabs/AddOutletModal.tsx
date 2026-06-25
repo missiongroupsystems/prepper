@@ -65,7 +65,7 @@ export function AddOutletModal({ isOpen, onClose, recipeId, outlets = [] }: AddO
           <X className="h-5 w-5" />
         </button>
 
-        <h2 className="mb-4 text-lg font-semibold text-foreground">
+        <h2 className="mb-4 text-lg font-medium text-foreground">
           Add Outlet
         </h2>
 

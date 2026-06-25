@@ -94,7 +94,7 @@ function IngredientCostTable({ recipeId }: { recipeId: number }) {
               >
                 Subtotal
               </td>
-              <td className="py-3 pl-4 text-right font-semibold text-foreground">
+              <td className="py-3 pl-4 text-right font-medium text-foreground">
                 {formatCurrency(costing.ingredient_cost)}
               </td>
             </tr>
@@ -211,7 +211,7 @@ function SubRecipeCostTable({ recipeId }: { recipeId: number }) {
               >
                 Subtotal
               </td>
-              <td className="py-3 pl-4 text-right font-semibold text-foreground">
+              <td className="py-3 pl-4 text-right font-medium text-foreground">
                 {formatCurrency(costing.sub_recipe_cost)}
               </td>
             </tr>
@@ -256,7 +256,7 @@ function CostSummary({ recipeId }: { recipeId: number }) {
         )}
         <div className="mt-2 flex items-center justify-between border-t border-border pt-2">
           <span className="text-sm text-muted-foreground">Total batch cost:</span>
-          <span className="font-semibold">
+          <span className="font-medium">
             {costing.total_batch_cost != null ? formatCurrency(costing.total_batch_cost) : '—'}
           </span>
         </div>
@@ -279,7 +279,7 @@ function CostSummary({ recipeId }: { recipeId: number }) {
               )}
             </div>
           </div>
-          <span className="font-semibold">
+          <span className="font-medium">
             {costing.cost_per_portion != null ? formatCurrency(costing.cost_per_portion) : '—'}
           </span>
         </div>
@@ -345,7 +345,7 @@ export function CostsTab() {
         {/* Ingredient Cost Breakdown Section */}
         <Card>
           <CardContent className="p-6">
-            <h2 className="text-lg font-semibold mb-4 text-foreground">
+            <h2 className="text-lg font-medium mb-4 text-foreground">
               Ingredient Costs
             </h2>
             <IngredientCostTable recipeId={recipe.id} />
@@ -355,7 +355,7 @@ export function CostsTab() {
         {/* Sub-Recipe Cost Breakdown Section */}
         <Card>
           <CardContent className="p-6">
-            <h2 className="text-lg font-semibold mb-4 text-foreground">
+            <h2 className="text-lg font-medium mb-4 text-foreground">
               Sub-Dishes Costs
             </h2>
             <SubRecipeCostTable recipeId={recipe.id} />
@@ -365,7 +365,7 @@ export function CostsTab() {
         {/* Cost Summary Section */}
         <Card>
           <CardContent className="p-6">
-            <h2 className="text-lg font-semibold mb-4 text-foreground">
+            <h2 className="text-lg font-medium mb-4 text-foreground">
               Cost Summary
             </h2>
             <CostSummary recipeId={recipe.id} />

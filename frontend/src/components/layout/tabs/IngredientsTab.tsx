@@ -62,7 +62,7 @@ export function IngredientsTab() {
         {/* Base Ingredients Card */}
         <Card>
           <CardContent className="p-6">
-            <h2 className="text-lg font-semibold mb-4 text-foreground">
+            <h2 className="text-lg font-medium mb-4 text-foreground">
               Base Ingredients
             </h2>
 
@@ -98,7 +98,7 @@ export function IngredientsTab() {
         {/* Items (Sub-Recipes) Card */}
         <Card>
           <CardContent className="p-6">
-            <h2 className="text-lg font-semibold mb-4 text-foreground">
+            <h2 className="text-lg font-medium mb-4 text-foreground">
               Items
             </h2>
 

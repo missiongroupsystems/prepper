@@ -254,7 +254,7 @@ export function OverviewTab() {
                                 if (e.key === 'Escape') { setIsEditingName(false); setNameValue(recipe?.name || ''); }
                               }}
                               autoFocus
-                              className="text-2xl font-bold text-foreground bg-transparent border-b-2 border-[hsl(var(--primary))] focus:outline-none flex-1 min-w-0"
+                              className="text-2xl font-medium text-foreground bg-transparent border-b-2 border-[hsl(var(--primary))] focus:outline-none flex-1 min-w-0"
                             />
                             <button onClick={handleSaveName} disabled={isUpdating} className="text-green-600 hover:text-green-700 disabled:opacity-50 shrink-0">
                               <Check className="h-5 w-5" />
@@ -265,7 +265,7 @@ export function OverviewTab() {
                           </div>
                         ) : (
                           <div className="flex items-center gap-2 group">
-                            <h1 className="text-2xl font-bold text-foreground">
+                            <h1 className="text-2xl font-medium text-foreground">
                               {recipe.name}
                             </h1>
                             {canEditRecipe && (
@@ -349,7 +349,7 @@ export function OverviewTab() {
             {/* Category Section */}
             <Card className="mb-6">
               <CardContent className="p-6">
-                <h2 className="text-lg font-semibold mb-4 text-foreground">
+                <h2 className="text-lg font-medium mb-4 text-foreground">
                   Category
                 </h2>
                 <div className="space-y-4">
@@ -490,7 +490,7 @@ export function OverviewTab() {
               <CardContent className="p-6">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1">
-                    <h2 className="text-lg font-semibold mb-4 text-foreground">
+                    <h2 className="text-lg font-medium mb-4 text-foreground">
                       Description
                     </h2>
                     {isEditingDescription ? (
@@ -556,7 +556,7 @@ export function OverviewTab() {
               {/* Ingredients Card */}
               <Card>
                 <CardContent className="p-6">
-                  <h2 className="text-lg font-semibold mb-4 text-foreground">
+                  <h2 className="text-lg font-medium mb-4 text-foreground">
                     Ingredients
                   </h2>
 
@@ -589,7 +589,7 @@ export function OverviewTab() {
               {/* Sub Recipes Card */}
               <Card>
                 <CardContent className="p-6">
-                  <h2 className="text-lg font-semibold mb-4 text-foreground">
+                  <h2 className="text-lg font-medium mb-4 text-foreground">
                     Sub Recipes
                   </h2>
 
@@ -624,7 +624,7 @@ export function OverviewTab() {
               {/* Costing Card */}
               <Card>
                 <CardContent className="p-6">
-                  <h2 className="text-lg font-semibold mb-4 text-foreground">
+                  <h2 className="text-lg font-medium mb-4 text-foreground">
                     Costing
                   </h2>
 
@@ -632,14 +632,14 @@ export function OverviewTab() {
                     <div className="space-y-4">
                       <div className="flex justify-between items-center py-2 border-b border-border">
                         <span className="text-muted-foreground">Batch Cost</span>
-                        <span className="font-semibold text-foreground">
+                        <span className="font-medium text-foreground">
                           {formatCurrency(costing.total_batch_cost)}
                         </span>
                       </div>
 
                       <div className="flex justify-between items-center py-2 border-b border-border">
                         <span className="text-muted-foreground">Cost per Portion</span>
-                        <span className="font-semibold text-xl text-foreground">
+                        <span className="font-medium text-xl text-foreground">
                           {formatCurrency(costing.cost_per_portion)}
                         </span>
                       </div>
@@ -647,7 +647,7 @@ export function OverviewTab() {
                       {recipe.selling_price_est && costing.cost_per_portion && (
                         <div className="flex justify-between items-center py-2">
                           <span className="text-muted-foreground">Margin</span>
-                          <span className="font-semibold text-green-600 dark:text-green-400">
+                          <span className="font-medium text-green-600 dark:text-green-400">
                             {((1 - costing.cost_per_portion / recipe.selling_price_est) * 100).toFixed(1)}%
                           </span>
                         </div>
@@ -665,7 +665,7 @@ export function OverviewTab() {
             {/* Instructions Card */}
             <Card>
               <CardContent className="p-6">
-                <h2 className="text-lg font-semibold mb-4 text-foreground">
+                <h2 className="text-lg font-medium mb-4 text-foreground">
                   Instructions
                 </h2>
 
@@ -715,7 +715,7 @@ export function OverviewTab() {
               <CardContent className="p-6">
                 <div className="flex items-center gap-2 mb-4">
                   <Wine className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-                  <h2 className="text-lg font-semibold text-foreground">
+                  <h2 className="text-lg font-medium text-foreground">
                     Tasting History
                   </h2>
                 </div>
@@ -725,7 +725,7 @@ export function OverviewTab() {
                     {/* Summary Section - AI Generated */}
                     <div className="p-4 rounded-lg bg-secondary border border-border">
                       <div className="flex items-center justify-between mb-3">
-                        <p className="text-sm font-semibold text-foreground">Feedback Summary</p>
+                        <p className="text-sm font-medium text-foreground">Feedback Summary</p>
                         {(canEditRecipe || userType === 'admin') && (
                           <button
                             onClick={() => { summaryForRecipeIdRef.current = selectedRecipeId; summarizeFeedback(selectedRecipeId!); }}
@@ -764,7 +764,7 @@ export function OverviewTab() {
                         onClick={() => setIsFeedbacksOpen(!isFeedbacksOpen)}
                         className="w-full flex items-center justify-between p-3 rounded-lg bg-secondary hover:bg-muted transition-colors"
                       >
-                        <span className="text-sm font-semibold text-foreground">
+                        <span className="text-sm font-medium text-foreground">
                           Feedbacks ({tastingNotes?.length || 0})
                         </span>
                         <ChevronDown

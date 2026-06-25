@@ -183,7 +183,7 @@ function RndRecipeCard({ recipe, isOwned, onFork, isFork, isForking }: RndRecipe
           disabled={summarizeMutation.isPending}
           className="w-full px-4 py-2 flex items-center justify-between hover:bg-secondary transition-colors disabled:opacity-50"
         >
-          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+          <span className="text-xs font-medium text-muted-foreground">
             Feedback Summary
           </span>
           {summarizeMutation.isPending ? (
@@ -687,7 +687,7 @@ function PipelinesTab() {
             <div className="flex flex-col">
               <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border">
                 <span className="text-muted-foreground"><ClipboardList className="h-5 w-5" /></span>
-                <h2 className="font-semibold text-lg">To Do</h2>
+                <h2 className="font-medium text-lg">To Do</h2>
                 <span className="ml-auto text-sm text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
                   {filteredTodoRecipes.length}
                 </span>
@@ -717,7 +717,7 @@ function PipelinesTab() {
             <div className="flex flex-col">
               <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border">
                 <span className="text-muted-foreground"><Loader2 className="h-5 w-5" /></span>
-                <h2 className="font-semibold text-lg">In Progress</h2>
+                <h2 className="font-medium text-lg">In Progress</h2>
                 <span className="ml-auto text-sm text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
                   {wipCount}
                 </span>
@@ -755,7 +755,7 @@ function PipelinesTab() {
             <div className="flex flex-col">
               <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border">
                 <span className="text-muted-foreground"><CheckCircle className="h-5 w-5" /></span>
-                <h2 className="font-semibold text-lg">Review</h2>
+                <h2 className="font-medium text-lg">Review</h2>
               </div>
 
               <div className="flex-1 space-y-4 min-h-[200px]">

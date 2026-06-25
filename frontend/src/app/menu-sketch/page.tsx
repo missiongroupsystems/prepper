@@ -80,7 +80,7 @@ export default function MenuSketchListPage() {
               >
                 <div className="flex flex-col gap-1">
                   <div className="flex items-center justify-between gap-2">
-                    <h3 className="truncate text-base font-semibold text-foreground">
+                    <h3 className="truncate text-base font-medium text-foreground">
                       {sketch.name}
                     </h3>
                     <div className="flex items-center gap-1.5 shrink-0">

@@ -117,7 +117,7 @@ export function TagManagementModal({ siId, isOpen, onClose }: TagManagementModal
 
       {/* Create new tag */}
       <div className="border-t border-border pt-4">
-        <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">
+        <p className="text-xs font-medium text-muted-foreground mb-2">
           New Tag
         </p>
         <div className="flex gap-2">

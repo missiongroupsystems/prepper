@@ -290,7 +290,7 @@ function SessionRecipesSection({
   return (
     <div className="mb-8">
       <div className="flex items-center justify-between gap-2 mb-4">
-        <h2 className="text-lg font-semibold text-foreground flex items-center gap-2 min-w-0">
+        <h2 className="text-lg font-medium text-foreground flex items-center gap-2 min-w-0">
           <ChefHat className="h-5 w-5 text-purple-500 shrink-0" />
           <span className="truncate">Session Dishes</span>
           {sessionRecipes.length > 0 && (
@@ -476,7 +476,7 @@ function SessionIngredientsSection({
   return (
     <div className="mb-8">
       <div className="flex items-center justify-between gap-2 mb-4">
-        <h2 className="text-lg font-semibold text-foreground flex items-center gap-2 min-w-0">
+        <h2 className="text-lg font-medium text-foreground flex items-center gap-2 min-w-0">
           <span className="text-amber-500 shrink-0">🥘</span>
           <span className="truncate">Session Ingredients</span>
           {ingredients.length > 0 && (
@@ -841,12 +841,12 @@ export default function TastingSessionDetailPage() {
         {/* Session Header */}
         <div className="mb-8">
           <div className="flex items-center gap-2 mb-2">
-            <h1 className="text-2xl font-bold text-foreground">
+            <h1 className="text-2xl font-medium text-foreground">
               {isCreator ? (
                 <EditableCell
                   value={session.name}
                   onSave={(value) => handleUpdateSession({ name: value })}
-                  className="text-2xl font-bold"
+                  className="text-2xl font-medium"
                   placeholder="Session name"
                 />
               ) : (
