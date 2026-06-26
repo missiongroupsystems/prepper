@@ -84,3 +84,4 @@ API routes under `/api/v1`. Swagger at `http://localhost:8000/docs`.
 - `.agents/skills/` — `/frontend-design`, `/fastapi-expert`, `/nextjs-best-practices`, `/nextjs-app-router-patterns`, `/vercel-react-best-practices`, `/python-testing-patterns`, `/database-schema-designer`, `/sqlalchemy-alembic-expert-best-practices-code-review`, `/feature-spec`, `/skill-creator`, `/git-commit` (user-driven only)
 - `.claude/commands/` — `/get_started`, `/commit` (user-driven), `/fe-build-check`, `/schema-assembly`, `/update-context`
 - `docs/intro.md` + `docs/changelog.md` — product context & history
+- `docs/references/design.md` — design system (Mission): target contract, tokens & migration tracker

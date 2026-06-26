@@ -6,6 +6,7 @@ All notable changes to Prepper are documented here.
 
 ## Index
 
+- **[0.0.50](#0050---2026-06-26)** — Mission Design System Adoption: Forest/Beige Editorial Tokens, Single-Family Polymath Typography, Pill/Hairline Components, `game-card` Retirement & Neutral + Chromatic Tokenisation
 - **[0.0.49](#0049---2026-06-16)** — Recipe Canvas Polish: Design-Token Migration (266 Hardcoded `zinc-*` Pairs Removed), Terracotta Active/Drop States, Reduced-Motion Support & Cost-Pill Contrast Fix
 - **[0.0.48](#0048---2026-05-22)** — Tasting Session Inline Feedback: Collapsible Per-Dish Feedback Panel Replaces Modal
 - **[0.0.47](#0047---2026-05-20)** — Tasting Session Dish Reordering: Drag-and-Drop Sequence Control for Session Creators
@@ -55,6 +56,26 @@ All notable changes to Prepper are documented here.
 - **[0.0.3](#003---2024-11-27)** — Database Migration: Alembic Initial Tables to Supabase + PostgreSQL JSON Compatibility Fix
 - **[0.0.2](#002---2024-11-27)** — Frontend Implementation: Next.js 15 Recipe Canvas with Drag-and-Drop, Autosave & TanStack Query
 - **[0.0.1](#001---2024-11-27)** — Backend Foundation: FastAPI + SQLModel with 17 API Endpoints, Domain Services & Unit Conversion
+---
+
+## [0.0.50] - 2026-06-26
+
+### Changed
+
+#### Mission Design System Adoption (Phases 0–4)
+
+RecipeRep migrated to the **Mission Design System** — one design language across Ebb & Flow products — replacing the terracotta/parchment + collectible `game-card` look with a calm forest/beige editorial system. New portable contract: `docs/references/design.md`. No behaviour changes; presentation only.
+
+- **Color + surfaces (Phase 1)** — `globals.css`: brand `--primary`/`--ring` flipped terracotta → deep forest green; parchment canvas → warm beige; cream cards → white; warm ink foreground; status palette retuned to a muted/warm register (sage / teal / ochre / brick / warm-grey); added `--hairline` tokens; `--radius` `0.75rem` → `0.5rem`; warm-dark `.dark` theme.
+- **Typography (Font + Phase 2)** — collapsed three faces (Fractul + CoFo Sans + CoFo Sans Mono) to a **single family** via a `--brand-typeface-*` seam: Polymath stand-in (Typekit `weg5tjh`) for the unlicensed Euclid Circular B; mono folds into the text face. Central `h1–h6` rule (weight 500, optical size-scaled tracking, `text-wrap: pretty`). Weight-band sweep (135 `font-bold`/`semibold` → `font-medium`), no-ALL-CAPS sweep (25 removed), stray heading `tracking-*` stripped.
+- **Components (Phase 3)** — buttons & status badges → fully-round pills; `Card` → `rounded-lg` + 0.5px hairline, no shadow, colour-only hover. **Retired the collectible `game-card` aesthetic** — canvas ingredient/recipe cards rebuilt as clean hairline cards with a thumbnail + neutral type tag (~240 lines of game-card CSS removed). Removed `flow-ui` lift/scale and `mono-gradient` utilities.
+- **Tokenisation (Phase 0.5 + chromatic)** — multi-agent sweeps routed hardcoded colours through semantic tokens across ~140 files: 1,178 neutral (`zinc`/`gray`) classes and 195 chromatic classes mapped by role (red → `destructive`, green → `status-approved`, amber → `warning`, purple → `supplier`, blue → `status-testing`/`primary`/link), with 926 + 161 `dark:` pairs collapsed into theme-aware tokens. Added `--warning` (ochre), `--inverse` (high-contrast badge) and `--supplier` (clay-violet) tokens.
+- **Motion (Phase 4)** — removed the legacy `flow-ui-hover-lift` / `flow-ui-active-scale` utilities; mandatory `prefers-reduced-motion` block retained.
+
+Deliberately preserved: functional status colours (desaturated but legible), star-rating amber, modal scrims, and RecipeRep's user-toggled light/dark theme. Known follow-ups tracked in `design.md`: RightPanel ingredient/recipe type-coding accent bars, `/design-system` showcase refresh, and the eventual self-hosted Euclid swap (a no-op at the seam).
+
+**Files changed:** `frontend/src/app/globals.css`, `frontend/src/app/layout.tsx`, `frontend/src/components/ui/*` (Button/Badge/Card), `frontend/src/components/layout/tabs/CanvasTab.tsx`, ~140 component & page files; new `docs/references/design.md`; `CLAUDE.md` pointer.
+
 ---
 
 ## [0.0.49] - 2026-06-16
