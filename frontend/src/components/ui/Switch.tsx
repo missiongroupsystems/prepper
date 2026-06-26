@@ -19,9 +19,9 @@ export const Switch = forwardRef<HTMLInputElement, SwitchProps>(
           className={cn(
             'relative h-6 w-11 appearance-none rounded-full transition-colors',
             'bg-muted',
-            'checked:bg-blue-500 dark:checked:bg-blue-600',
+            'checked:bg-primary',
             'disabled:opacity-50 disabled:cursor-not-allowed',
-            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-background',
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
             'cursor-pointer',
             // Slider effect using ::before pseudo-element via CSS
             'before:content-[""] before:absolute before:h-5 before:w-5 before:rounded-full before:bg-card before:transition-transform before:pointer-events-none',

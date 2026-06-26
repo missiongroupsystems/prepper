@@ -108,7 +108,7 @@ export function DishFeedbackPanel({ recipeId, sessionId, currentUserId, isPartic
             Add Feedback
           </button>
           {showAddForm && (
-            <Card className="border-purple-200 dark:border-purple-800 bg-purple-50/50 dark:bg-purple-900/10">
+            <Card className="border-supplier/40 bg-supplier-bg">
               <CardContent className="pt-4">
                 <FeedbackForm
                   initialData={{ taster_name: username || '' }}

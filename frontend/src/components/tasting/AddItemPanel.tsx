@@ -73,7 +73,7 @@ export function AddItemPanel({
         <h2 className="text-lg font-medium text-foreground flex items-center gap-2">
           {type === 'recipe' ? (
             <>
-              <span className="text-purple-500">🍳</span>
+              <span className="text-supplier">🍳</span>
               Session Recipes
             </>
           ) : (
@@ -101,7 +101,7 @@ export function AddItemPanel({
       {isOpen && (
         <Card className={`mb-4 border-200 dark:border-800 bg-50/50 dark:bg-900/10 ${
           type === 'recipe'
-            ? 'border-purple-200 dark:border-purple-800 bg-purple-50/50 dark:bg-purple-900/10'
+            ? 'border-supplier/40 bg-supplier-bg/50'
             : 'border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-900/10'
         }`}>
           <CardContent className="pt-4">
@@ -134,7 +134,7 @@ export function AddItemPanel({
                       className={`w-full text-left px-3 py-2 text-sm hover:bg-secondary border-b border-border last:border-b-0 ${
                         selectedItemId === item.id
                           ? type === 'recipe'
-                            ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-900 dark:text-purple-100'
+                            ? 'bg-supplier-bg text-supplier'
                             : 'bg-amber-100 dark:bg-amber-900/30 text-amber-900 dark:text-amber-100'
                           : 'text-foreground'
                       }`}

@@ -20,16 +20,16 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
             'relative h-5 w-5 appearance-none rounded border-2 transition-all',
             'border-input',
             'bg-card',
-            'checked:bg-blue-500 checked:border-blue-500 dark:checked:bg-blue-600 dark:checked:border-blue-600',
+            'checked:bg-primary checked:border-primary',
             'disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-secondary',
-            'hover:enabled:border-blue-400 dark:hover:enabled:border-blue-500',
-            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2',
+            'hover:enabled:border-primary',
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
             'cursor-pointer',
             // Checkmark using ::after pseudo-element
             'after:content-[""] after:absolute after:hidden',
             'checked:after:block',
             'after:left-1.5 after:top-0.5 after:h-3 after:w-1.5',
-            'after:border-r-2 after:border-b-2 after:border-white after:dark:border-white',
+            'after:border-r-2 after:border-b-2 after:border-primary-foreground',
             'after:transform after:rotate-45',
             className
           )}

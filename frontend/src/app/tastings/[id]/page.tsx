@@ -132,7 +132,7 @@ function SortableDishItem({
         )}
         <div className="flex items-center gap-2 font-medium text-foreground flex-1 min-w-0">
           {reviewedRecipeIds.has(sr.recipe_id) ? (
-            <CheckCircle className="h-4 w-4 text-green-500 shrink-0" />
+            <CheckCircle className="h-4 w-4 text-[hsl(var(--status-approved))] shrink-0" />
           ) : (
             <div className="h-4 w-4 rounded-full border-2 border-border shrink-0" />
           )}
@@ -291,7 +291,7 @@ function SessionRecipesSection({
     <div className="mb-8">
       <div className="flex items-center justify-between gap-2 mb-4">
         <h2 className="text-lg font-medium text-foreground flex items-center gap-2 min-w-0">
-          <ChefHat className="h-5 w-5 text-purple-500 shrink-0" />
+          <ChefHat className="h-5 w-5 text-supplier shrink-0" />
           <span className="truncate">Session Dishes</span>
           {sessionRecipes.length > 0 && (
             <Badge variant="secondary" className="text-xs shrink-0">
@@ -313,7 +313,7 @@ function SessionRecipesSection({
       </div>
 
       {isCreator && showAddRecipe && (
-        <Card className="mb-4 border-purple-200 dark:border-purple-800 bg-purple-50/50 dark:bg-purple-900/10">
+        <Card className="mb-4 border-supplier/40 bg-supplier-bg">
           <CardContent className="pt-4">
             <div className="space-y-3">
               <div>
@@ -344,14 +344,14 @@ function SessionRecipesSection({
                         onClick={() => handleToggleRecipe(recipe.id)}
                         className={`w-full text-left px-3 py-2 text-sm border-b border-border last:border-b-0 flex items-center justify-between ${
                           isSelected
-                            ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-900 dark:text-purple-100'
+                            ? 'bg-primary/10 text-primary'
                             : 'text-foreground hover:bg-secondary'
                         }`}
                       >
                         <span className="flex items-center gap-2">
                           <span className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${
                             isSelected
-                              ? 'bg-purple-600 border-purple-600 text-white'
+                              ? 'bg-primary border-primary text-primary-foreground'
                               : 'border-border'
                             }`}>
                             {isSelected && <span className="text-xs">&#10003;</span>}
@@ -367,7 +367,7 @@ function SessionRecipesSection({
                     type="button"
                     onClick={onLoadMoreRecipes}
                     disabled={isLoadingMoreRecipes}
-                    className="w-full px-3 py-2 text-sm text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 font-medium disabled:opacity-50"
+                    className="w-full px-3 py-2 text-sm text-supplier hover:bg-supplier-bg font-medium disabled:opacity-50"
                   >
                     {isLoadingMoreRecipes ? 'Loading...' : 'Load more dishes'}
                   </button>
@@ -377,7 +377,7 @@ function SessionRecipesSection({
                     type="button"
                     onClick={handleCreateAndSelect}
                     disabled={isCreatingRecipe}
-                    className="w-full px-3 py-2 text-sm text-left flex items-center gap-2 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 border-t border-border font-medium disabled:opacity-50"
+                    className="w-full px-3 py-2 text-sm text-left flex items-center gap-2 text-supplier hover:bg-supplier-bg border-t border-border font-medium disabled:opacity-50"
                   >
                     <Plus className="h-4 w-4 shrink-0" />
                     {isCreatingRecipe ? 'Creating...' : <>Create &ldquo;{searchQuery.trim()}&rdquo; as new dish</>}
@@ -882,12 +882,8 @@ export default function TastingSessionDetailPage() {
                 <div className="absolute z-20 top-full left-0 mt-1 bg-card border border-border rounded-lg shadow-lg p-3">
                   <style>{`
                     .rdp-root {
-                      --rdp-accent-color: hsl(270 65% 50%);
-                      --rdp-accent-background-color: hsl(270 65% 95%);
-                    }
-                    .dark .rdp-root {
-                      --rdp-accent-color: hsl(270 65% 60%);
-                      --rdp-accent-background-color: hsl(270 65% 15%);
+                      --rdp-accent-color: hsl(var(--primary));
+                      --rdp-accent-background-color: hsl(var(--color-forest-light));
                     }
                   `}</style>
                   <DayPicker
@@ -907,7 +903,7 @@ export default function TastingSessionDetailPage() {
                       <select
                         value={selectedHour}
                         onChange={(e) => setSelectedHour(e.target.value)}
-                        className="flex-1 px-3 py-2 border border-input rounded-md bg-card text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        className="flex-1 px-3 py-2 border border-input rounded-md bg-card text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
                       >
                         {hours.map((h) => (
                           <option key={h} value={h}>
@@ -919,7 +915,7 @@ export default function TastingSessionDetailPage() {
                       <select
                         value={selectedMinute}
                         onChange={(e) => setSelectedMinute(e.target.value)}
-                        className="flex-1 px-3 py-2 border border-input rounded-md bg-card text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        className="flex-1 px-3 py-2 border border-input rounded-md bg-card text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
                       >
                         {minutes.map((m) => (
                           <option key={m} value={m}>
@@ -930,7 +926,7 @@ export default function TastingSessionDetailPage() {
                       <select
                         value={selectedPeriod}
                         onChange={(e) => setSelectedPeriod(e.target.value as 'AM' | 'PM')}
-                        className="flex-1 px-3 py-2 border border-input rounded-md bg-card text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        className="flex-1 px-3 py-2 border border-input rounded-md bg-card text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
                       >
                         <option value="AM">AM</option>
                         <option value="PM">PM</option>
@@ -941,7 +937,7 @@ export default function TastingSessionDetailPage() {
                     <button
                       type="button"
                       onClick={handleDateTimeConfirm}
-                      className="flex-1 px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-md text-sm font-medium transition-colors"
+                      className="flex-1 px-3 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-md text-sm font-medium transition-colors"
                     >
                       Save
                     </button>
@@ -1020,7 +1016,7 @@ export default function TastingSessionDetailPage() {
               }}
             >
               {copied ? (
-                <Check className="h-4 w-4 mr-1.5 text-green-500" />
+                <Check className="h-4 w-4 mr-1.5 text-[hsl(var(--status-approved))]" />
               ) : (
                 <Copy className="h-4 w-4 mr-1.5" />
               )}

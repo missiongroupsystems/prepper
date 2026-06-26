@@ -201,7 +201,7 @@ export const RecipeIngredientRow = memo(function RecipeIngredientRow({
             {ingredient.ingredient.allergens.map((allergen) => (
               <span
                 key={allergen.id}
-                className="inline-block rounded-full bg-red-100 px-2 py-1 text-xs font-medium text-red-800 dark:bg-red-900/30 dark:text-red-300"
+                className="inline-block rounded-full bg-destructive/10 px-2 py-1 text-xs font-medium text-destructive"
               >
                 {allergen.name}
               </span>

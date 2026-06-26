@@ -62,7 +62,7 @@ export function BuyCatalogueImportModal({ isOpen, onClose }: BuyCatalogueImportM
       <div className="space-y-5">
         <div>
           <p className="text-xs font-medium text-muted-foreground mb-2">
-            Buy Catalogue XLSX <span className="text-red-500">*</span>
+            Buy Catalogue XLSX <span className="text-destructive">*</span>
           </p>
           <input
             ref={fileRef}

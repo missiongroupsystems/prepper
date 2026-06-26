@@ -38,7 +38,7 @@ export function UserProfileTab() {
   const { data: parentOutlet } = useOutlet(outlet?.parent_outlet_id ?? null);
 
   const roleLabel = userType === 'admin' ? 'Administrator' : 'Normal';
-  const roleColor = userType === 'admin' ? 'bg-purple-500' : 'bg-blue-400';
+  const roleColor = userType === 'admin' ? 'bg-supplier' : 'bg-primary';
 
   const outletSubline = [parentOutlet?.name, outlet?.code].filter(Boolean).join(' \u2022 ');
 

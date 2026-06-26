@@ -118,7 +118,7 @@ function EditOutletModal({ outlet, allOutlets, onClose }: EditOutletModalProps) 
             <select
               value={formData.parent_outlet_id || ''}
               onChange={(e) => setFormData((prev) => ({ ...prev, parent_outlet_id: e.target.value ? parseInt(e.target.value) : null }))}
-              className="w-full px-3 py-2 border border-input rounded-md bg-card text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-input rounded-md bg-card text-sm focus:outline-none focus:ring-2 focus:ring-ring"
             >
               <option value="">-- None --</option>
               {allOutlets

@@ -138,7 +138,7 @@ export function RecipeIngredientsList({ recipeId, canEdit }: RecipeIngredientsLi
 
   if (error) {
     return (
-      <div className="rounded-lg bg-red-50 p-4 text-center text-sm text-red-600 dark:bg-red-900/20 dark:text-red-400">
+      <div className="rounded-lg bg-destructive/10 p-4 text-center text-sm text-destructive">
         Failed to load ingredients
       </div>
     );
@@ -150,7 +150,7 @@ export function RecipeIngredientsList({ recipeId, canEdit }: RecipeIngredientsLi
         ref={setNodeRef}
         className={cn(
           'rounded-lg border-2 border-dashed border-border p-8 text-center',
-          isOver && 'border-blue-400 bg-blue-50 dark:bg-blue-900/20'
+          isOver && 'border-primary bg-primary/5'
         )}
       >
         <p className="text-muted-foreground">No ingredients yet</p>
@@ -170,7 +170,7 @@ export function RecipeIngredientsList({ recipeId, canEdit }: RecipeIngredientsLi
       ref={setNodeRef}
       className={cn(
         'rounded-lg',
-        isOver && 'ring-2 ring-blue-400 ring-offset-2'
+        isOver && 'ring-2 ring-ring ring-offset-2'
       )}
     >
       <DndContext

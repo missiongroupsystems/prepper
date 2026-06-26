@@ -30,7 +30,7 @@ export function AllergenCard({
       onMouseLeave={() => setShowActions(false)}
     >
       <div className="flex items-start gap-3">
-        <AlertCircle className="h-5 w-5 text-orange-500 flex-shrink-0 mt-0.5" />
+        <AlertCircle className="h-5 w-5 text-warning flex-shrink-0 mt-0.5" />
         <div className="flex-1 min-w-0">
           <CardTitle className="truncate">{allergen.name}</CardTitle>
           {allergen.description && (

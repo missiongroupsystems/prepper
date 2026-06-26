@@ -108,7 +108,7 @@ export default function RecipeCategoryPage({ params }: RecipeCategoryPageProps) 
           <ArrowLeft className="h-4 w-4" />
           Back to Recipes
         </Link>
-        <div className="rounded-lg bg-red-50 dark:bg-red-950 p-4 text-red-600 dark:text-red-400">
+        <div className="rounded-lg bg-destructive/10 p-4 text-destructive">
           Category not found or failed to load.
         </div>
       </div>
@@ -329,7 +329,7 @@ export default function RecipeCategoryPage({ params }: RecipeCategoryPageProps) 
                               <td className="py-3 px-2 text-foreground font-medium">
                                 <Link
                                   href={`/recipes/${recipeLink.recipe_id}`}
-                                  className="hover:text-purple-600 dark:hover:text-purple-400 hover:underline"
+                                  className="text-foreground hover:text-primary hover:underline"
                                 >
                                   {recipe?.name || 'Unknown Recipe'}
                                 </Link>

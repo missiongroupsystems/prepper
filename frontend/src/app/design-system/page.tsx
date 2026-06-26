@@ -550,31 +550,6 @@ export default function DesignSystemPage() {
           </Subsection>
         </Section>
 
-        {/* Utility Classes */}
-        <Section title="Utility Classes">
-          <Subsection title="Animations">
-            <div className="flex flex-wrap gap-6">
-              <Card interactive className="flow-ui-hover-lift w-40">
-                <CardContent className="pt-4 text-center">
-                  <p className="text-sm">.flow-ui-hover-lift</p>
-                </CardContent>
-              </Card>
-              <Button className="flow-ui-active-scale">
-                .flow-ui-active-scale
-              </Button>
-            </div>
-          </Subsection>
-
-          <Subsection title="Gradients">
-            <div className="flex flex-wrap gap-6 items-center">
-              <div className="w-40 h-24 rounded-lg mono-gradient" />
-              <p className="mono-gradient-text text-2xl font-medium">
-                Gradient Text
-              </p>
-            </div>
-          </Subsection>
-        </Section>
-
         {/* Icons */}
         <Section title="Icons">
           <p className="text-sm text-muted-foreground mb-4">

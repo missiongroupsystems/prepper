@@ -147,7 +147,7 @@ export function AllergensTab() {
   if (error) {
     return (
       <div className="p-6">
-        <div className="rounded-lg bg-red-50 dark:bg-red-950 p-4 text-red-600 dark:text-red-400">
+        <div className="rounded-lg bg-destructive/10 p-4 text-destructive">
           Failed to load allergens. Please try again.
         </div>
       </div>

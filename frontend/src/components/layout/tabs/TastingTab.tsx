@@ -130,7 +130,7 @@ export function TastingTab() {
     return (
       <div className="flex-1 bg-background p-6">
         <div className="max-w-2xl mx-auto">
-          <div className="rounded-lg bg-red-50 dark:bg-red-950 p-4 text-red-600 dark:text-red-400">
+          <div className="rounded-lg bg-destructive/10 p-4 text-destructive">
             Recipe not found or failed to load.
           </div>
         </div>

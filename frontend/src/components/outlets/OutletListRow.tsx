@@ -23,7 +23,7 @@ export function OutletListRow({ outlet, parentOutletName, href }: OutletListRowP
         <CardContent className="py-2">
           <div className="flex items-center justify-between gap-4">
             <div className="flex-1 min-w-0">
-              <h3 className="text-base font-medium text-foreground truncate hover:text-blue-600 dark:hover:text-blue-400">
+              <h3 className="text-base font-medium text-foreground truncate hover:text-primary">
                 {outlet.name}
               </h3>
               {outlet.code && (

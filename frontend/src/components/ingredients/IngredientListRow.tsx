@@ -42,7 +42,7 @@ export function IngredientListRow({
         <div className="flex items-center justify-between gap-4">
           <div className="flex-1 min-w-0">
             <Link href={`/ingredients/${ingredient.id}`}>
-              <h3 className="text-base font-medium text-foreground truncate hover:text-blue-600 dark:hover:text-blue-400">
+              <h3 className="text-base font-medium text-foreground truncate hover:text-primary">
                 {ingredient.name}
               </h3>
             </Link>

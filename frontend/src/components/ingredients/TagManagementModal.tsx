@@ -90,7 +90,7 @@ export function TagManagementModal({ siId, isOpen, onClose }: TagManagementModal
                 <div className="flex items-center gap-1 shrink-0">
                   <button
                     onClick={confirmDelete}
-                    className="text-xs text-red-600 dark:text-red-400 font-medium hover:underline"
+                    className="text-xs text-destructive font-medium hover:underline"
                   >
                     Delete
                   </button>
@@ -104,7 +104,7 @@ export function TagManagementModal({ siId, isOpen, onClose }: TagManagementModal
               ) : (
                 <button
                   onClick={() => handleDeleteGlobal(tag.id)}
-                  className="opacity-0 group-hover:opacity-100 p-0.5 rounded text-muted-foreground hover:text-red-500 dark:hover:text-red-400 transition-opacity"
+                  className="opacity-0 group-hover:opacity-100 p-0.5 rounded text-muted-foreground hover:text-destructive transition-opacity"
                   aria-label={`Delete tag ${tag.name}`}
                 >
                   <X className="h-3.5 w-3.5" />

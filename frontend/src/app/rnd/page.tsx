@@ -99,7 +99,7 @@ function RndRecipeCard({ recipe, isOwned, onFork, isFork, isForking }: RndRecipe
   const displaySummary = recipe.summary_feedback;
 
   return (
-    <Card className={isFork ? 'border-l-4 border-l-blue-500' : ''}>
+    <Card className={isFork ? 'border-l-4 border-l-primary' : ''}>
       <Link href={`/rnd/r/${recipe.id}`} className="block">
         <CardHeader>
           <div className="flex-1 min-w-0">
@@ -320,7 +320,7 @@ function WipRecipeCard({ recipe, isOwned }: WipRecipeCardProps) {
 
   return (
     <>
-      <Card className="border-l-4 border-l-blue-500">
+      <Card className="border-l-4 border-l-primary">
         <Link href={`/rnd/r/${recipe.id}`} className="block">
           <CardHeader>
             <div className="flex-1 min-w-0">
@@ -640,7 +640,7 @@ function PipelinesTab() {
   if (feedbackError) {
     return (
       <div className="p-6">
-        <div className="rounded-lg bg-red-50 dark:bg-red-950 p-4 text-red-600 dark:text-red-400">
+        <div className="rounded-lg bg-destructive/10 p-4 text-destructive">
           Failed to load recipes. Please try again.
         </div>
       </div>

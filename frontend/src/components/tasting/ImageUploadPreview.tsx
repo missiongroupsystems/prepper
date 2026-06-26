@@ -145,10 +145,10 @@ export function ImageUploadPreview({
             onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); }}
             onDragLeave={(e) => { e.preventDefault(); setIsDragging(false); }}
             onDrop={async (e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); if (e.dataTransfer.files.length) await handleFiles(e.dataTransfer.files); }}
-            className={`w-full border-2 border-dashed rounded-lg p-6 text-center hover:border-muted-foreground transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${isDragging ? 'border-blue-400 bg-blue-50/10' : 'border-border'}`}
+            className={`w-full border-2 border-dashed rounded-lg p-6 text-center hover:border-muted-foreground transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${isDragging ? 'border-primary bg-primary/5' : 'border-border'}`}
           >
             {isProcessing ? (
-              <Loader2 className="h-6 w-6 text-purple-500 mx-auto mb-2 animate-spin" />
+              <Loader2 className="h-6 w-6 text-primary mx-auto mb-2 animate-spin" />
             ) : (
               <Upload className="h-6 w-6 text-muted-foreground mx-auto mb-2" />
             )}

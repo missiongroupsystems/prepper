@@ -30,7 +30,7 @@ export const RecipeListRow = memo(function RecipeListRow({ recipe, costPerPortio
         <CardContent className="py-2">
           <div className="flex items-center justify-between gap-4">
             <div className="flex-1 min-w-0">
-              <h3 className="text-base font-medium text-foreground truncate hover:text-blue-600 dark:hover:text-blue-400">
+              <h3 className="text-base font-medium text-foreground truncate hover:text-primary">
                 {recipe.name}
               </h3>
               <p className="text-sm text-muted-foreground mt-0.5">
@@ -50,7 +50,7 @@ export const RecipeListRow = memo(function RecipeListRow({ recipe, costPerPortio
                   <Badge variant="default" className="text-xs">Via Sub-dish</Badge>
                 )}
                 {isOwned && (
-                  <Badge className="text-xs bg-black text-white dark:bg-white dark:text-black">Owned</Badge>
+                  <Badge className="text-xs bg-inverse text-inverse-foreground">Owned</Badge>
                 )}
                 {categoryNames.map((name) => (
                   <Badge key={name} variant="secondary" className="text-xs">{name}</Badge>

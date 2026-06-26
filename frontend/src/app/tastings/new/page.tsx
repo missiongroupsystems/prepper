@@ -166,9 +166,9 @@ export default function NewTastingSessionPage() {
                 setName(e.target.value);
                 if (errors.name) setErrors((prev) => ({ ...prev, name: undefined }));
               }}
-              className={errors.name ? 'border-red-500' : ''}
+              className={errors.name ? 'border-destructive' : ''}
             />
-            {errors.name && <p className="text-xs text-red-500 mt-1">{errors.name}</p>}
+            {errors.name && <p className="text-xs text-destructive mt-1">{errors.name}</p>}
           </div>
 
           <div>
@@ -183,7 +183,7 @@ export default function NewTastingSessionPage() {
                 type="button"
                 onClick={() => setShowCalendar(!showCalendar)}
                 className={`w-full flex items-center justify-between px-3 py-2 border rounded-md bg-card text-left text-sm hover:border-input transition-colors ${
-                  errors.date ? 'border-red-500' : 'border-input'
+                  errors.date ? 'border-destructive' : 'border-input'
                 }`}
               >
                 <span className="flex items-center gap-2">
@@ -198,12 +198,8 @@ export default function NewTastingSessionPage() {
                 <div className="absolute z-10 mt-1 bg-popover border border-border rounded-lg shadow-lg p-3">
                   <style>{`
                     .rdp-root {
-                      --rdp-accent-color: hsl(15 65% 50%);
-                      --rdp-accent-background-color: hsl(15 65% 95%);
-                    }
-                    .dark .rdp-root {
-                      --rdp-accent-color: hsl(15 65% 60%);
-                      --rdp-accent-background-color: hsl(15 65% 15%);
+                      --rdp-accent-color: hsl(var(--primary));
+                      --rdp-accent-background-color: hsl(var(--color-forest-light));
                     }
                   `}</style>
                   <DayPicker
@@ -225,7 +221,7 @@ export default function NewTastingSessionPage() {
                       <select
                         value={selectedHour}
                         onChange={(e) => setSelectedHour(e.target.value)}
-                        className="flex-1 px-3 py-2 border border-input rounded-md bg-card text-sm focus:outline-none focus:ring-2 focus:ring-[hsl(15_65%_50%)] focus:border-transparent"
+                        className="flex-1 px-3 py-2 border border-input rounded-md bg-card text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
                       >
                         {hours.map((h) => (
                           <option key={h} value={h}>
@@ -237,7 +233,7 @@ export default function NewTastingSessionPage() {
                       <select
                         value={selectedMinute}
                         onChange={(e) => setSelectedMinute(e.target.value)}
-                        className="flex-1 px-3 py-2 border border-input rounded-md bg-card text-sm focus:outline-none focus:ring-2 focus:ring-[hsl(15_65%_50%)] focus:border-transparent"
+                        className="flex-1 px-3 py-2 border border-input rounded-md bg-card text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
                       >
                         {minutes.map((m) => (
                           <option key={m} value={m}>
@@ -248,7 +244,7 @@ export default function NewTastingSessionPage() {
                       <select
                         value={selectedPeriod}
                         onChange={(e) => setSelectedPeriod(e.target.value as 'AM' | 'PM')}
-                        className="flex-1 px-3 py-2 border border-input rounded-md bg-card text-sm focus:outline-none focus:ring-2 focus:ring-[hsl(15_65%_50%)] focus:border-transparent"
+                        className="flex-1 px-3 py-2 border border-input rounded-md bg-card text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
                       >
                         <option value="AM">AM</option>
                         <option value="PM">PM</option>
@@ -258,14 +254,14 @@ export default function NewTastingSessionPage() {
                   <button
                     type="button"
                     onClick={() => setShowCalendar(false)}
-                    className="w-full mt-3 px-3 py-2 bg-[hsl(15_65%_50%)] hover:bg-[hsl(15_65%_45%)] text-white rounded-md text-sm font-medium transition-colors"
+                    className="w-full mt-3 px-3 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-md text-sm font-medium transition-colors"
                   >
                     Done
                   </button>
                 </div>
               )}
             </div>
-            {errors.date && <p className="text-xs text-red-500 mt-1">{errors.date}</p>}
+            {errors.date && <p className="text-xs text-destructive mt-1">{errors.date}</p>}
           </div>
 
           <div>

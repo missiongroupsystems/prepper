@@ -68,10 +68,10 @@ export function DishFeedbackModal({ dishName, notes, onClose }: DishFeedbackModa
                   {note.decision && (
                     <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-medium ${
                       note.decision === 'approved'
-                        ? 'bg-green-500/15 text-green-700 dark:text-green-400'
+                        ? 'bg-[hsl(var(--status-approved-bg))] text-[hsl(var(--status-approved))]'
                         : note.decision === 'rejected'
                         ? 'bg-destructive/15 text-destructive'
-                        : 'bg-amber-500/15 text-amber-700 dark:text-amber-400'
+                        : 'bg-warning-bg text-warning'
                     }`}>
                       {note.decision === 'approved' ? 'Approved' : note.decision === 'rejected' ? 'Rejected' : 'Needs work'}
                     </span>

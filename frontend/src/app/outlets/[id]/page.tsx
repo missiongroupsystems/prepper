@@ -65,7 +65,7 @@ function EditableSelect({ value, onSave, options, className = '', onValidate, di
         value={value}
         onChange={handleChange}
         onBlur={handleBlur}
-        className={`px-1 py-0.5 text-sm border border-purple-400 rounded focus:outline-none focus:ring-1 focus:ring-purple-500 bg-card ${className}`}
+        className={`px-1 py-0.5 text-sm border border-primary rounded focus:outline-none focus:ring-1 focus:ring-ring bg-card ${className}`}
       >
         {options.map((opt) => (
           <option key={opt.value} value={opt.value}>
@@ -242,7 +242,7 @@ export default function OutletPage({ params }: OutletPageProps) {
           <ArrowLeft className="h-4 w-4" />
           Back
         </Link>
-        <div className="rounded-lg bg-red-50 dark:bg-red-950 p-4 text-red-600 dark:text-red-400">
+        <div className="rounded-lg bg-destructive/10 p-4 text-destructive">
           {is403
             ? "You do not have permission to access this outlet."
             : "Outlet not found or failed to load."}
@@ -351,7 +351,7 @@ export default function OutletPage({ params }: OutletPageProps) {
                               e.target.value = '';
                             }
                           }}
-                          className="px-2 py-1 text-sm border border-purple-400 rounded focus:outline-none focus:ring-1 focus:ring-purple-500 bg-card text-foreground cursor-pointer"
+                          className="px-2 py-1 text-sm border border-primary rounded focus:outline-none focus:ring-1 focus:ring-ring bg-card text-foreground cursor-pointer"
                         >
                           <option value="">Select parent outlet...</option>
                           {parentOutletOptions.map((opt) => (
@@ -518,7 +518,7 @@ export default function OutletPage({ params }: OutletPageProps) {
                               <td className="py-3 px-2 text-foreground font-medium">
                                 <Link
                                   href={`/recipes/${recipeOutlet.recipe_id}`}
-                                  className="hover:text-purple-600 dark:hover:text-purple-400 hover:underline"
+                                  className="hover:text-primary hover:underline"
                                 >
                                   {recipe?.name || 'Unknown Recipe'}
                                 </Link>
@@ -542,7 +542,7 @@ export default function OutletPage({ params }: OutletPageProps) {
                                       const n = parseFloat(raw);
                                       if (!isNaN(n)) setEditData({ ...editData, [recipeOutlet.recipe_id]: { price_override: String(n) } });
                                     }}
-                                    className="w-full px-2 py-1 text-sm border border-input rounded bg-card text-foreground focus:outline-none focus:ring-1 focus:ring-purple-500 text-right"
+                                    className="w-full px-2 py-1 text-sm border border-input rounded bg-card text-foreground focus:outline-none focus:ring-1 focus:ring-ring text-right"
                                   />
                                 ) : (
                                   recipeOutlet.price_override !== null ? formatCurrency(recipeOutlet.price_override) : '-'
@@ -565,7 +565,7 @@ export default function OutletPage({ params }: OutletPageProps) {
                                             setEditData({});
                                           }}
                                           disabled={updateRecipeOutletMutation.isPending}
-                                          className="w-full justify-start text-red-500 hover:text-red-700 dark:hover:text-red-400 rounded-none first:rounded-t-md h-8 px-3"
+                                          className="w-full justify-start text-destructive hover:bg-destructive/10 rounded-none first:rounded-t-md h-8 px-3"
                                         >
                                           <X className="h-4 w-4 mr-2" />
                                           Cancel
@@ -575,7 +575,7 @@ export default function OutletPage({ params }: OutletPageProps) {
                                           size="sm"
                                           onClick={() => handleUpdateRecipe(recipeOutlet.recipe_id)}
                                           disabled={updateRecipeOutletMutation.isPending}
-                                          className="w-full justify-start text-green-600 hover:text-green-700 dark:hover:text-green-400 rounded-none last:rounded-b-md h-8 px-3"
+                                          className="w-full justify-start text-[hsl(var(--status-approved))] hover:bg-[hsl(var(--status-approved-bg))] rounded-none last:rounded-b-md h-8 px-3"
                                         >
                                           <Check className="h-4 w-4 mr-2" />
                                           Save
@@ -604,7 +604,7 @@ export default function OutletPage({ params }: OutletPageProps) {
                                           size="sm"
                                           onClick={() => handleDeleteRecipe(recipeOutlet.recipe_id)}
                                           disabled={removeRecipeFromOutletMutation.isPending}
-                                          className="w-full justify-start text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950 rounded-none last:rounded-b-md h-8 px-3"
+                                          className="w-full justify-start text-destructive hover:bg-destructive/10 rounded-none last:rounded-b-md h-8 px-3"
                                         >
                                           <Trash2 className="h-4 w-4 mr-2" />
                                           Delete
@@ -667,7 +667,7 @@ export default function OutletPage({ params }: OutletPageProps) {
                               <td className="py-3 px-2 text-muted-foreground font-medium">
                                 <Link
                                   href={`/recipes/${recipeOutlet.recipe_id}`}
-                                  className="hover:text-purple-600 dark:hover:text-purple-400 hover:underline"
+                                  className="hover:text-primary hover:underline"
                                 >
                                   {recipe?.name || 'Unknown Recipe'}
                                 </Link>

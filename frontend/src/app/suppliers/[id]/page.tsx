@@ -190,7 +190,7 @@ export default function SupplierPage({ params }: SupplierPageProps) {
           <ArrowLeft className="h-4 w-4" />
           Back to Ingredients
         </Link>
-        <div className="rounded-lg bg-red-50 dark:bg-red-950 p-4 text-red-600 dark:text-red-400">
+        <div className="rounded-lg bg-destructive/10 p-4 text-destructive">
           Supplier not found or failed to load.
         </div>
       </div>
@@ -244,7 +244,7 @@ export default function SupplierPage({ params }: SupplierPageProps) {
                           size="sm"
                           onClick={handleArchive}
                           disabled={deactivateSupplierMutation.isPending}
-                          className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950"
+                          className="text-destructive hover:bg-destructive/10"
                         >
                           <Trash2 className="h-4 w-4 mr-1" />
                           Archive
@@ -324,7 +324,7 @@ export default function SupplierPage({ params }: SupplierPageProps) {
             <Card>
               <CardContent className="p-6">
                 <div className="flex items-center gap-2 mb-4">
-                  <Package className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                  <Package className="h-5 w-5 text-supplier" />
                   <h2 className="text-lg font-medium text-foreground">
                     Ingredients
                   </h2>
@@ -532,7 +532,7 @@ export default function SupplierPage({ params }: SupplierPageProps) {
                             <td className="py-3 px-2 text-foreground font-medium">
                               <Link
                                 href={`/ingredients/${ingredient.ingredient_id}`}
-                                className="hover:text-purple-600 dark:hover:text-purple-400"
+                                className="hover:text-primary"
                               >
                                 {ingredient.ingredient_name}
                               </Link>
@@ -555,7 +555,7 @@ export default function SupplierPage({ params }: SupplierPageProps) {
                                     })
                                   }
                                   placeholder="e.g., SKU-001"
-                                  className="w-full px-2 py-1 text-sm border border-input rounded bg-card text-foreground focus:outline-none focus:ring-1 focus:ring-purple-500"
+                                  className="w-full px-2 py-1 text-sm border border-input rounded bg-card text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
                                 />
                               ) : (
                                 ingredient.sku ?? '-'
@@ -580,7 +580,7 @@ export default function SupplierPage({ params }: SupplierPageProps) {
                                     const n = parseFloat(editData[ingredient.id]?.pack_size ?? '');
                                     if (!isNaN(n)) setEditData({ ...editData, [ingredient.id]: { ...editData[ingredient.id], pack_size: String(n) } });
                                   }}
-                                  className="w-full px-2 py-1 text-sm border border-input rounded bg-card text-foreground focus:outline-none focus:ring-1 focus:ring-purple-500 text-right"
+                                  className="w-full px-2 py-1 text-sm border border-input rounded bg-card text-foreground focus:outline-none focus:ring-1 focus:ring-ring text-right"
                                 />
                               ) : (
                                 ingredient.pack_size
@@ -599,7 +599,7 @@ export default function SupplierPage({ params }: SupplierPageProps) {
                                       },
                                     })
                                   }
-                                  className="px-2 py-1 text-sm border border-input rounded bg-card text-foreground focus:outline-none focus:ring-1 focus:ring-purple-500 w-full"
+                                  className="px-2 py-1 text-sm border border-input rounded bg-card text-foreground focus:outline-none focus:ring-1 focus:ring-ring w-full"
                                 >
                                   {UNIT_OPTIONS.map((opt) => (
                                     <option key={opt.value} value={opt.value}>
@@ -630,7 +630,7 @@ export default function SupplierPage({ params }: SupplierPageProps) {
                                     const n = parseFloat(editData[ingredient.id]?.price_per_pack ?? '');
                                     if (!isNaN(n)) setEditData({ ...editData, [ingredient.id]: { ...editData[ingredient.id], price_per_pack: String(n) } });
                                   }}
-                                  className="w-full px-2 py-1 text-sm border border-input rounded bg-card text-foreground focus:outline-none focus:ring-1 focus:ring-purple-500 text-right"
+                                  className="w-full px-2 py-1 text-sm border border-input rounded bg-card text-foreground focus:outline-none focus:ring-1 focus:ring-ring text-right"
                                 />
                               ) : (
                                 formatCurrency(ingredient.price_per_pack)
@@ -665,7 +665,7 @@ export default function SupplierPage({ params }: SupplierPageProps) {
                                           setEditData({});
                                         }}
                                         disabled={updateIngredientMutation.isPending}
-                                        className="w-full justify-start text-red-500 hover:text-red-700 dark:hover:text-red-400 rounded-none first:rounded-t-md h-8 px-3"
+                                        className="w-full justify-start text-destructive hover:bg-destructive/10 rounded-none first:rounded-t-md h-8 px-3"
                                       >
                                         <X className="h-4 w-4 mr-2" />
                                         Cancel
@@ -690,7 +690,7 @@ export default function SupplierPage({ params }: SupplierPageProps) {
                                           }
                                         }}
                                         disabled={updateIngredientMutation.isPending}
-                                        className="w-full justify-start text-green-600 hover:text-green-700 dark:hover:text-green-400 rounded-none last:rounded-b-md h-8 px-3"
+                                        className="w-full justify-start text-[hsl(var(--status-approved))] hover:bg-[hsl(var(--status-approved-bg))] rounded-none last:rounded-b-md h-8 px-3"
                                       >
                                         <Check className="h-4 w-4 mr-2" />
                                         Save
@@ -722,7 +722,7 @@ export default function SupplierPage({ params }: SupplierPageProps) {
                                         size="sm"
                                         onClick={() => handleDeleteIngredient(ingredient.id)}
                                         disabled={removeIngredientMutation.isPending}
-                                        className="w-full justify-start text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950 rounded-none last:rounded-b-md h-8 px-3"
+                                        className="w-full justify-start text-destructive hover:bg-destructive/10 rounded-none last:rounded-b-md h-8 px-3"
                                       >
                                         <Trash2 className="h-4 w-4 mr-2" />
                                         Delete

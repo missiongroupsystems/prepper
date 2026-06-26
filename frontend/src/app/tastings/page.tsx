@@ -65,7 +65,7 @@ function TastingSessionCard({ session, expired, isOwn, isInvited }: TastingSessi
           <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
             expired
               ? 'bg-secondary text-muted-foreground'
-              : 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400'
+              : 'bg-supplier-bg text-supplier'
           }`}>
             <Wine className="h-5 w-5" />
           </div>
@@ -141,7 +141,7 @@ export default function TastingsPage() {
   if (error) {
     return (
       <div className="p-6">
-        <div className="rounded-lg bg-red-50 dark:bg-red-950 p-4 text-red-600 dark:text-red-400">
+        <div className="rounded-lg bg-destructive/10 p-4 text-destructive">
           Failed to load tasting sessions. Please try again.
         </div>
       </div>
@@ -207,7 +207,7 @@ export default function TastingsPage() {
         {!isLoading && ongoingSessions.length > 0 && (
           <div className="mb-8">
             <div className="flex items-center gap-2 mb-4">
-              <Clock className="h-5 w-5 text-purple-500" />
+              <Clock className="h-5 w-5 text-supplier" />
               <h2 className="text-lg font-medium text-foreground">
                 Upcoming & Today
               </h2>

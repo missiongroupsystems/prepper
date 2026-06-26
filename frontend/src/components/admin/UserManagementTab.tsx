@@ -75,7 +75,7 @@ export function UserManagementTab() {
   if (error) {
     return (
       <div className="p-6">
-        <div className="rounded-lg bg-red-50 dark:bg-red-950 p-4 text-red-600 dark:text-red-400">
+        <div className="rounded-lg bg-destructive/10 p-4 text-destructive">
           Failed to load users. Please try again.
         </div>
       </div>
@@ -182,7 +182,7 @@ export function UserManagementTab() {
                           autoFocus
                           disabled={updateUser.isPending}
                           placeholder="Add phone..."
-                          className="px-2 py-1 text-sm w-full border border-blue-500 rounded bg-card text-foreground placeholder:text-muted-foreground disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="px-2 py-1 text-sm w-full border border-primary rounded bg-card text-foreground placeholder:text-muted-foreground disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-ring"
                         />
                       ) : (
                         <div
@@ -200,8 +200,8 @@ export function UserManagementTab() {
                       <span
                         className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
                           user.user_type === 'admin'
-                            ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-100'
-                            : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100'
+                            ? 'bg-supplier-bg text-supplier'
+                            : 'bg-[hsl(var(--status-testing-bg))] text-[hsl(var(--status-testing))]'
                         }`}
                       >
                         {user.user_type === 'admin' ? 'Admin' : 'Normal'}
@@ -216,7 +216,7 @@ export function UserManagementTab() {
                           disabled={updateUser.isPending}
                           className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
                             user.is_manager
-                              ? 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-100 hover:bg-amber-200 dark:hover:bg-amber-800'
+                              ? 'bg-warning-bg text-warning hover:bg-warning/20'
                               : 'bg-secondary text-secondary-foreground hover:bg-muted'
                           }`}
                         >

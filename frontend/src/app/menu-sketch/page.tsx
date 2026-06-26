@@ -76,7 +76,7 @@ export default function MenuSketchListPage() {
               <Link
                 key={sketch.id}
                 href={`/menu-sketch/${sketch.id}`}
-                className="flex flex-col rounded-xl border border-border bg-card p-5 shadow-sm transition-all hover:shadow-md"
+                className="flex flex-col rounded-lg border border-border bg-card p-5 transition-colors hover:bg-accent"
               >
                 <div className="flex flex-col gap-1">
                   <div className="flex items-center justify-between gap-2">

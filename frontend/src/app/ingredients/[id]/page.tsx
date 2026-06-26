@@ -98,7 +98,7 @@ function EditableSelect({ value, onSave, options, className = '' }: EditableSele
         value={value}
         onChange={handleChange}
         onBlur={handleBlur}
-        className={`px-1 py-0.5 text-sm border border-purple-400 rounded focus:outline-none focus:ring-1 focus:ring-purple-500 bg-card ${className}`}
+        className={`px-1 py-0.5 text-sm border border-primary rounded focus:outline-none focus:ring-1 focus:ring-ring bg-card ${className}`}
       >
         {options.map((opt) => (
           <option key={opt.value} value={opt.value}>
@@ -474,7 +474,7 @@ export default function IngredientPage({ params }: IngredientPageProps) {
           <ArrowLeft className="h-4 w-4" />
           Back to Ingredients
         </Link>
-        <div className="rounded-lg bg-red-50 dark:bg-red-950 p-4 text-red-600 dark:text-red-400">
+        <div className="rounded-lg bg-destructive/10 p-4 text-destructive">
           Ingredient not found or failed to load.
         </div>
       </div>
@@ -614,7 +614,7 @@ export default function IngredientPage({ params }: IngredientPageProps) {
                           size="sm"
                           onClick={handleReassignCategory}
                           disabled={categorizeIngredientMutation.isPending}
-                          className="text-xs text-orange-600 hover:text-orange-700 hover:bg-orange-50 dark:text-orange-400 dark:hover:text-orange-300 dark:hover:bg-orange-950"
+                          className="text-xs text-primary hover:text-primary hover:bg-primary/5"
                         >
                           <RefreshCw className={`h-3 w-3 mr-1 ${categorizeIngredientMutation.isPending ? 'animate-spin' : ''}`} />
                           {categorizeIngredientMutation.isPending ? 'Assigning...' : 'Reassign'}
@@ -638,7 +638,7 @@ export default function IngredientPage({ params }: IngredientPageProps) {
             <Card>
               <CardContent className="p-6">
                 <div className="flex items-center gap-2 mb-4">
-                  <Truck className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                  <Truck className="h-5 w-5 text-supplier" />
                   <h2 className="text-lg font-medium text-foreground">
                     Suppliers
                   </h2>
@@ -839,7 +839,7 @@ export default function IngredientPage({ params }: IngredientPageProps) {
                             <td className="py-3 px-2 text-foreground font-medium">
                               <Link
                                 href={`/suppliers/${supplier.supplier_id}`}
-                                className="hover:text-purple-600 dark:hover:text-purple-400 hover:underline"
+                                className="hover:text-supplier hover:underline"
                               >
                                 {supplier.supplier_name}
                               </Link>
@@ -862,7 +862,7 @@ export default function IngredientPage({ params }: IngredientPageProps) {
                                     })
                                   }
                                   placeholder="e.g., SKU-001"
-                                  className="w-full px-2 py-1 text-sm border border-input rounded bg-card text-foreground focus:outline-none focus:ring-1 focus:ring-purple-500"
+                                  className="w-full px-2 py-1 text-sm border border-input rounded bg-card text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
                                 />
                               ) : (
                                 supplier.sku ?? '-'
@@ -887,7 +887,7 @@ export default function IngredientPage({ params }: IngredientPageProps) {
                                     const n = parseFloat(editData[supplier.id]?.pack_size ?? '');
                                     if (!isNaN(n)) setEditData({ ...editData, [supplier.id]: { ...editData[supplier.id], pack_size: String(n) } });
                                   }}
-                                  className="w-full px-2 py-1 text-sm border border-input rounded bg-card text-foreground focus:outline-none focus:ring-1 focus:ring-purple-500 text-right"
+                                  className="w-full px-2 py-1 text-sm border border-input rounded bg-card text-foreground focus:outline-none focus:ring-1 focus:ring-ring text-right"
                                 />
                               ) : (
                                 supplier.pack_size
@@ -906,7 +906,7 @@ export default function IngredientPage({ params }: IngredientPageProps) {
                                       },
                                     })
                                   }
-                                  className="px-2 py-1 text-sm border border-input rounded bg-card text-foreground focus:outline-none focus:ring-1 focus:ring-purple-500 w-full"
+                                  className="px-2 py-1 text-sm border border-input rounded bg-card text-foreground focus:outline-none focus:ring-1 focus:ring-ring w-full"
                                 >
                                   {UNIT_OPTIONS.map((opt) => (
                                     <option key={opt.value} value={opt.value}>
@@ -937,7 +937,7 @@ export default function IngredientPage({ params }: IngredientPageProps) {
                                     const n = parseFloat(editData[supplier.id]?.price_per_pack ?? '');
                                     if (!isNaN(n)) setEditData({ ...editData, [supplier.id]: { ...editData[supplier.id], price_per_pack: String(n) } });
                                   }}
-                                  className="w-full px-2 py-1 text-sm border border-input rounded bg-card text-foreground focus:outline-none focus:ring-1 focus:ring-purple-500 text-right"
+                                  className="w-full px-2 py-1 text-sm border border-input rounded bg-card text-foreground focus:outline-none focus:ring-1 focus:ring-ring text-right"
                                 />
                               ) : (
                                 formatCurrency(supplier.price_per_pack)
@@ -972,7 +972,7 @@ export default function IngredientPage({ params }: IngredientPageProps) {
                                           setEditData({});
                                         }}
                                         disabled={updateSupplierMutation.isPending}
-                                        className="w-full justify-start text-red-500 hover:text-red-700 dark:hover:text-red-400 rounded-none first:rounded-t-md h-8 px-3"
+                                        className="w-full justify-start text-destructive hover:text-destructive rounded-none first:rounded-t-md h-8 px-3"
                                       >
                                         <X className="h-4 w-4 mr-2" />
                                         Cancel
@@ -997,7 +997,7 @@ export default function IngredientPage({ params }: IngredientPageProps) {
                                           }
                                         }}
                                         disabled={updateSupplierMutation.isPending}
-                                        className="w-full justify-start text-green-600 hover:text-green-700 dark:hover:text-green-400 rounded-none last:rounded-b-md h-8 px-3"
+                                        className="w-full justify-start text-[hsl(var(--status-approved))] hover:opacity-80 rounded-none last:rounded-b-md h-8 px-3"
                                       >
                                         <Check className="h-4 w-4 mr-2" />
                                         Save
@@ -1029,7 +1029,7 @@ export default function IngredientPage({ params }: IngredientPageProps) {
                                         size="sm"
                                         onClick={() => handleDeleteSupplier(supplier.id)}
                                         disabled={removeSupplierMutation.isPending}
-                                        className="w-full justify-start text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950 rounded-none last:rounded-b-md h-8 px-3"
+                                        className="w-full justify-start text-destructive hover:bg-destructive/10 rounded-none last:rounded-b-md h-8 px-3"
                                       >
                                         <Trash2 className="h-4 w-4 mr-2" />
                                         Delete

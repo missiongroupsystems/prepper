@@ -64,7 +64,7 @@ export function FMHSupplierImportModal({ isOpen, onClose }: FMHSupplierImportMod
         {/* Suppliers file */}
         <div>
           <p className="text-xs font-medium text-muted-foreground mb-2">
-            Suppliers file <span className="text-red-500">*</span>
+            Suppliers file <span className="text-destructive">*</span>
           </p>
           <input
             ref={suppliersRef}
@@ -88,7 +88,7 @@ export function FMHSupplierImportModal({ isOpen, onClose }: FMHSupplierImportMod
         {/* Pricings file */}
         <div>
           <p className="text-xs font-medium text-muted-foreground mb-2">
-            Supplier Pricings file <span className="text-red-500">*</span>
+            Supplier Pricings file <span className="text-destructive">*</span>
           </p>
           <input
             ref={pricingsRef}

@@ -18,7 +18,7 @@ export function SupplierListRow({ supplier, href }: SupplierListRowProps) {
           <div className="flex items-center justify-between gap-4">
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <h3 className="text-base font-medium text-foreground truncate hover:text-blue-600 dark:hover:text-blue-400">
+                <h3 className="text-base font-medium text-foreground truncate hover:text-primary">
                   {supplier.name}
                 </h3>
                 {supplier.code && (

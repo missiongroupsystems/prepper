@@ -106,7 +106,7 @@ const VersionNode = memo(({ data }: NodeProps<VersionNodeType>) => {
       className={cn(
         'cursor-pointer rounded-lg border p-4 transition-all hover:shadow-md min-w-[280px] max-w-[320px]',
         isCurrentRecipe
-          ? 'border-blue-500 bg-blue-50 shadow-blue-100 dark:border-blue-400 dark:bg-blue-950 dark:shadow-blue-900/20'
+          ? 'border-primary bg-primary/5 shadow-primary/20'
           : 'border-border bg-card hover:border-border'
       )}
     >
@@ -123,7 +123,7 @@ const VersionNode = memo(({ data }: NodeProps<VersionNodeType>) => {
               {recipe.name}
             </h3>
             {isCurrentRecipe && (
-              <Badge className="bg-blue-500 text-white text-xs shrink-0">
+              <Badge className="bg-primary text-primary-foreground text-xs shrink-0">
                 Current
               </Badge>
             )}
@@ -365,7 +365,7 @@ function ActionablesList({
                 }}
               >
                 {item.checked ? (
-                  <CheckSquare className="h-5 w-5 text-green-600 dark:text-green-400" />
+                  <CheckSquare className="h-5 w-5 text-[hsl(var(--status-approved))]" />
                 ) : (
                   <Square className="h-5 w-5 text-muted-foreground" />
                 )}
@@ -516,7 +516,7 @@ function OverviewTab({
 
               <div className="flex items-center gap-2 shrink-0">
                 {userId !== null && recipe.owner_id === userId && (
-                  <Badge className="bg-black text-white dark:bg-white dark:text-black">Owned</Badge>
+                  <Badge className="bg-inverse text-inverse-foreground">Owned</Badge>
                 )}
                 <Badge variant={STATUS_VARIANTS[recipe.status]}>
                   {recipe.status.charAt(0).toUpperCase() + recipe.status.slice(1)}
@@ -561,7 +561,7 @@ function OverviewTab({
           className="w-full p-6 flex items-center justify-between hover:bg-secondary transition-colors"
         >
           <div className="flex items-center gap-2">
-            <ClipboardList className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+            <ClipboardList className="h-5 w-5 text-warning" />
             <h2 className="text-lg font-medium text-foreground">
               Follow Ups
             </h2>
@@ -599,7 +599,7 @@ function OverviewTab({
           className="w-full p-6 flex items-center justify-between hover:bg-secondary transition-colors"
         >
           <div className="flex items-center gap-2">
-            <Wine className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+            <Wine className="h-5 w-5 text-supplier" />
             <h2 className="text-lg font-medium text-foreground">
               Tasting History
             </h2>
@@ -643,7 +643,7 @@ function OverviewTab({
                         <div className="flex items-center gap-2 mb-1">
                           <Link
                             href={`/tastings/${note.session_id}`}
-                            className="text-sm font-medium text-foreground hover:text-purple-600 dark:hover:text-purple-400"
+                            className="text-sm font-medium text-foreground hover:text-supplier"
                           >
                             {note.session_name}
                           </Link>
@@ -800,7 +800,7 @@ function OverviewTab({
                       {recipe.selling_price_est && costing.cost_per_portion && (
                         <div className="flex justify-between items-center py-2">
                           <span className="text-muted-foreground">Margin</span>
-                          <span className="font-medium text-green-600 dark:text-green-400">
+                          <span className="font-medium text-[hsl(var(--status-approved))]">
                             {((1 - costing.cost_per_portion / recipe.selling_price_est) * 100).toFixed(1)}%
                           </span>
                         </div>
@@ -893,7 +893,7 @@ function VersionsTab({
     return (
       <Card>
         <CardContent className="p-6">
-          <div className="rounded-lg bg-red-50 dark:bg-red-950 p-4 text-red-600 dark:text-red-400">
+          <div className="rounded-lg bg-destructive/10 p-4 text-destructive">
             Failed to load version history
           </div>
         </CardContent>
@@ -1035,7 +1035,7 @@ export default function RndRecipePage({ params }: RndRecipePageProps) {
           <ArrowLeft className="h-4 w-4" />
           Back to R&D
         </Link>
-        <div className="rounded-lg bg-red-50 dark:bg-red-950 p-4 text-red-600 dark:text-red-400">
+        <div className="rounded-lg bg-destructive/10 p-4 text-destructive">
           Recipe not found or failed to load.
         </div>
       </div>

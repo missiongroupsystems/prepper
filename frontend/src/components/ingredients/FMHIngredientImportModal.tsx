@@ -69,7 +69,7 @@ export function FMHIngredientImportModal({ isOpen, onClose }: FMHIngredientImpor
         {/* Products file */}
         <div>
           <p className="text-xs font-medium text-muted-foreground mb-2">
-            Product List file <span className="text-red-500">*</span>
+            Product List file <span className="text-destructive">*</span>
           </p>
           <input
             ref={fileRef}

@@ -396,7 +396,7 @@ export function SubRecipesList({ recipeId, canEdit }: SubRecipesListProps) {
 
   if (error) {
     return (
-      <div className="rounded-lg bg-red-50 p-4 text-center text-sm text-red-600 dark:bg-red-900/20 dark:text-red-400">
+      <div className="rounded-lg bg-destructive/10 p-4 text-center text-sm text-destructive">
         Failed to load sub-recipes
       </div>
     );
@@ -413,7 +413,7 @@ export function SubRecipesList({ recipeId, canEdit }: SubRecipesListProps) {
       ref={setNodeRef}
       className={cn(
         'space-y-4 rounded-lg',
-        isOver && 'ring-2 ring-green-400 ring-offset-2'
+        isOver && 'ring-2 ring-primary ring-offset-2'
       )}
     >
       {canEdit && recipes && (
@@ -458,7 +458,7 @@ export function SubRecipesList({ recipeId, canEdit }: SubRecipesListProps) {
         <div
           className={cn(
             'rounded-lg border-2 border-dashed border-border p-8 text-center',
-            isOver && 'border-green-400 bg-green-50 dark:bg-green-900/20'
+            isOver && 'border-primary bg-primary/5'
           )}
         >
           <p className="text-muted-foreground">No sub-recipes yet</p>

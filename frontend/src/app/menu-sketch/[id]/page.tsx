@@ -126,7 +126,7 @@ function DishPreviewCell({
   );
 
   return (
-    <div className={`relative px-4 py-3 space-y-2${item.is_highlight ? ' bg-amber-500/10 dark:bg-amber-500/25' : ''}`}>
+    <div className={`relative px-4 py-3 space-y-2${item.is_highlight ? ' bg-warning-bg' : ''}`}>
       {/* Dish name + icons + prices + badges on one row */}
       <div className="flex items-center gap-2">
         <p className="flex-1 text-base font-medium text-foreground leading-snug">
@@ -168,9 +168,9 @@ function DishPreviewCell({
               onClick={() => setShowFeedback((v) => !v)}
               className={`shrink-0 flex items-center gap-0.5 rounded-full border px-1.5 text-[10px] transition-colors hover:opacity-80 ${
                 showFeedback
-                  ? 'border-blue-400/80 bg-blue-500/25 text-blue-600 dark:text-blue-400'
+                  ? 'border-[hsl(var(--status-testing))]/80 bg-[hsl(var(--status-testing-bg))] text-[hsl(var(--status-testing))]'
                   : item.tasting_notes.length > 0
-                  ? 'border-blue-400/50 bg-blue-500/15 text-blue-600 dark:text-blue-400'
+                  ? 'border-[hsl(var(--status-testing))]/50 bg-[hsl(var(--status-testing-bg))] text-[hsl(var(--status-testing))]'
                   : 'border-border bg-muted/60 text-muted-foreground'
               }`}
               title="Tasting feedback"
@@ -185,7 +185,7 @@ function DishPreviewCell({
               onClick={onOpenComments}
               className={`shrink-0 flex items-center gap-0.5 rounded-full border px-1.5 text-[10px] transition-colors hover:opacity-80 ${
                 commentCount > 0
-                  ? 'border-orange-400/50 bg-orange-500/15 text-orange-600 dark:text-orange-400'
+                  ? 'border-warning/50 bg-warning-bg text-warning'
                   : 'border-border bg-muted/60 text-muted-foreground'
               }`}
             >
@@ -247,7 +247,7 @@ function MenuSketchPreview({
         const items = itemsBySection[section.id] ?? [];
         const pairs = chunk(items, 2);
         return (
-          <div key={section.id} className="rounded-xl overflow-hidden border border-border shadow-sm">
+          <div key={section.id} className="rounded-lg overflow-hidden border border-border">
             {/* Section header */}
             <div className="text-center font-medium text-sm py-2.5 px-4 bg-muted text-foreground">
               {section.name || 'Unnamed Section'}
@@ -436,7 +436,7 @@ function DishCard({
   return (
     <div
       className={`relative rounded-lg border border-border p-3 space-y-2 ${
-        item.is_highlight ? 'bg-amber-50 dark:bg-amber-950/20' : 'bg-card'
+        item.is_highlight ? 'bg-warning-bg' : 'bg-card'
       }`}
     >
       {/* Drag handle + remove */}
@@ -674,7 +674,7 @@ function DishCard({
         <button
           onClick={() => setShowFeedback(true)}
           className={`flex items-center gap-0.5 rounded p-0.5 text-xs hover:opacity-80 ${
-            item.tasting_notes.length > 0 ? 'text-blue-600 dark:text-blue-400' : 'text-muted-foreground'
+            item.tasting_notes.length > 0 ? 'text-[hsl(var(--status-testing))]' : 'text-muted-foreground'
           }`}
           title="Tasting feedback"
         >
@@ -684,7 +684,7 @@ function DishCard({
         <button
           onClick={onOpenComments}
           className={`flex items-center gap-0.5 rounded p-0.5 text-xs ${
-            unresolvedCount > 0 ? 'text-orange-500' : 'text-muted-foreground hover:text-foreground'
+            unresolvedCount > 0 ? 'text-warning' : 'text-muted-foreground hover:text-foreground'
           }`}
           title="Comments"
         >
@@ -888,7 +888,7 @@ function DishRow({
     <div
       className={`rounded-lg border ${
         isSelected ? 'border-primary/50' : 'border-border'
-      } ${item.is_highlight ? 'bg-amber-50 dark:bg-amber-950/20' : 'bg-card'}`}
+      } ${item.is_highlight ? 'bg-warning-bg' : 'bg-card'}`}
     >
       {/* Main row — table-like with column dividers */}
       <div
@@ -1120,7 +1120,7 @@ function DishRow({
           <button
             onClick={() => setShowFeedback(true)}
             className={`flex items-center gap-1 rounded p-0.5 text-xs hover:opacity-80 ${
-              item.tasting_notes.length > 0 ? 'text-blue-600 dark:text-blue-400' : 'text-muted-foreground'
+              item.tasting_notes.length > 0 ? 'text-[hsl(var(--status-testing))]' : 'text-muted-foreground'
             }`}
             title="Tasting feedback"
           >
@@ -1130,7 +1130,7 @@ function DishRow({
           <button
             onClick={onOpenComments}
             className={`flex items-center gap-1 rounded p-0.5 text-xs ${
-              unresolvedCount > 0 ? 'text-orange-500' : 'text-muted-foreground hover:text-foreground'
+              unresolvedCount > 0 ? 'text-warning' : 'text-muted-foreground hover:text-foreground'
             }`}
             title="Comments"
           >
@@ -1302,7 +1302,7 @@ function SectionCard({
   };
 
   return (
-    <div className="rounded-xl border border-border bg-card shadow-sm">
+    <div className="rounded-lg border border-border bg-card">
       {/* Section header */}
       <div className="flex items-center gap-2 border-b border-border px-3 py-2">
         <span
@@ -1818,7 +1818,7 @@ export default function MenuSketchEditorPage() {
               {notesOpen ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronUp className="h-3.5 w-3.5" />}
               Notes
               {sketch.notes && !notesOpen && (
-                <Check className="ml-auto h-3 w-3 text-green-500" />
+                <Check className="ml-auto h-3 w-3 text-[hsl(var(--status-approved))]" />
               )}
             </button>
             {notesOpen && (

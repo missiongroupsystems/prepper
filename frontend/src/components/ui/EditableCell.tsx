@@ -66,7 +66,7 @@ export function EditableCell({
         onBlur={handleBlur}
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
-        className={`w-full px-1 py-0.5 text-sm border border-purple-400 rounded focus:outline-none focus:ring-1 focus:ring-purple-500 bg-card ${className}`}
+        className={`w-full px-1 py-0.5 text-sm border border-primary rounded focus:outline-none focus:ring-1 focus:ring-ring bg-card ${className}`}
       />
     );
   }

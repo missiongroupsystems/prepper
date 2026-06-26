@@ -189,7 +189,7 @@ export function OverviewTab() {
     return (
       <div className="flex-1 bg-background p-6">
         <div className="max-w-5xl mx-auto">
-          <div className="rounded-lg bg-red-50 dark:bg-red-950 p-4 text-red-600 dark:text-red-400">
+          <div className="rounded-lg bg-destructive/10 p-4 text-destructive">
             Recipe not found or failed to load.
           </div>
         </div>
@@ -233,7 +233,7 @@ export function OverviewTab() {
                     {canEditRecipe && (
                       <button
                         onClick={() => setIsImageModalOpen(true)}
-                        className="absolute bottom-1 right-1 rounded-full h-8 w-8 bg-[hsl(var(--primary))] hover:opacity-90 text-black flex items-center justify-center transition-colors shadow-lg"
+                        className="absolute bottom-1 right-1 rounded-full h-8 w-8 bg-[hsl(var(--primary))] hover:opacity-90 text-primary-foreground flex items-center justify-center transition-colors shadow-lg"
                         title="Edit recipe image"
                       >
                         <Wand2 className="h-4 w-4" />
@@ -256,7 +256,7 @@ export function OverviewTab() {
                               autoFocus
                               className="text-2xl font-medium text-foreground bg-transparent border-b-2 border-[hsl(var(--primary))] focus:outline-none flex-1 min-w-0"
                             />
-                            <button onClick={handleSaveName} disabled={isUpdating} className="text-green-600 hover:text-green-700 disabled:opacity-50 shrink-0">
+                            <button onClick={handleSaveName} disabled={isUpdating} className="text-[hsl(var(--status-approved))] hover:opacity-80 disabled:opacity-50 shrink-0">
                               <Check className="h-5 w-5" />
                             </button>
                             <button onClick={() => { setIsEditingName(false); setNameValue(recipe?.name || ''); }} className="text-muted-foreground hover:text-foreground shrink-0">
@@ -295,7 +295,7 @@ export function OverviewTab() {
                       <div className="flex items-center gap-2 flex-wrap">
                         <Badge variant="secondary">v{recipe.version}</Badge>
                         {userId !== null && recipe.owner_id === userId && (
-                          <Badge className="bg-black text-white dark:bg-white dark:text-black">Owned</Badge>
+                          <Badge className="bg-inverse text-inverse-foreground">Owned</Badge>
                         )}
                         {categoryLinks.map((link) => {
                           const category = allCategories.find((c) => c.id === link.category_id);
@@ -541,7 +541,7 @@ export function OverviewTab() {
                   {canEditRecipe && !isEditingDescription && (
                     <button
                       onClick={() => setIsEditingDescription(true)}
-                      className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[hsl(var(--primary))] hover:opacity-90 text-black text-sm font-medium transition-colors mt-1 shrink-0"
+                      className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[hsl(var(--primary))] hover:opacity-90 text-primary-foreground text-sm font-medium transition-colors mt-1 shrink-0"
                     >
                       <Edit2 className="h-4 w-4" />
                       Edit
@@ -647,7 +647,7 @@ export function OverviewTab() {
                       {recipe.selling_price_est && costing.cost_per_portion && (
                         <div className="flex justify-between items-center py-2">
                           <span className="text-muted-foreground">Margin</span>
-                          <span className="font-medium text-green-600 dark:text-green-400">
+                          <span className="font-medium text-[hsl(var(--status-approved))]">
                             {((1 - costing.cost_per_portion / recipe.selling_price_est) * 100).toFixed(1)}%
                           </span>
                         </div>
@@ -714,7 +714,7 @@ export function OverviewTab() {
             <Card className="mt-6">
               <CardContent className="p-6">
                 <div className="flex items-center gap-2 mb-4">
-                  <Wine className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                  <Wine className="h-5 w-5 text-supplier" />
                   <h2 className="text-lg font-medium text-foreground">
                     Tasting History
                   </h2>
@@ -730,7 +730,7 @@ export function OverviewTab() {
                           <button
                             onClick={() => { summaryForRecipeIdRef.current = selectedRecipeId; summarizeFeedback(selectedRecipeId!); }}
                             disabled={isSummarizingFeedback}
-                            className="flex items-center gap-2 px-2 py-1 rounded bg-[hsl(var(--primary))] hover:opacity-90 disabled:opacity-50 text-black text-xs font-medium transition-colors disabled:cursor-not-allowed"
+                            className="flex items-center gap-2 px-2 py-1 rounded bg-[hsl(var(--primary))] hover:opacity-90 disabled:opacity-50 text-primary-foreground text-xs font-medium transition-colors disabled:cursor-not-allowed"
                           >
                             <Wand2 className="h-3 w-3" />
                             {isSummarizingFeedback ? 'Generating...' : 'Generate'}
@@ -787,7 +787,7 @@ export function OverviewTab() {
                                   <div className="flex items-center gap-2 mb-1">
                                     <Link
                                       href={`/tastings/${note.session_id}`}
-                                      className="text-sm font-medium text-foreground hover:text-purple-600 dark:hover:text-purple-400"
+                                      className="text-sm font-medium text-foreground hover:text-primary"
                                     >
                                       {note.session_name}
                                     </Link>

@@ -60,19 +60,19 @@ const DECISION_CONFIG: Record<
   approved: {
     label: 'Approved',
     icon: CheckCircle,
-    className: 'text-green-600 dark:text-green-400',
+    className: 'text-[hsl(var(--status-approved))]',
     badgeVariant: 'success',
   },
   needs_work: {
     label: 'Needs Work',
     icon: AlertCircle,
-    className: 'text-amber-600 dark:text-amber-400',
+    className: 'text-warning',
     badgeVariant: 'warning',
   },
   rejected: {
     label: 'Rejected',
     icon: XCircle,
-    className: 'text-red-600 dark:text-red-400',
+    className: 'text-destructive',
     badgeVariant: 'destructive',
   },
 };
@@ -311,7 +311,7 @@ function FeedbackNoteCard({ note, onUpdate, onDelete, currentUserId }: FeedbackN
             </button>
             <button
               onClick={() => onDelete(note.id)}
-              className="p-1.5 rounded-md hover:bg-red-100 dark:hover:bg-red-900/30 text-muted-foreground hover:text-red-600"
+              className="p-1.5 rounded-md hover:bg-destructive/10 text-muted-foreground hover:text-destructive"
             >
               <Trash2 className="h-4 w-4" />
             </button>
@@ -371,7 +371,7 @@ function FeedbackNoteCard({ note, onUpdate, onDelete, currentUserId }: FeedbackN
                           href={image.image_url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="rounded-lg overflow-hidden bg-secondary aspect-square hover:ring-2 ring-amber-500 transition-all"
+                          className="rounded-lg overflow-hidden bg-secondary aspect-square hover:ring-2 ring-ring transition-all"
                         >
                           <Image
                             src={image.image_url}
@@ -509,7 +509,7 @@ export default function IngredientTastingPage() {
   if (!session) {
     return (
       <div className="p-6">
-        <div className="rounded-lg bg-red-50 dark:bg-red-950 p-4 text-red-600 dark:text-red-400">
+        <div className="rounded-lg bg-destructive/10 p-4 text-destructive">
           Tasting session not found.
         </div>
       </div>
@@ -519,7 +519,7 @@ export default function IngredientTastingPage() {
   if (!ingredient) {
     return (
       <div className="p-6">
-        <div className="rounded-lg bg-red-50 dark:bg-red-950 p-4 text-red-600 dark:text-red-400">
+        <div className="rounded-lg bg-destructive/10 p-4 text-destructive">
           Ingredient not found.
         </div>
       </div>
@@ -542,7 +542,7 @@ export default function IngredientTastingPage() {
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-2 mb-2">
-            <Droplet className="h-6 w-6 text-amber-500" />
+            <Droplet className="h-6 w-6 text-primary" />
             <h1 className="text-2xl font-medium text-foreground">{ingredient.name}</h1>
           </div>
           <p className="text-sm text-muted-foreground mb-2">{session.name}</p>
@@ -603,7 +603,7 @@ export default function IngredientTastingPage() {
 
         {/* Add Feedback Form */}
         {showAddForm && (
-          <Card className="mb-4 border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-900/10">
+          <Card className="mb-4 border-primary/30 bg-primary/5">
             <CardContent className="pt-4">
               <FeedbackForm
                 initialData={{ taster_name: username || '' }}

@@ -35,7 +35,7 @@ export function IngredientCard({ ingredient, categories, onEdit, onArchive, onUn
       <CardHeader>
         <div className="flex-1 min-w-0">
           <Link href={`/ingredients/${ingredient.id}`}>
-            <CardTitle className="truncate text-xl hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer">
+            <CardTitle className="truncate text-xl hover:text-primary cursor-pointer">
               {ingredient.name}
             </CardTitle>
           </Link>

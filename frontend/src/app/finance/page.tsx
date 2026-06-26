@@ -27,15 +27,15 @@ export default function FinancePage() {
         </PageHeader>
 
         {/* Dependency Notice */}
-        <Card className="mb-6 border-amber-200 dark:border-amber-900 bg-amber-50 dark:bg-amber-950/30">
+        <Card className="mb-6 border-warning/30 bg-warning-bg">
           <CardContent className="p-4">
             <div className="flex items-start gap-3">
-              <Building2 className="h-5 w-5 text-amber-600 dark:text-amber-500 mt-0.5" />
+              <Building2 className="h-5 w-5 text-warning mt-0.5" />
               <div>
-                <h3 className="font-medium text-amber-800 dark:text-amber-300">
+                <h3 className="font-medium text-warning">
                   Atlas Integration Required
                 </h3>
-                <p className="text-sm text-amber-700 dark:text-amber-400 mt-1">
+                <p className="text-sm text-warning mt-1">
                   This page requires integration with Atlas POS to display sales data.
                   COGS calculations will be available once Atlas integration is complete (Plan 04).
                 </p>

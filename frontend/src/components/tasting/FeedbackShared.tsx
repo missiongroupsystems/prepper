@@ -33,19 +33,19 @@ export const DECISION_CONFIG: Record<
   approved: {
     label: 'Approved',
     icon: CheckCircle,
-    className: 'text-green-600 dark:text-green-400',
+    className: 'text-[hsl(var(--status-approved))]',
     badgeVariant: 'success',
   },
   needs_work: {
     label: 'Needs Work',
     icon: AlertCircle,
-    className: 'text-amber-600 dark:text-amber-400',
+    className: 'text-warning',
     badgeVariant: 'warning',
   },
   rejected: {
     label: 'Rejected',
     icon: XCircle,
-    className: 'text-red-600 dark:text-red-400',
+    className: 'text-destructive',
     badgeVariant: 'destructive',
   },
 };
@@ -368,7 +368,7 @@ export function FeedbackNoteCard({ note, currentUserId, onUpdate, onDelete, show
                           href={image.image_url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="rounded-lg overflow-hidden bg-muted aspect-square hover:ring-2 ring-purple-500 transition-all"
+                          className="rounded-lg overflow-hidden bg-muted aspect-square hover:ring-2 ring-ring transition-all"
                         >
                           <Image
                             src={image.image_url}

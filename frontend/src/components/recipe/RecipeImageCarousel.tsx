@@ -170,7 +170,7 @@ export function RecipeImageCarousel({ recipeId, recipeName, ingredients }: Recip
             <button
               onClick={handleDeleteImage}
               disabled={deleteImageMutation.isPending}
-              className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="text-destructive hover:bg-destructive/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               title="Delete this image"
             >
               <Trash2 className="h-4 w-4" />
