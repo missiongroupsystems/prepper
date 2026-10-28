@@ -1,4 +1,4 @@
-# Prepper
+# Mission Recipes
 
 A kitchen-first recipe workspace that treats recipes as living, central objects—not database records. Drag ingredients, write freeform instructions, and let the system handle costing automatically.
 
@@ -78,7 +78,7 @@ A Postman collection is available at `backend/postman_collection.json` for testi
 1. Open Postman
 2. Click **Import** (top-left) or use `Ctrl/Cmd + O`
 3. Drag and drop `backend/postman_collection.json` or click **Upload Files** and select it
-4. The collection will appear in your sidebar under "Prepper API"
+4. The collection will appear in your sidebar under "Mission Recipes API"
 
 **Setup:**
 - Ensure the backend is running on `http://localhost:8000`

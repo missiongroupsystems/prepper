@@ -1,8 +1,8 @@
-# RecipeRep Design System
+# Mission Recipes Design System
 
-> RecipeRep's instance of the **Mission Design System** — one design language across every Mission / Ebb & Flow product (Mission Systems, Grapestack, Beacon, Bearhug, Lighthouse, Geddit, RecipeRep, Supadriver, SupaSchedule, Launchpad).
+> Mission Recipes' instance of the **Mission Design System** — one design language across every Mission / Ebb & Flow product (Mission Systems, Grapestack, Beacon, Bearhug, Lighthouse, Geddit, Mission Recipes, Supadriver, SupaSchedule, Launchpad).
 >
-> This file is the **target contract** for RecipeRep (the kitchen-first recipe workspace, packaged in this repo as `prepper`). The Mission language was authored for calm, editorial marketing surfaces; RecipeRep is a dense operational app (recipe canvas, ingredients, costing, tasting sessions, outlets, versioning). Where the two pull apart, this doc records the adaptation explicitly rather than copying Mission blindly. The live implementation in `frontend/src/app/globals.css` and `frontend/src/app/layout.tsx` is the source of truth for tokens; when this doc and the code disagree, fix whichever is wrong for the phase you're in.
+> This file is the **target contract** for Mission Recipes (the kitchen-first recipe workspace, packaged in this repo as `prepper`). The Mission language was authored for calm, editorial marketing surfaces; Mission Recipes is a dense operational app (recipe canvas, ingredients, costing, tasting sessions, outlets, versioning). Where the two pull apart, this doc records the adaptation explicitly rather than copying Mission blindly. The live implementation in `frontend/src/app/globals.css` and `frontend/src/app/layout.tsx` is the source of truth for tokens; when this doc and the code disagree, fix whichever is wrong for the phase you're in.
 
 The feel in one sentence: **white and warm-beige surfaces, one dark-green brand accent, hairline-thin lines, generous space on empty/onboarding surfaces and disciplined density on data surfaces, quiet motion — calm, editorial, human, never loud — while recipe/ingredient/cost status stays instantly legible.**
 
@@ -10,7 +10,7 @@ The feel in one sentence: **white and warm-beige surfaces, one dark-green brand 
 
 ## 0. Implementation status (migration tracker)
 
-This doc describes the **target**. RecipeRep starts from its prior **terracotta / parchment** system (HSL tokens, three typefaces, a collectible `game-card` aesthetic). Phases below are RecipeRep's actual state, not Mission's — most of the migration has **not** started.
+This doc describes the **target**. Mission Recipes starts from its prior **terracotta / parchment** system (HSL tokens, three typefaces, a collectible `game-card` aesthetic). Phases below are Mission Recipes' actual state, not Mission's — most of the migration has **not** started.
 
 | Phase | Scope | Status |
 |---|---|---|
@@ -22,12 +22,12 @@ This doc describes the **target**. RecipeRep starts from its prior **terracotta 
 | 3 | Components — buttons & badges → fully-round pills (no shadow, colour-only hover); cards → 0.5px hairline + no shadow; hairline widths across primitives + chrome; **retire `game-card`** | 🟡 in progress — primitives done (`Button`/`Badge`/`.status-*` → pill; `Card` → `rounded-lg` + 0.5px hairline, no shadow, colour-only hover). **game-card fully retired** — CanvasTab rebuilt as hairline cards with thumbnail + neutral type tag; ~240 lines of game-card CSS removed; `flow-ui`/`mono-gradient` utilities + orphan tokens removed. Chromatic worklist done — multi-agent sweep over 57 files mapped 195 classes by role (red→`destructive`, green→`status-approved`, amber→`warning`, purple→`supplier`, blue→`status-testing`/`primary`/link), 161 `dark:` pairs collapsed; added `--warning`/`--inverse`/`--supplier` tokens; "Owned" badge → `--inverse`; date-picker accents → `--primary`. Deliberately left: star-rating amber (convention), modal scrims, `prose-zinc`, ReactFlow/chart hex, and the RightPanel ingredient/recipe type-coding accent bars (blue/green) — see follow-up. |
 | 4 | Motion — remove legacy `flow-ui-hover-lift` / `flow-ui-active-scale`; status-label → pill radius | ✅ done — `flow-ui-*` utilities removed (Phase 3); `game-card` hover/lift gone; `.status-*` → pill radius; `prefers-reduced-motion` block shipped (0.0.49). |
 
-**Decisions locked for RecipeRep:**
+**Decisions locked for Mission Recipes:**
 - **Brand = Mission forest green** (full adoption). Terracotta is retired as the brand accent.
 - **Single family = Polymath** (stand-in for Euclid Circular B). Fractul + CoFo Sans + CoFo Sans Mono are dropped.
 - **`game-card` is retired**, not kept as an exception — ingredient/recipe cards rebuild as hairline cards.
 - **The broad tokenisation sweep (Phase 0.5) runs as a multi-agent workflow**, fanning out per directory/screen.
-- This doc is the **RecipeRep-branded** contract; the Geddit/Mission master lives elsewhere.
+- This doc is the **Mission Recipes-branded** contract; the Geddit/Mission master lives elsewhere.
 
 **Phase 3 chromatic worklist** (what the Phase 0.5 sweep deliberately left for component work):
 - **`game-card` rarity** — blue (ingredient) / green (recipe) / purple (tertiary/supplier) glows, shadows, 2px borders. Retire to hairline cards (§5).
@@ -67,12 +67,12 @@ Concrete colour/spacing values below marked _(tune in Phase 1)_ are targets to b
 
 ## 2. Color
 
-RecipeRep uses a **two-tier** color model. This is the central adaptation of Mission for an operational app.
+Mission Recipes uses a **two-tier** color model. This is the central adaptation of Mission for an operational app.
 
 - **Tier 1 — Brand & interactive chrome:** exactly one accent. Mission's restraint applies in full.
 - **Tier 2 — Functional status:** a small, desaturated, warm palette reserved for operational state (recipe lifecycle, ingredient status, inventory/cost health). It exists for legibility, never decoration.
 
-> **Token-naming note (RecipeRep ≠ Geddit):** RecipeRep's brand token is **`--primary`** (with `--ring`), and its existing `--accent` token is a *neutral warm surface*, not the brand. Mission/Geddit name the brand `--accent`. Keep RecipeRep's names — flip `--primary`/`--ring` to forest green; leave `--accent` as the neutral surface it already is. Don't blind-rename or every `bg-accent` flips visually.
+> **Token-naming note (Mission Recipes ≠ Geddit):** Mission Recipes' brand token is **`--primary`** (with `--ring`), and its existing `--accent` token is a *neutral warm surface*, not the brand. Mission/Geddit name the brand `--accent`. Keep Mission Recipes' names — flip `--primary`/`--ring` to forest green; leave `--accent` as the neutral surface it already is. Don't blind-rename or every `bg-accent` flips visually.
 
 ### 2.1 The brand accent — exactly one
 
@@ -89,7 +89,7 @@ One brand accent for the entire system. Used for: primary pill buttons, eyebrows
 
 Two surfaces, warm ink-greys, one warm near-black. The greys are **warm** (a hint of stone/clay), never cold. Tokens stay HSL.
 
-**App-shell convention (RecipeRep):** RecipeRep keeps its **top-nav shell** (`TopNav` + `TopAppBar`, `flex h-dvh flex-col`), not Geddit's sidebar. The beige-canvas / white-card relationship still holds: the **warm beige is the canvas** (page ground + top bar share one tone), and **white cards are raised on top**. The top bar is parted from content by a 0.5px hairline. Geddit's sidebar specifics are N/A here.
+**App-shell convention (Mission Recipes):** Mission Recipes keeps its **top-nav shell** (`TopNav` + `TopAppBar`, `flex h-dvh flex-col`), not Geddit's sidebar. The beige-canvas / white-card relationship still holds: the **warm beige is the canvas** (page ground + top bar share one tone), and **white cards are raised on top**. The top bar is parted from content by a 0.5px hairline. Geddit's sidebar specifics are N/A here.
 
 | Token | Current (HSL) | Target (HSL ≈ hex) | Role |
 |---|---|---|---|
@@ -113,11 +113,11 @@ Tinted ink at low opacity, never solid grey. On dark surfaces use white at `0.16
 
 ### 2.4 Functional status palette (Tier 2)
 
-Recipe/ingredient/cost state must be readable at a glance, so RecipeRep keeps a status palette — but **re-tuned into Mission's muted, warm, desaturated register**. The token *names* and `.status-*` utilities stay; only their *values* change. Lower saturation than legacy; hues warm-shifted; each still distinguishable. _(values tune in Phase 1)_
+Recipe/ingredient/cost state must be readable at a glance, so Mission Recipes keeps a status palette — but **re-tuned into Mission's muted, warm, desaturated register**. The token *names* and `.status-*` utilities stay; only their *values* change. Lower saturation than legacy; hues warm-shifted; each still distinguishable. _(values tune in Phase 1)_
 
 Used **only** by status badges/labels and health indicators — never as page chrome, buttons, or links.
 
-| Semantic (RecipeRep token) | Legacy (HSL) | Target — muted/warm | Applies to |
+| Semantic (Mission Recipes token) | Legacy (HSL) | Target — muted/warm | Applies to |
 |---|---|---|---|
 | `--status-draft` (slate) | `220 10% 50%` | warm grey `30 6% 52%` | recipe draft, inactive |
 | `--status-testing` (teal) | `160 50% 40%` | muted teal `185 28% 40%` | testing / in-progress |
@@ -131,7 +131,7 @@ Each keeps its `-bg` (tint) pair as today. **Note the deliberate distinction:** 
 
 **Dark sections** (empty/onboarding surfaces only): full dark-green canvas (`background: hsl(var(--primary))`). Headings `#ffffff`; body white at reduced alpha (`0.78` ledes, `0.68` secondary, `0.72` kickers); hairlines/pill outlines white `0.45`; inverted pills near-solid white `0.94` with forest-green text.
 
-**Dark mode (kept, re-tuned).** RecipeRep retains its full user-toggled light/dark theme — no feature regression (the `prepper-theme` localStorage toggle + `.dark` class on `<html>` stays). The `.dark` tokens re-tune to Mission's **warm-dark** palette _(tune in Phase 1)_:
+**Dark mode (kept, re-tuned).** Mission Recipes retains its full user-toggled light/dark theme — no feature regression (the `mission_recipes_theme` localStorage toggle + `.dark` class on `<html>` stays). The `.dark` tokens re-tune to Mission's **warm-dark** palette _(tune in Phase 1)_:
 
 | Token | Current (dark) | Target (dark) |
 |---|---|---|
@@ -149,7 +149,7 @@ Functional status colors lighten for contrast on dark, as today.
 
 ### 3.1 Typeface
 
-**One typeface, one family, via a single swap seam.** RecipeRep today ships **three** faces — `fractul-variable` (headings/display), `cofo-sans-variable` (body/UI), `cofo-sans-mono-variable` (numerics) — loaded via Adobe Typekit kit `syo6zfp`, with `Manrope` + `Geist_Mono` (Google) as fallbacks. **This violates the one-family rule and is the largest open migration.**
+**One typeface, one family, via a single swap seam.** Mission Recipes today ships **three** faces — `fractul-variable` (headings/display), `cofo-sans-variable` (body/UI), `cofo-sans-mono-variable` (numerics) — loaded via Adobe Typekit kit `syo6zfp`, with `Manrope` + `Geist_Mono` (Google) as fallbacks. **This violates the one-family rule and is the largest open migration.**
 
 **Done (Phase 1 spike):** collapsed to a **single family — Polymath** (Typekit kit `weg5tjh`, the Mission Polymath kit) behind a swap seam in `frontend/src/app/globals.css`, so the family name lives in exactly one place:
 
@@ -235,12 +235,12 @@ Default **left**. Center is reserved for whole-section "moments" — empty-state
 
 ### 4.1 Spatial tokens
 
-App surfaces use the existing shell gutters (`p-4 md:p-6 lg:p-8`). Marketing/standalone-page gutters (`--pad-x: 56px`, `--content-max: 1320px`) apply only if RecipeRep grows public/marketing pages.
+App surfaces use the existing shell gutters (`p-4 md:p-6 lg:p-8`). Marketing/standalone-page gutters (`--pad-x: 56px`, `--content-max: 1320px`) apply only if Mission Recipes grows public/marketing pages.
 
 ### 4.2 Vertical rhythm — two registers
 
 - **Empty / onboarding:** generous — big content wants big gaps (44–110px); mobile compresses to ~80–100px.
-- **Operational / data (the default in RecipeRep):** disciplined. Page padding `p-4 md:p-6 lg:p-8`; card padding `p-6`; section gaps `mb-6`/`mb-8`; tight table rows. Air comes from hairlines and whitespace *within* a dense grid, not big voids.
+- **Operational / data (the default in Mission Recipes):** disciplined. Page padding `p-4 md:p-6 lg:p-8`; card padding `p-6`; section gaps `mb-6`/`mb-8`; tight table rows. Air comes from hairlines and whitespace *within* a dense grid, not big voids.
 
 ### 4.3 Corner radii
 
@@ -273,13 +273,13 @@ Primitives live in `frontend/src/components/ui/` (`Button`, `Card`, `Badge`, `Mo
 
 ## 6. Glassmorphism
 
-The one optional "effect," used with restraint over a dark accent canvas only. **Never on flat light/beige surfaces** (nothing to blur — use a solid card + hairline instead). In RecipeRep, glass is essentially unused — operational data surfaces sit on white/beige and use solid cards. Reserve for any future dark hero/empty surface; blur 14–18px, ~14% white fill, 0.5px translucent border, white text. No colored glass, no thick borders, no stacked layers.
+The one optional "effect," used with restraint over a dark accent canvas only. **Never on flat light/beige surfaces** (nothing to blur — use a solid card + hairline instead). In Mission Recipes, glass is essentially unused — operational data surfaces sit on white/beige and use solid cards. Reserve for any future dark hero/empty surface; blur 14–18px, ~14% white fill, 0.5px translucent border, white text. No colored glass, no thick borders, no stacked layers.
 
 ---
 
 ## 7. Icons
 
-Stroke-based, single-color, one drawing language. RecipeRep uses **`lucide-react`** (thin-line, Mission-compatible). Keep `fill="none"`, thin strokes, `round` linejoin/linecap. On light: ink stroke. On dark: `#ffffff`. Forest green is for icon **chips** (the rounded tile behind an icon), not the glyph itself. **Avoid filled/duotone/multicolor variants. No emoji as UI icons** (note: the menu-sketch dish icon-tags use emoji as *content/data*, which is fine — that's not chrome).
+Stroke-based, single-color, one drawing language. Mission Recipes uses **`lucide-react`** (thin-line, Mission-compatible). Keep `fill="none"`, thin strokes, `round` linejoin/linecap. On light: ink stroke. On dark: `#ffffff`. Forest green is for icon **chips** (the rounded tile behind an icon), not the glyph itself. **Avoid filled/duotone/multicolor variants. No emoji as UI icons** (note: the menu-sketch dish icon-tags use emoji as *content/data*, which is fine — that's not chrome).
 
 ---
 
@@ -318,7 +318,7 @@ frontend/
 │       └── hooks/        # TanStack Query hooks
 ```
 
-`docs/references/design.md` (this file) is RecipeRep's portable contract. The Mission master lives in the Mission Systems repo; keep RecipeRep-specific adaptations (two-tier color, compact UI scale, top-nav shell, dark mode, `--primary`-as-brand naming) in sync conceptually, not by copy-paste.
+`docs/references/design.md` (this file) is Mission Recipes' portable contract. The Mission master lives in the Mission Systems repo; keep Mission Recipes-specific adaptations (two-tier color, compact UI scale, top-nav shell, dark mode, `--primary`-as-brand naming) in sync conceptually, not by copy-paste.
 
 ---
 

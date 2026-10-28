@@ -1,4 +1,4 @@
-# Frontend Blueprint (Prepper)
+# Frontend Blueprint (Mission Recipes)
 
 Last updated: 2025-01-02
 

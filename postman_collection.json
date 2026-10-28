@@ -1,6 +1,6 @@
 {
   "info": {
-    "name": "Prepper API",
+    "name": "Mission Recipes API",
     "description": "Kitchen-first recipe workspace API for chefs and operators",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },

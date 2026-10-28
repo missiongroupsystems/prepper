@@ -1,6 +1,6 @@
-# Prepper
+# Mission Recipes
 
-Kitchen-first recipe workspace for chefs and operators. Recipes are living objects on a "recipe canvas" with drag-and-drop ingredients, freeform-to-structured instructions, and automatic costing with wastage tracking. Principles: clarity, immediacy, reversibility — no save buttons, only autosave.
+Kitchen-first recipe workspace for chefs and operators: the Recipes application in the Mission Systems suite (packaged in this repo as `prepper`). Recipes are living objects on a "recipe canvas" with drag-and-drop ingredients, freeform-to-structured instructions, and automatic costing with wastage tracking. Principles: clarity, immediacy, reversibility — no save buttons, only autosave.
 
 Features: Supabase auth (normal/admin, hierarchical outlet-based access), recipe versioning (forking + version tree via `root_id` / `version`), multi-outlet with hierarchy + cycle detection + per-outlet price overrides, wastage-adjusted costing, AI agents (categorization, tasting feedback summarization).
 

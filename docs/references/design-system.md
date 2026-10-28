@@ -1,10 +1,10 @@
-# Prepper Design System
+# Mission Recipes Design System
 
-This document outlines the design system for Prepper, a kitchen-first recipe workspace for chefs and operators.
+This document outlines the design system for Mission Recipes, a kitchen-first recipe workspace for chefs and operators.
 
 ## Overview
 
-The Prepper design system is built on:
+The Mission Recipes design system is built on:
 - **Tailwind CSS 4** with CSS custom properties
 - **shadcn/ui-style** components (customized)
 - **Three-font typography** via Adobe Typekit
@@ -243,7 +243,9 @@ function ThemeToggle() {
 
 ### Logo
 
-The RecipeRep logo features a friendly chef character with the wordmark. Located in `public/logo/`:
+The current logo features a friendly chef character with the wordmark. Located in `public/logo/`:
+
+> **Note:** These logo files still use the legacy `reciperep-*` names and artwork. They are pending replacement with Mission Recipes assets.
 
 | File | Dimensions | Usage |
 |------|------------|-------|
@@ -254,7 +256,7 @@ The RecipeRep logo features a friendly chef character with the wordmark. Located
 ```tsx
 <Image
   src="/logo/reciperep-logo_inline-960x180.png"
-  alt="RecipeRep"
+  alt="Mission Recipes"
   width={120}
   height={22}
   className="h-6 w-auto"

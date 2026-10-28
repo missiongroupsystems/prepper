@@ -1,6 +1,6 @@
 # Frontend Pages Documentation
 
-This document lists all pages in the Prepper frontend application and their functionality.
+This document lists all pages in the Mission Recipes frontend application and their functionality.
 
 ## Core Navigation Pages
 

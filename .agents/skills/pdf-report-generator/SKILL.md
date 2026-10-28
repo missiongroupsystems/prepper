@@ -54,14 +54,14 @@ The generator script lives at `.agents/skills/pdf-report-generator/generate_repo
 python .agents/skills/pdf-report-generator/generate_report.py \
   --input /tmp/report_findings.json \
   --title "Performance Optimisation Report" \
-  --project "Prepper"
+  --project "Mission Recipes"
 ```
 
 Optional flags:
 - `--input / -i` — path to JSON file (reads stdin if omitted)
 - `--output / -o` — output PDF path (default: `~/Downloads/optimisation-report.pdf`)
 - `--title / -t` — report title (default: `"Performance Optimisation Report"`)
-- `--project / -p` — project name (default: `"Prepper"`)
+- `--project / -p` — project name (default: `"Mission Recipes"`)
 
 ### 4. Confirm output
 
@@ -86,7 +86,7 @@ rm /tmp/report_findings.json
 │        TITLE PAGE           │
 │  "Performance Optimisation  │
 │        Report"              │
-│  Project: Prepper           │
+│  Project: Mission Recipes   │
 │  Date: YYYY-MM-DD           │
 │  Total findings: N          │
 ├─────────────────────────────┤

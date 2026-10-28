@@ -1,7 +1,7 @@
 {
   "info": {
-    "_postman_id": "prepper-api-collection",
-    "name": "Prepper API",
+    "_postman_id": "mission-recipes-api-collection",
+    "name": "Mission Recipes API",
     "description": "Recipe Builder API - Kitchen-first recipe workspace for chefs and operators",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },

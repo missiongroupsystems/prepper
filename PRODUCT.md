@@ -12,7 +12,7 @@ The job to be done: turn a dish in someone's head into a living, costed, version
 
 ## Product Purpose
 
-Prepper is a kitchen-first recipe workspace. A recipe is not a database record; it's a living object on a "recipe canvas" with one dish in focus at a time. Everything else (ingredient library, instructions, costing) exists to support that active context. The product separates authoritative data (ingredients, quantities, yields) from derived representations (formatted instructions, cost breakdowns), so chefs get an effortless tactile surface while finance gets reliable structured data.
+Mission Recipes is a kitchen-first recipe workspace, the Recipes application in the Mission Systems suite. A recipe is not a database record; it's a living object on a "recipe canvas" with one dish in focus at a time. Everything else (ingredient library, instructions, costing) exists to support that active context. The product separates authoritative data (ingredients, quantities, yields) from derived representations (formatted instructions, cost breakdowns), so chefs get an effortless tactile surface while finance gets reliable structured data.
 
 Success: a non-technical chef can build and maintain a recipe end-to-end without ever pressing "Save" or navigating a wizard, and the resulting cost/wastage/margin numbers are trustworthy enough for finance to act on.
 

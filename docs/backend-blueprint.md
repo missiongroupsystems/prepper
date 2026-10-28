@@ -1,4 +1,4 @@
-# Backend Blueprint (Prepper)
+# Backend Blueprint (Mission Recipes)
 
 Last updated: 2026-01-02
 

@@ -1,6 +1,6 @@
-# Prepper Frontend
+# Mission Recipes Frontend
 
-A Next.js 15 frontend for the Prepper recipe workspace.
+A Next.js 15 frontend for the Mission Recipes recipe workspace.
 
 ## Tech Stack
 

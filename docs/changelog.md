@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to Prepper are documented here.
+All notable changes to Mission Recipes are documented here.
 
 ---
 

@@ -189,7 +189,7 @@ def main():
     parser.add_argument("--input", "-i", help="Path to JSON findings file (reads stdin if omitted)")
     parser.add_argument("--output", "-o", help="Output PDF path (default: ~/Downloads/optimisation-report.pdf)")
     parser.add_argument("--title", "-t", default="Performance Optimisation Report", help="Report title")
-    parser.add_argument("--project", "-p", default="Prepper", help="Project name")
+    parser.add_argument("--project", "-p", default="Mission Recipes", help="Project name")
     args = parser.parse_args()
 
     # Load findings
