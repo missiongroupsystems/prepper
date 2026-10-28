@@ -3,10 +3,10 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Eye, FlaskConical, GitFork, LayoutGrid, List, MessageSquare, Pencil, SlidersHorizontal } from 'lucide-react';
+import { Page } from '@/components/app';
 import { Badge, Button, Checkbox, SegmentedControl } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import { DISPLAY_OPTION_LABELS, inlineFieldClasses, type DisplayOptions, type ViewMode } from './shared';
-import { PAGE_GUTTERS } from './PageMeasure';
 
 const VIEW_ITEMS = [
   { id: 'card', label: 'Card view', icon: LayoutGrid, iconOnly: true },
@@ -58,7 +58,7 @@ export function EditorHeader({
 
   return (
     <header className="shrink-0 hairline-b bg-background">
-      <div className={cn(PAGE_GUTTERS, 'flex flex-wrap items-center justify-between gap-x-6 gap-y-3 py-4')}>
+      <Page className="flex-row flex-wrap items-center justify-between gap-x-6 gap-y-3 py-4 sm:py-4 lg:py-4">
         <div className="flex min-w-0 flex-1 basis-72 items-center gap-2">
           <Button
             variant="ghost"
@@ -158,7 +158,7 @@ export function EditorHeader({
             Fork
           </Button>
         </div>
-      </div>
+      </Page>
     </header>
   );
 }

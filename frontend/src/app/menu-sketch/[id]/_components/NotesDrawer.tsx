@@ -3,8 +3,8 @@
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import { Check, ChevronUp } from 'lucide-react';
+import { Page } from '@/components/app';
 import { cn } from '@/lib/utils';
-import { PAGE_GUTTERS } from './PageMeasure';
 
 const NotesEditor = dynamic(() => import('../NotesEditor').then((m) => m.NotesEditor), { ssr: false });
 
@@ -14,7 +14,7 @@ export function NotesDrawer({ notes, onSave }: { notes: string | null | undefine
 
   return (
     <div className="shrink-0 hairline-t bg-card">
-      <div className={PAGE_GUTTERS}>
+      <Page className="gap-0 py-0 sm:py-0 lg:py-0">
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
@@ -36,7 +36,7 @@ export function NotesDrawer({ notes, onSave }: { notes: string | null | undefine
             <NotesEditor initialContent={notes ?? ''} onChange={() => {}} onSave={onSave} />
           </div>
         )}
-      </div>
+      </Page>
     </div>
   );
 }
