@@ -20,7 +20,7 @@ export function AuthLayout({
   children: ReactNode;
 }) {
   return (
-    <main className="flex min-h-dvh flex-col items-center justify-center gap-6 bg-background px-5 py-10">
+    <div className="flex min-h-dvh flex-col items-center justify-center gap-6 bg-background px-5 py-10">
       <BrandLogo className="h-7 text-ink" />
       <Card className="flex w-full max-w-[25rem] flex-col gap-6 p-6 sm:p-8">
         <div className="flex flex-col gap-1.5 text-center">
@@ -30,7 +30,7 @@ export function AuthLayout({
         {children}
       </Card>
       <p className="text-center text-sm text-muted-foreground">{footer}</p>
-    </main>
+    </div>
   );
 }
 
