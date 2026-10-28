@@ -15,6 +15,7 @@ export { Badge } from './Badge';
 export type { BadgeProps, BadgeVariant, StatusVariant, SemanticVariant } from './Badge';
 export { Table, TableHeader, TableBody, TableFooter, TableRow, TableHead, TableCell, TableEmpty } from './Table';
 export { EmptyState } from './EmptyState';
+export { EntityCode } from './EntityCode';
 export { Skeleton, SkeletonRows } from './Skeleton';
 export { Spinner } from './Spinner';
 export { Pagination } from './Pagination';
