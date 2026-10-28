@@ -1,990 +1,99 @@
 'use client';
 
-import { use, useState, useMemo, useCallback } from 'react';
+import { use, useState } from 'react';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import Image from 'next/image';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
+import { Eye, Pencil } from 'lucide-react';
 import {
-  ArrowLeft,
-  Edit2,
-  Eye,
-  ImagePlus,
-  Clock,
-  Thermometer,
-  Star,
-  CheckCircle,
-  AlertCircle,
-  XCircle,
-  Wine,
-  ClipboardList,
-  History,
-  LayoutGrid,
-  Square,
-  CheckSquare,
-  Calendar,
-  User,
-  ChevronDown,
-} from 'lucide-react';
-import {
-  ReactFlow,
-  Background,
-  Handle,
-  Position,
-  MarkerType,
-  type Node,
-  type Edge,
-  type NodeProps,
-  type NodeMouseHandler,
-} from '@xyflow/react';
-import '@xyflow/react/dist/style.css';
-import { memo } from 'react';
-import { useRecipe, useRecipeIngredients, useCosting, useSubRecipes, useRecipes, useRecipeVersions, useOutlets, useRecipeCategoryLinks, useRecipeCategories, useRecipeAllergens } from '@/lib/hooks';
-import { useRecipeTastingNotes, useRecipeTastingSummary, useUpdateTastingNote } from '@/lib/hooks/useTastings';
+  useRecipe,
+  useRecipeIngredients,
+  useCosting,
+  useSubRecipes,
+  useRecipes,
+  useRecipeVersions,
+  useOutlets,
+  useRecipeCategoryLinks,
+  useRecipeCategories,
+  useRecipeAllergens,
+} from '@/lib/hooks';
+import { useRecipeTastingNotes, useRecipeTastingSummary } from '@/lib/hooks/useTastings';
 import { useRecipeOutlets } from '@/lib/hooks/useRecipeOutlets';
 import { useAppState } from '@/lib/store';
-import { Badge, Button, Card, CardContent, Skeleton } from '@/components/ui';
-import { formatCurrency, formatTimer, cn } from '@/lib/utils';
-import type { Recipe, RecipeStatus, TastingDecision, TastingNoteWithRecipe, RecipeIngredient, CostingResult, SubRecipe, RecipeTastingSummary, RecipeOutlet, Outlet, RecipeRecipeCategory, RecipeCategory, Allergen } from '@/types';
+import { Page, SectionHeader } from '@/components/app';
+import { Badge, Skeleton, TabRail, buttonClasses } from '@/components/ui';
+import { formatDisplayName } from '@/lib/format/displayName';
+import { RecipeStatusBadge } from '@/components/rnd/recipeDisplay';
+import { RndRecipeSummary } from '@/components/rnd/RndRecipeSummary';
+import { FollowUps } from '@/components/rnd/FollowUps';
+import { TastingHistory } from '@/components/rnd/TastingHistory';
+import { RecipeMoreInfo } from '@/components/rnd/RecipeMoreInfo';
+import { BackLink, TastingNotFound } from '@/components/tasting/TastingPageStates';
+import type { Outlet, Recipe } from '@/types';
+
+const RndVersionTree = dynamic(() => import('@/components/rnd/RndVersionTree').then((m) => m.RndVersionTree), {
+  ssr: false,
+  loading: () => <Skeleton className="m-8 h-28 w-64 rounded-lg" />,
+});
+
+const LOOKUP_PAGE_SIZE = 30;
+/** The header strip of the full-height Versions tab: the page gutters on the 1080px measure. */
+const HEADER_MEASURE = 'mx-auto w-full max-w-(--content-max) px-5 pt-6 pb-4 sm:px-8 sm:pt-8 lg:px-12 lg:pt-10';
+
+const TABS = [
+  { id: 'overview', label: 'Overview', panelId: 'rnd-recipe-overview' },
+  { id: 'versions', label: 'Iteration history', panelId: 'rnd-recipe-versions' },
+] as const;
+type TabType = (typeof TABS)[number]['id'];
 
 interface RndRecipePageProps {
   params: Promise<{ recipeId: string }>;
 }
 
-type TabType = 'overview' | 'versions';
-
-// ReactFlow paints edges and the dot grid into SVG presentation attributes, which
-// do not resolve CSS custom properties — these must be literals. Values mirror the
-// warm ink ramp (--c-ink-300 / a beige hairline); never a cold grey.
-const TREE_EDGE_COLOR = '#8d8a82';
-const TREE_GRID_COLOR = '#e6e3dc';
-
-const STATUS_VARIANTS: Record<RecipeStatus, 'default' | 'success' | 'warning' | 'secondary'> = {
-  draft: 'secondary',
-  active: 'success',
-  archived: 'warning',
-};
-
-const DECISION_CONFIG: Record<TastingDecision, { label: string; icon: typeof CheckCircle; variant: 'success' | 'warning' | 'destructive' }> = {
-  approved: { label: 'Approved', icon: CheckCircle, variant: 'success' },
-  needs_work: { label: 'Needs work', icon: AlertCircle, variant: 'warning' },
-  rejected: { label: 'Rejected', icon: XCircle, variant: 'destructive' },
-};
-
-function StarRating({ rating }: { rating: number | null }) {
-  if (!rating) return <span className="text-muted-foreground">-</span>;
-  return (
-    <div className="flex items-center gap-0.5">
-      {[1, 2, 3, 4, 5].map((star) => (
-        <Star
-          key={star}
-          className={`h-3.5 w-3.5 ${
-            star <= rating
-              ? 'fill-[var(--color-feedback-warning)] text-[var(--color-feedback-warning)]'
-              : 'text-muted-foreground'
-          }`}
-        />
-      ))}
-    </div>
-  );
-}
-
-function formatTastingDate(dateString: string): string {
-  return new Date(dateString).toLocaleDateString('en-GB', {
-    day: 'numeric',
-    month: 'short',
-  });
-}
-
-// ============ Version Tree Components ============
-
-interface VersionNodeData extends Record<string, unknown> {
-  recipe: Recipe;
-  isCurrentRecipe: boolean;
-}
-
-type VersionNodeType = Node<VersionNodeData, 'versionNode'>;
-
-const VersionNode = memo(({ data }: NodeProps<VersionNodeType>) => {
-  const { recipe, isCurrentRecipe } = data;
-
-  return (
-    <div
-      className={cn(
-        'cursor-pointer rounded-xl border p-4 transition-all hover:shadow-elevation-2 min-w-[280px] max-w-[320px]',
-        isCurrentRecipe
-          ? 'border-[var(--border-strong)] bg-[var(--surface-selected)] shadow-elevation-1'
-          : 'border-border bg-card hover:border-border'
-      )}
-    >
-      <Handle
-        type="target"
-        position={Position.Left}
-        className="!bg-muted-foreground !w-2 !h-2 !border-0"
-      />
-
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <h3 className="font-medium text-foreground truncate">
-              {recipe.name}
-            </h3>
-            {isCurrentRecipe && (
-              <Badge variant="info" className="text-xs shrink-0">
-                Current
-              </Badge>
-            )}
-          </div>
-          <div className="flex items-center gap-3 text-sm text-muted-foreground">
-            <span className="flex items-center gap-1">
-              <History className="h-3.5 w-3.5" />
-              v{recipe.version}
-            </span>
-            <span className="flex items-center gap-1">
-              <Calendar className="h-3.5 w-3.5" />
-              {new Date(recipe.created_at).toLocaleDateString()}
-            </span>
-          </div>
-          {recipe.created_by && (
-            <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
-              <User className="h-3 w-3" />
-              {recipe.created_by}
-            </div>
-          )}
-        </div>
-        <Badge variant={STATUS_VARIANTS[recipe.status]} className="shrink-0">
-          {recipe.status}
-        </Badge>
-      </div>
-
-      <Handle
-        type="source"
-        position={Position.Right}
-        className="!bg-muted-foreground !w-2 !h-2 !border-0"
-      />
-    </div>
-  );
-});
-
-VersionNode.displayName = 'VersionNode';
-
-const nodeTypes = {
-  versionNode: VersionNode,
-};
-
-function buildVersionGraph(
-  versions: Recipe[],
-  selectedRecipeId: number | null
-): { nodes: VersionNodeType[]; edges: Edge[] } {
-  if (!versions.length) return { nodes: [], edges: [] };
-
-  // Filter out masked (private) recipes - they have empty names
-  const visibleVersions = versions.filter((recipe) => recipe.name !== '');
-  if (!visibleVersions.length) return { nodes: [], edges: [] };
-
-  // Build a map of recipe id to recipe for quick lookup
-  const recipeMap = new Map<number, Recipe>();
-  for (const recipe of visibleVersions) {
-    recipeMap.set(recipe.id, recipe);
-  }
-
-  // Build parent-child relationships based on root_id (which is actually "forked_from")
-  const childrenMap = new Map<number, Recipe[]>();
-  let rootRecipe: Recipe | null = null;
-
-  for (const recipe of visibleVersions) {
-    if (recipe.root_id === null) {
-      // This is the root recipe (original, not forked from anything)
-      rootRecipe = recipe;
-    } else if (recipeMap.has(recipe.root_id)) {
-      // Only create edge if the parent is in our visible versions list
-      const children = childrenMap.get(recipe.root_id) || [];
-      children.push(recipe);
-      childrenMap.set(recipe.root_id, children);
-    }
-  }
-
-  // If no root found, use the recipe with the lowest version number
-  if (!rootRecipe) {
-    rootRecipe = [...visibleVersions].sort((a, b) => a.version - b.version)[0];
-  }
-
-  // Layout nodes using a tree structure (BFS for level assignment)
-  // Horizontal layout: levels go left to right
-  const NODE_WIDTH = 320;
-  const NODE_HEIGHT = 120;
-  const HORIZONTAL_SPACING = 80;
-  const VERTICAL_SPACING = 40;
-
-  // Assign levels (depth) to each node using BFS
-  const levelMap = new Map<number, number>();
-  const nodesAtLevel = new Map<number, Recipe[]>();
-  const queue: { recipe: Recipe; level: number }[] = [{ recipe: rootRecipe, level: 0 }];
-  const visited = new Set<number>();
-
-  while (queue.length > 0) {
-    const { recipe, level } = queue.shift()!;
-    if (visited.has(recipe.id)) continue;
-    visited.add(recipe.id);
-
-    levelMap.set(recipe.id, level);
-    const levelNodes = nodesAtLevel.get(level) || [];
-    levelNodes.push(recipe);
-    nodesAtLevel.set(level, levelNodes);
-
-    // Add children to queue
-    const children = childrenMap.get(recipe.id) || [];
-    // Sort children by version for consistent ordering
-    children.sort((a, b) => a.version - b.version);
-    for (const child of children) {
-      if (!visited.has(child.id)) {
-        queue.push({ recipe: child, level: level + 1 });
-      }
-    }
-  }
-
-  // Handle any orphaned nodes (not connected to root) - add them at appropriate levels
-  for (const recipe of visibleVersions) {
-    if (!visited.has(recipe.id)) {
-      const level = recipe.version - 1; // Use version as a fallback for level
-      levelMap.set(recipe.id, level);
-      const levelNodes = nodesAtLevel.get(level) || [];
-      levelNodes.push(recipe);
-      nodesAtLevel.set(level, levelNodes);
-    }
-  }
-
-  // Calculate positions for horizontal layout (left to right)
-  // X = level (depth), Y = position within level
-  const positionMap = new Map<number, { x: number; y: number }>();
-  const maxLevel = Math.max(...Array.from(nodesAtLevel.keys()));
-
-  for (let level = 0; level <= maxLevel; level++) {
-    const nodesInLevel = nodesAtLevel.get(level) || [];
-    const totalHeight = nodesInLevel.length * NODE_HEIGHT + (nodesInLevel.length - 1) * VERTICAL_SPACING;
-    const startY = -totalHeight / 2 + NODE_HEIGHT / 2;
-
-    nodesInLevel.forEach((recipe, index) => {
-      positionMap.set(recipe.id, {
-        x: level * (NODE_WIDTH + HORIZONTAL_SPACING),
-        y: startY + index * (NODE_HEIGHT + VERTICAL_SPACING),
-      });
-    });
-  }
-
-  // Create nodes (only for visible/authorized recipes)
-  const nodes: VersionNodeType[] = visibleVersions.map((recipe) => {
-    const position = positionMap.get(recipe.id) || { x: 0, y: 0 };
-    return {
-      id: String(recipe.id),
-      type: 'versionNode',
-      position,
-      data: {
-        recipe,
-        isCurrentRecipe: recipe.id === selectedRecipeId,
-      },
-      draggable: false,
-      selectable: false,
-    };
-  });
-
-  // Create edges based on actual parent-child (root_id) relationships
-  const edges: Edge[] = [];
-  for (const recipe of visibleVersions) {
-    if (recipe.root_id !== null && recipeMap.has(recipe.root_id)) {
-      edges.push({
-        id: `e${recipe.root_id}-${recipe.id}`,
-        source: String(recipe.root_id),
-        target: String(recipe.id),
-        type: 'smoothstep',
-        animated: false,
-        style: { stroke: TREE_EDGE_COLOR, strokeWidth: 2 },
-        markerEnd: {
-          type: MarkerType.ArrowClosed,
-          color: TREE_EDGE_COLOR,
-          width: 20,
-          height: 20,
-        },
-      });
-    }
-  }
-
-  return { nodes, edges };
-}
-
-// ============ Actionable Item Component ============
-
-interface ActionableItem {
-  noteId: number;
-  sessionId: number;
-  text: string;
-  sessionName: string | null;
-  sessionDate: string | null;
-  checked: boolean;
-}
-
-function ActionablesList({
-  actionables,
-  onToggle,
-  isUpdating,
-}: {
-  actionables: ActionableItem[];
-  onToggle: (noteId: number, sessionId: number, currentValue: boolean) => void;
-  isUpdating: boolean;
-}) {
-  const uncheckedCount = actionables.filter(a => !a.checked).length;
-
-  return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-medium text-foreground">
-          Follow ups ({uncheckedCount} tasks left)
-        </h2>
-      </div>
-
-      {actionables.length === 0 ? (
-        <div className="text-center py-12">
-          <ClipboardList className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-          <p className="text-muted-foreground">
-            No actionables from tastings yet
-          </p>
-        </div>
-      ) : (
-        <ul className="space-y-2">
-          {actionables.map((item) => (
-            <li
-              key={item.noteId}
-              className={cn(
-                'flex items-start gap-3 p-3 rounded-lg border transition-colors cursor-pointer',
-                item.checked
-                  ? 'bg-secondary border-border'
-                  : 'bg-card border-border hover:border-border',
-                isUpdating && 'opacity-50 pointer-events-none'
-              )}
-              onClick={() => onToggle(item.noteId, item.sessionId, item.checked)}
-            >
-              <button
-                className="mt-0.5 shrink-0"
-                disabled={isUpdating}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onToggle(item.noteId, item.sessionId, item.checked);
-                }}
-              >
-                {item.checked ? (
-                  <CheckSquare className="h-5 w-5 text-[var(--color-feedback-success)]" />
-                ) : (
-                  <Square className="h-5 w-5 text-muted-foreground" />
-                )}
-              </button>
-              <div className="flex-1 min-w-0">
-                <p className={cn(
-                  'text-sm whitespace-pre-line',
-                  item.checked
-                    ? 'text-muted-foreground line-through'
-                    : 'text-foreground'
-                )}>
-                  {item.text}
-                </p>
-                {item.sessionName && (
-                  <p className="text-xs text-muted-foreground mt-1">
-                    From: {item.sessionName}
-                    {item.sessionDate && ` (${formatTastingDate(item.sessionDate)})`}
-                  </p>
-                )}
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  );
-}
-
-// ============ Tab Components ============
-
-function OverviewTab({
+function RndRecipeHead({
   recipe,
-  ingredients,
-  costing,
-  subRecipes,
-  recipeMap,
-  tastingNotes,
-  tastingSummary,
-  userId,
-  outlets,
-  outletMap,
-  categoryLinks,
-  allCategories,
-  allergens,
+  isOwner,
+  activeTab,
+  onTabChange,
 }: {
   recipe: Recipe;
-  ingredients: RecipeIngredient[] | undefined;
-  costing: CostingResult | undefined;
-  subRecipes: SubRecipe[] | undefined;
-  recipeMap: Map<number, string>;
-  tastingNotes: TastingNoteWithRecipe[] | undefined;
-  tastingSummary: RecipeTastingSummary | undefined;
-  userId: string | null;
-  outlets: RecipeOutlet[] | undefined;
-  outletMap: Map<number, Outlet>;
-  categoryLinks: RecipeRecipeCategory[] | undefined;
-  allCategories: RecipeCategory[] | undefined;
-  allergens: Allergen[] | undefined;
+  isOwner: boolean;
+  activeTab: TabType;
+  onTabChange: (tab: TabType) => void;
 }) {
-  const [isMoreInfoOpen, setIsMoreInfoOpen] = useState(false);
-  const [isTastingHistoryOpen, setIsTastingHistoryOpen] = useState(false);
-  const [isFollowUpsOpen, setIsFollowUpsOpen] = useState(false);
-
-  // Extract actionables from tasting notes
-  const actionables = useMemo(() => {
-    if (!tastingNotes) return [];
-    const items: ActionableItem[] = [];
-    for (const note of tastingNotes) {
-      if (note.action_items && note.action_items.trim()) {
-        items.push({
-          noteId: note.id,
-          sessionId: note.session_id,
-          text: note.action_items.trim(),
-          sessionName: note.session_name,
-          sessionDate: note.session_date,
-          checked: note.action_items_done,
-        });
-      }
-    }
-    return items;
-  }, [tastingNotes]);
-
-  const updateTastingNote = useUpdateTastingNote();
-  const handleToggle = useCallback((noteId: number, sessionId: number, currentValue: boolean) => {
-    updateTastingNote.mutate({
-      sessionId,
-      noteId,
-      data: { action_items_done: !currentValue },
-      recipeId: recipe.id,
-    });
-  }, [updateTastingNote, recipe.id]);
-
   return (
-    <>
-      {/* Recipe Header */}
-      <Card className="mb-6">
-        <CardContent className="p-6">
-          <div className="flex items-start gap-6">
-            {recipe.image_url ? (
-              <Image
-                src={recipe.image_url}
-                alt={recipe.name}
-                width={128}
-                height={128}
-                className="w-24 h-24 md:w-32 md:h-32 rounded-lg object-cover shrink-0"
-              />
+    <div className="flex flex-col gap-4">
+      <BackLink href="/rnd" label="Back to R&D" />
+      <SectionHeader
+        eyebrow="R&D"
+        title={formatDisplayName(recipe.name)}
+        description={
+          <span className="flex flex-wrap items-center gap-1.5">
+            <RecipeStatusBadge status={recipe.status} />
+            {isOwner && <Badge variant="info" className="text-[13px]">Yours</Badge>}
+          </span>
+        }
+        actions={
+          <Link href={`/recipes/${recipe.id}`} className={buttonClasses('secondary', 'md')}>
+            {isOwner ? (
+              <Pencil className="size-4" strokeWidth={1.5} aria-hidden="true" />
             ) : (
-              <div className="w-24 h-24 md:w-32 md:h-32 rounded-lg bg-secondary flex items-center justify-center text-muted-foreground shrink-0">
-                <ImagePlus className="h-8 w-8" />
-              </div>
+              <Eye className="size-4" strokeWidth={1.5} aria-hidden="true" />
             )}
-
-            <div className="flex-1 min-w-0">
-              <div className="flex-1 min-w-0">
-                <h1 className="text-2xl font-medium tracking-[-0.015em] text-foreground">
-                  {recipe.name}
-                </h1>
-                <p className="text-muted-foreground mt-1">
-                  Yield: {recipe.yield_quantity} {recipe.yield_unit}
-                </p>
-
-                {(outlets && outlets.length > 0) || (categoryLinks && categoryLinks.length > 0) || (allergens && allergens.length > 0) ? (
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {outlets && outlets.map((recipeOutlet) => {
-                      const outlet = outletMap.get(recipeOutlet.outlet_id);
-                      return (
-                        <Badge key={recipeOutlet.outlet_id} variant="secondary" className="text-xs">
-                          {outlet?.code || `Outlet #${recipeOutlet.outlet_id}`}
-                        </Badge>
-                      );
-                    })}
-                    {categoryLinks && categoryLinks.map((link) => {
-                      const category = allCategories?.find((c) => c.id === link.category_id);
-                      return category ? (
-                        <Badge key={link.id} variant="default" className="text-xs">
-                          {category.name}
-                        </Badge>
-                      ) : null;
-                    })}
-                    {allergens && allergens.map((allergen) => (
-                      <Badge key={allergen.id} variant="warning" className="text-xs">
-                        {allergen.name}
-                      </Badge>
-                    ))}
-                  </div>
-                ) : null}
-              </div>
-
-              <div className="flex items-center gap-2 shrink-0">
-                {userId !== null && recipe.owner_id === userId && (
-                  <Badge className="bg-primary text-primary-foreground">Owned</Badge>
-                )}
-                <Badge variant={STATUS_VARIANTS[recipe.status]}>
-                  {recipe.status.charAt(0).toUpperCase() + recipe.status.slice(1)}
-                </Badge>
-                <Link href={`/recipes/${recipe.id}`}>
-                  <Button variant="outline" size="sm">
-                    {userId !== null && recipe.owner_id === userId ? (
-                      <Edit2 className="h-4 w-4" />
-                    ) : (
-                      <Eye className="h-4 w-4" />
-                    )}
-                    {userId !== null && recipe.owner_id === userId ? 'Edit in Canvas' : 'View in Canvas'}
-                  </Button>
-                </Link>
-              </div>
-
-              <div className="mt-4 text-sm text-muted-foreground">
-                Created: {new Date(recipe.created_at).toLocaleDateString()}
-                {recipe.updated_at !== recipe.created_at && (
-                  <span className="ml-4">
-                    Updated: {new Date(recipe.updated_at).toLocaleDateString()}
-                  </span>
-                )}
-              </div>
-
-              {recipe.description && (
-                <div className="mt-4 pt-4 border-t border-border">
-                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                    {recipe.description}
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Follow ups Section (Collapsible) */}
-      <Card className="mb-6">
-        <button
-          onClick={() => setIsFollowUpsOpen(!isFollowUpsOpen)}
-          className="w-full p-6 flex items-center justify-between hover:bg-secondary transition-colors"
-        >
-          <div className="flex items-center gap-2">
-            <ClipboardList className="h-5 w-5 text-muted-foreground" />
-            <h2 className="text-xl font-medium text-foreground">
-              Follow ups
-            </h2>
-          </div>
-          <div className="flex items-center gap-3">
-            {actionables.length > 0 && (
-              <span className="text-sm text-muted-foreground">
-                {actionables.filter(a => !a.checked).length} of {actionables.length}
-              </span>
-            )}
-            <ChevronDown
-              className={cn(
-                'h-5 w-5 text-muted-foreground transition-transform shrink-0',
-                isFollowUpsOpen && 'rotate-180'
-              )}
-            />
-          </div>
-        </button>
-
-        {isFollowUpsOpen && (
-          <CardContent className="p-6 border-t border-border">
-            <ActionablesList
-              actionables={actionables}
-              onToggle={handleToggle}
-              isUpdating={updateTastingNote.isPending}
-            />
-          </CardContent>
-        )}
-      </Card>
-
-      {/* Tasting history Card (Collapsible) */}
-      <Card className="mb-6">
-        <button
-          onClick={() => setIsTastingHistoryOpen(!isTastingHistoryOpen)}
-          className="w-full p-6 flex items-center justify-between hover:bg-secondary transition-colors"
-        >
-          <div className="flex items-center gap-2">
-            <Wine className="h-5 w-5 text-muted-foreground" />
-            <h2 className="text-xl font-medium text-foreground">
-              Tasting history
-            </h2>
-          </div>
-          <div className="flex items-center gap-3">
-            {tastingSummary && tastingSummary.total_tastings > 0 && (
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">
-                  {tastingSummary.total_tastings} tasting{tastingSummary.total_tastings !== 1 ? 's' : ''}
-                </span>
-                {tastingSummary.average_overall_rating && (
-                  <div className="flex items-center gap-1 text-sm">
-                    <Star className="h-4 w-4 fill-[var(--color-feedback-warning)] text-[var(--color-feedback-warning)]" />
-                    <span className="font-medium">{tastingSummary.average_overall_rating.toFixed(1)}</span>
-                  </div>
-                )}
-              </div>
-            )}
-            <ChevronDown
-              className={cn(
-                'h-5 w-5 text-muted-foreground transition-transform shrink-0',
-                isTastingHistoryOpen && 'rotate-180'
-              )}
-            />
-          </div>
-        </button>
-
-        {isTastingHistoryOpen && (
-          <CardContent className="p-6 border-t border-border">
-            {tastingNotes && tastingNotes.length > 0 ? (
-              <div className="space-y-3">
-                {tastingNotes.map((note) => {
-                  const config = note.decision ? DECISION_CONFIG[note.decision] : null;
-                  const Icon = config?.icon;
-                  return (
-                    <div
-                      key={note.id}
-                      className="flex items-start gap-3 p-3 rounded-lg bg-secondary"
-                    >
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <Link
-                            href={`/tastings/${note.session_id}`}
-                            className="text-sm font-medium text-foreground hover:text-[var(--color-text-link)]"
-                          >
-                            {note.session_name}
-                          </Link>
-                          {config && (
-                            <Badge variant={config.variant} className="text-xs">
-                              {Icon && <Icon className="h-3 w-3 mr-1" />}
-                              {config.label}
-                            </Badge>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                          {note.session_date && (
-                            <span>{formatTastingDate(note.session_date)}</span>
-                          )}
-                          {note.overall_rating && (
-                            <StarRating rating={note.overall_rating} />
-                          )}
-                        </div>
-                        {note.feedback && (
-                          <p className="mt-2 text-sm text-muted-foreground line-clamp-2">
-                            &ldquo;{note.feedback}&rdquo;
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="text-center py-8">
-                <Wine className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                <p className="text-muted-foreground">
-                  No tastings recorded yet
-                </p>
-                <Link href="/tastings/new" className="mt-2 inline-block">
-                  <Button variant="outline" size="sm">
-                    Create Tasting Session
-                  </Button>
-                </Link>
-              </div>
-            )}
-          </CardContent>
-        )}
-      </Card>
-
-      {/* More info Section (Collapsible) */}
-      <Card className="mb-6">
-        <button
-          onClick={() => setIsMoreInfoOpen(!isMoreInfoOpen)}
-          className="w-full p-6 flex items-center justify-between hover:bg-secondary transition-colors"
-        >
-          <h2 className="text-xl font-medium text-foreground">
-            More info
-          </h2>
-          <ChevronDown
-            className={cn(
-              'h-5 w-5 text-muted-foreground transition-transform',
-              isMoreInfoOpen && 'rotate-180'
-            )}
-          />
-        </button>
-
-        {isMoreInfoOpen && (
-          <>
-            {/* Ingredients | Sub recipes | Costing Grid */}
-            <div className="px-6 pb-6 border-t border-border pt-6">
-              <div className="grid gap-6 md:grid-cols-3 mb-6">
-                {/* Ingredients Card */}
-                <div>
-                  <h3 className="text-base font-medium mb-4 text-foreground">
-                    Ingredients
-                  </h3>
-
-                  {ingredients && ingredients.length > 0 ? (
-                    <ul className="space-y-2">
-                      {ingredients.map((ri) => (
-                        <li
-                          key={ri.id}
-                          className="flex items-center justify-between py-2 border-b border-border last:border-0"
-                        >
-                          <div>
-                            <span className="font-medium text-foreground">
-                              {ri.ingredient?.name || `Ingredient #${ri.ingredient_id}`}
-                            </span>
-                          </div>
-                          <span className="text-muted-foreground">
-                            {ri.quantity} {ri.unit}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p className="text-muted-foreground">
-                      No ingredients added yet
-                    </p>
-                  )}
-                </div>
-
-                {/* Sub recipes */}
-                <div>
-                  <h3 className="text-base font-medium mb-4 text-foreground">
-                    Sub recipes
-                  </h3>
-
-                  {subRecipes && subRecipes.length > 0 ? (
-                    <ul className="space-y-2">
-                      {[...subRecipes]
-                        .sort((a, b) => a.position - b.position)
-                        .map((sr) => (
-                          <li
-                            key={sr.id}
-                            className="flex items-center justify-between py-2 border-b border-border last:border-0"
-                          >
-                            <div>
-                              <span className="font-medium text-foreground">
-                                {recipeMap.get(sr.child_recipe_id) || `Recipe #${sr.child_recipe_id}`}
-                              </span>
-                            </div>
-                            <span className="text-muted-foreground">
-                              {sr.quantity} {sr.unit}
-                            </span>
-                          </li>
-                        ))}
-                    </ul>
-                  ) : (
-                    <p className="text-muted-foreground">
-                      No sub-recipes added yet
-                    </p>
-                  )}
-                </div>
-
-                {/* Costing */}
-                <div>
-                  <h3 className="text-base font-medium mb-4 text-foreground">
-                    Costing
-                  </h3>
-
-                  {costing ? (
-                    <div className="space-y-4">
-                      <div className="flex justify-between items-center py-2 border-b border-border">
-                        <span className="text-muted-foreground">Batch Cost</span>
-                        <span className="font-medium text-foreground">
-                          {formatCurrency(costing.total_batch_cost)}
-                        </span>
-                      </div>
-
-                      <div className="flex justify-between items-center py-2 border-b border-border">
-                        <span className="text-muted-foreground">Cost per Portion</span>
-                        <span className="font-medium text-xl tabular-nums text-foreground">
-                          {formatCurrency(costing.cost_per_portion)}
-                        </span>
-                      </div>
-
-                      {recipe.selling_price_est && costing.cost_per_portion && (
-                        <div className="flex justify-between items-center py-2">
-                          <span className="text-muted-foreground">Margin</span>
-                          <span className="font-medium tabular-nums text-[var(--color-feedback-success)]">
-                            {((1 - costing.cost_per_portion / recipe.selling_price_est) * 100).toFixed(1)}%
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <p className="text-muted-foreground">
-                      No costing data available
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              {/* Instructions */}
-              <div className="border-t border-border pt-6">
-                <h3 className="text-base font-medium mb-4 text-foreground">
-                  Instructions
-                </h3>
-
-                {recipe.instructions_structured?.steps && recipe.instructions_structured.steps.length > 0 ? (
-                  <ol className="space-y-4">
-                    {recipe.instructions_structured.steps.map((step, index) => (
-                      <li key={index} className="flex gap-4">
-                        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-secondary text-sm font-medium text-muted-foreground">
-                          {step.order || index + 1}
-                        </span>
-                        <div className="flex-1 pt-0.5">
-                          <p className="text-foreground">{step.text}</p>
-                          <div className="mt-2 flex items-center gap-4 text-sm text-muted-foreground">
-                            {step.timer_seconds && (
-                              <span className="flex items-center gap-1">
-                                <Clock className="h-4 w-4" />
-                                {formatTimer(step.timer_seconds)}
-                              </span>
-                            )}
-                            {step.temperature_c && (
-                              <span className="flex items-center gap-1">
-                                <Thermometer className="h-4 w-4" />
-                                {step.temperature_c}°C
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </li>
-                    ))}
-                  </ol>
-                ) : recipe.instructions_raw ? (
-                  <div className="prose prose-stone max-w-none">
-                    <p className="whitespace-pre-wrap text-foreground">
-                      {recipe.instructions_raw}
-                    </p>
-                  </div>
-                ) : (
-                  <p className="text-muted-foreground">
-                    No instructions added yet
-                  </p>
-                )}
-              </div>
-            </div>
-          </>
-        )}
-      </Card>
-    </>
+            {isOwner ? 'Edit in canvas' : 'View in canvas'}
+          </Link>
+        }
+      />
+      <TabRail
+        label="Dish sections"
+        items={[...TABS]}
+        activeId={activeTab}
+        onSelect={(id) => onTabChange(id as TabType)}
+        className="mt-1"
+      />
+    </div>
   );
 }
-
-function VersionsTab({
-  recipeId,
-  versions,
-  isLoading,
-  error,
-}: {
-  recipeId: number;
-  versions: Recipe[] | undefined;
-  isLoading: boolean;
-  error: Error | null;
-}) {
-  const router = useRouter();
-
-  const handleNodeClick: NodeMouseHandler<VersionNodeType> = useCallback((_event, node) => {
-    router.push(`/rnd/r/${node.data.recipe.id}?tab=versions`);
-  }, [router]);
-
-  const { nodes, edges } = useMemo(() => {
-    if (!versions) return { nodes: [], edges: [] };
-    return buildVersionGraph(versions, recipeId);
-  }, [versions, recipeId]);
-
-  if (error) {
-    return (
-      <Card>
-        <CardContent className="p-6">
-          <div className="rounded-xl bg-[var(--color-feedback-error-tint)] p-4 text-[var(--color-feedback-error)]">
-            Failed to load version history
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (isLoading) {
-    return (
-      <Card>
-        <CardContent className="p-6">
-          <div className="space-y-4">
-            <Skeleton className="h-8 w-48" />
-            <Skeleton className="h-[400px] w-full" />
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (!versions || versions.length === 0) {
-    return (
-      <Card>
-        <CardContent className="p-6">
-          <div className="text-center py-12">
-            <History className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-            <p className="text-muted-foreground">
-              No version history available
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  return (
-    <Card className="flex flex-col">
-      <CardContent className="p-0 flex flex-col">
-        {/* Header */}
-        <div className="flex items-center gap-2 p-4 border-b border-border">
-          <History className="h-5 w-5 text-muted-foreground" />
-          <h2 className="text-xl font-medium text-foreground">
-            Iteration history
-          </h2>
-          <Badge variant="secondary" className="ml-auto">
-            {versions.length} version{versions.length !== 1 ? 's' : ''}
-          </Badge>
-        </div>
-
-        {/* React Flow Canvas */}
-        <div className="h-[500px]">
-          <ReactFlow
-            nodes={nodes}
-            edges={edges}
-            nodeTypes={nodeTypes}
-            onNodeClick={handleNodeClick}
-            defaultViewport={{ x: 50, y: 200, zoom: 1 }}
-            nodesDraggable={false}
-            nodesConnectable={false}
-            elementsSelectable={false}
-            panOnDrag={false}
-            panOnScroll={true}
-            zoomOnScroll={false}
-            zoomOnPinch={false}
-            zoomOnDoubleClick={false}
-            minZoom={1}
-            maxZoom={1}
-            proOptions={{ hideAttribution: true }}
-          >
-            <Background color={TREE_GRID_COLOR} gap={16} />
-          </ReactFlow>
-        </div>
-
-        {/* Footer hint */}
-        <div className="p-3 border-t border-border text-center">
-          <p className="text-sm text-muted-foreground">
-            Click a version node to view that recipe
-          </p>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-// ============ Main Page Component ============
 
 export default function RndRecipePage({ params }: RndRecipePageProps) {
   const { recipeId: recipeIdStr } = use(params);
@@ -992,138 +101,87 @@ export default function RndRecipePage({ params }: RndRecipePageProps) {
   const { userId } = useAppState();
   const searchParams = useSearchParams();
 
-  const tabFromUrl = searchParams.get('tab') as TabType | null;
-  const [activeTab, setActiveTab] = useState<TabType>(
-    tabFromUrl && ['overview', 'versions'].includes(tabFromUrl)
-      ? tabFromUrl
-      : 'overview'
-  );
+  const tabFromUrl = searchParams.get('tab');
+  const [activeTab, setActiveTab] = useState<TabType>(tabFromUrl === 'versions' ? 'versions' : 'overview');
 
   const { data: recipe, isLoading: recipeLoading, error: recipeError } = useRecipe(recipeId);
   const { data: ingredients, isLoading: ingredientsLoading } = useRecipeIngredients(recipeId);
   const { data: costing, isLoading: costingLoading } = useCosting(recipeId);
   const { data: subRecipes, isLoading: subRecipesLoading } = useSubRecipes(recipeId);
-  const { data: allRecipesData } = useRecipes({ page_size: 30 });
-  const allRecipes = allRecipesData?.items;
+  const { data: allRecipesData } = useRecipes({ page_size: LOOKUP_PAGE_SIZE });
   const { data: tastingNotes, isLoading: tastingLoading } = useRecipeTastingNotes(recipeId);
   const { data: tastingSummary } = useRecipeTastingSummary(recipeId);
   const { data: versions, isLoading: versionsLoading, error: versionsError } = useRecipeVersions(recipeId, userId);
   const { data: recipeOutlets } = useRecipeOutlets(recipeId);
-  const { data: allOutletsData } = useOutlets({ page_size: 30 });
-  const allOutlets = allOutletsData?.items;
+  const { data: allOutletsData } = useOutlets({ page_size: LOOKUP_PAGE_SIZE });
   const { data: categoryLinks = [] } = useRecipeCategoryLinks(recipeId);
-  const { data: allCategoriesData } = useRecipeCategories({ page_size: 30 });
-  const allCategories = allCategoriesData?.items ?? [];
+  const { data: allCategoriesData } = useRecipeCategories({ page_size: LOOKUP_PAGE_SIZE });
   const { data: allergens = [] } = useRecipeAllergens(recipeId);
 
   const isLoading = recipeLoading || ingredientsLoading || costingLoading || subRecipesLoading || tastingLoading;
 
-  // Create a map of recipe IDs to names for sub-recipe display
-  const recipeMap = new Map<number, string>();
-  allRecipes?.forEach((r) => recipeMap.set(r.id, r.name));
-
-  // Create a map of outlet IDs to outlets for recipe outlet display
-  const outletMap = new Map<number, Outlet>();
-  allOutlets?.forEach((outlet) => outletMap.set(outlet.id, outlet));
-
-  const tabs = [
-    { id: 'overview' as const, label: 'Overview', icon: LayoutGrid },
-    { id: 'versions' as const, label: 'Iteration history', icon: History },
-  ];
-
   if (recipeError) {
+    return <TastingNotFound title="Recipe not found or failed to load" backHref="/rnd" backLabel="Back to R&D" />;
+  }
+
+  if (isLoading || !recipe) {
     return (
-      <div className="p-6">
-        <Link
-          href="/rnd"
-          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to R&D
-        </Link>
-        <div className="rounded-xl bg-[var(--color-feedback-error-tint)] p-4 text-[var(--color-feedback-error)]">
-          Recipe not found or failed to load.
-        </div>
-      </div>
+      <Page>
+        <BackLink href="/rnd" label="Back to R&D" />
+        {isLoading && (
+          <div role="status" aria-label="Loading" className="flex flex-col gap-6">
+            <Skeleton className="h-8 w-72" />
+            <Skeleton className="h-9 w-64" />
+            <Skeleton className="h-36 rounded-lg" />
+            <Skeleton className="h-14 rounded-lg" />
+            <Skeleton className="h-14 rounded-lg" />
+          </div>
+        )}
+      </Page>
     );
   }
 
+  const isOwner = userId !== null && recipe.owner_id === userId;
+  const head = <RndRecipeHead recipe={recipe} isOwner={isOwner} activeTab={activeTab} onTabChange={setActiveTab} />;
+
+  if (activeTab === 'versions') {
+    return (
+      <Page fill>
+        <div className={HEADER_MEASURE}>{head}</div>
+        <div id="rnd-recipe-versions" role="tabpanel" className="min-h-[400px] flex-1">
+          <RndVersionTree recipeId={recipeId} versions={versions} isLoading={versionsLoading} error={versionsError} />
+        </div>
+      </Page>
+    );
+  }
+
+  const recipeNames = new Map<number, string>();
+  allRecipesData?.items.forEach((r) => recipeNames.set(r.id, r.name));
+  const outletMap = new Map<number, Outlet>();
+  allOutletsData?.items.forEach((outlet) => outletMap.set(outlet.id, outlet));
+
   return (
-    <div className="h-full overflow-auto">
-      <div className="p-6 max-w-5xl mx-auto">
-        {/* Back Link */}
-        <Link
-          href="/rnd"
-          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to R&D
-        </Link>
-
-        {isLoading ? (
-          <div className="space-y-6">
-            <Skeleton className="h-10 w-64 rounded-lg" />
-            <Skeleton className="h-32 rounded-lg" />
-            <div className="grid gap-6 md:grid-cols-2">
-              <Skeleton className="h-48 rounded-lg" />
-              <Skeleton className="h-48 rounded-lg" />
-            </div>
-            <Skeleton className="h-64 rounded-lg" />
-          </div>
-        ) : recipe ? (
-          <>
-            {/* Tab Navigation */}
-            <div className="flex items-center gap-1 mb-6 p-1 bg-secondary rounded-lg w-fit">
-              {tabs.map((tab) => {
-                const Icon = tab.icon;
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={cn(
-                      'flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors',
-                      activeTab === tab.id
-                        ? 'bg-card text-foreground shadow-elevation-1'
-                        : 'text-muted-foreground hover:text-foreground'
-                    )}
-                  >
-                    <Icon className="h-4 w-4" />
-                    {tab.label}
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Tab Content */}
-            {activeTab === 'overview' && (
-              <OverviewTab
-                recipe={recipe}
-                ingredients={ingredients}
-                costing={costing}
-                subRecipes={subRecipes}
-                recipeMap={recipeMap}
-                tastingNotes={tastingNotes}
-                tastingSummary={tastingSummary}
-                userId={userId}
-                outlets={recipeOutlets}
-                outletMap={outletMap}
-                categoryLinks={categoryLinks}
-                allCategories={allCategories}
-                allergens={allergens}
-              />
-            )}
-
-            {activeTab === 'versions' && (
-              <VersionsTab
-                recipeId={recipeId}
-                versions={versions}
-                isLoading={versionsLoading}
-                error={versionsError}
-              />
-            )}
-          </>
-        ) : null}
+    <Page>
+      {head}
+      <div id="rnd-recipe-overview" role="tabpanel" className="flex flex-col gap-4">
+        <RndRecipeSummary
+          recipe={recipe}
+          outlets={recipeOutlets}
+          outletMap={outletMap}
+          categoryLinks={categoryLinks}
+          allCategories={allCategoriesData?.items ?? []}
+          allergens={allergens}
+        />
+        <FollowUps recipeId={recipe.id} tastingNotes={tastingNotes} />
+        <TastingHistory tastingNotes={tastingNotes} tastingSummary={tastingSummary} />
+        <RecipeMoreInfo
+          recipe={recipe}
+          ingredients={ingredients}
+          costing={costing}
+          subRecipes={subRecipes}
+          recipeNames={recipeNames}
+        />
       </div>
-    </div>
+    </Page>
   );
 }
