@@ -6,6 +6,7 @@ All notable changes to Mission Recipes are documented here.
 
 ## Index
 
+- **[0.0.51](#0051---2026-10-28)** — Rename to Mission Recipes: Product Name Across UI, Email & Docs, One-Time `prepper_*` → `mission_recipes_*` Storage Key Migration
 - **[0.0.50](#0050---2026-06-26)** — Mission Design System Adoption: Forest/Beige Editorial Tokens, Single-Family Polymath Typography, Pill/Hairline Components, `game-card` Retirement & Neutral + Chromatic Tokenisation
 - **[0.0.49](#0049---2026-06-16)** — Recipe Canvas Polish: Design-Token Migration (266 Hardcoded `zinc-*` Pairs Removed), Terracotta Active/Drop States, Reduced-Motion Support & Cost-Pill Contrast Fix
 - **[0.0.48](#0048---2026-05-22)** — Tasting Session Inline Feedback: Collapsible Per-Dish Feedback Panel Replaces Modal
@@ -56,6 +57,22 @@ All notable changes to Mission Recipes are documented here.
 - **[0.0.3](#003---2024-11-27)** — Database Migration: Alembic Initial Tables to Supabase + PostgreSQL JSON Compatibility Fix
 - **[0.0.2](#002---2024-11-27)** — Frontend Implementation: Next.js 15 Recipe Canvas with Drag-and-Drop, Autosave & TanStack Query
 - **[0.0.1](#001---2024-11-27)** — Backend Foundation: FastAPI + SQLModel with 17 API Endpoints, Domain Services & Unit Conversion
+---
+
+## [0.0.51] - 2026-10-28
+
+### Changed
+
+#### Rename to Mission Recipes
+
+The product is now **Mission Recipes**, the Recipes application in the Mission Systems suite. It was previously called Prepper (in the repo and docs) and RecipeRep (in the UI). No behaviour changes.
+
+- **UI copy**: the page title, login and register headings, nav and design-system logo alt text, and the tasting invitation email (sender name, title, body and footer) all say "Mission Recipes". The email also contained a stray "RecipePrep" variant, which is fixed too.
+- **Storage keys**: `prepper_auth`, `prepper_last_route` and `prepper-theme` became `mission_recipes_auth`, `mission_recipes_last_route` and `mission_recipes_theme`, and all of them are now defined in a new `lib/storage-keys.ts`. `migrateLegacyStorageKeys()` runs once when `providers.tsx` loads. It copies each legacy value to its new key if that key is empty, then removes the legacy key, so existing users stay logged in and keep their theme. The inline no-flash theme script in `layout.tsx` also falls back to the legacy key on the first load. Covered by `e2e/storage-migration.spec.ts`.
+- **Docs and tooling**: CLAUDE.md, the READMEs, PRODUCT.md, `docs/intro.md` (which also corrects the stale "no authentication" claim), the blueprints, `docs/references/design.md` and `design-system.md`, the Postman collections ("Mission Recipes API") and the PDF report skill default.
+
+Deliberately unchanged: the logo image files and paths (the Mission Recipes SVG set replaces them in the redesign), infrastructure identifiers (Fly apps `reciperepo`/`reciperepo-stage`, Supabase bucket `prepper`, the domains), seeded `@prepper.test` e2e accounts, and historical docs.
+
 ---
 
 ## [0.0.50] - 2026-06-26
