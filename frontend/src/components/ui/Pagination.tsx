@@ -1,6 +1,7 @@
 'use client';
 
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { Button } from './Button';
 
 interface PaginationProps {
   pageNumber: number;
@@ -10,42 +11,40 @@ interface PaginationProps {
   onPageChange: (page: number) => void;
 }
 
-export function Pagination({
-  pageNumber,
-  totalPages,
-  totalCount,
-  currentPageSize,
-  onPageChange,
-}: PaginationProps) {
+export function Pagination({ pageNumber, totalPages, totalCount, currentPageSize, onPageChange }: PaginationProps) {
   if (totalPages <= 1) return null;
 
   const start = (pageNumber - 1) * currentPageSize + 1;
   const end = Math.min(start + currentPageSize - 1, totalCount);
 
   return (
-    <div className="flex items-center justify-between border-t border-border px-2 py-3 text-sm">
-      <span className="text-muted-foreground">
+    <nav aria-label="Pagination" className="flex items-center justify-between border-t border-line px-2 py-3 text-sm">
+      <span className="text-muted-foreground tabular-nums">
         {start}–{end} of {totalCount}
       </span>
       <div className="flex items-center gap-1">
-        <button
+        <Button
+          variant="ghost"
+          size="icon-sm"
           onClick={() => onPageChange(pageNumber - 1)}
           disabled={pageNumber <= 1}
-          className="p-1 rounded hover:bg-secondary disabled:opacity-30 disabled:cursor-not-allowed"
+          aria-label="Previous page"
         >
-          <ChevronLeft className="h-4 w-4" />
-        </button>
-        <span className="px-2 text-muted-foreground">
+          <ChevronLeft className="size-4" strokeWidth={1.5} aria-hidden="true" />
+        </Button>
+        <span className="px-2 text-muted-foreground tabular-nums">
           {pageNumber} / {totalPages}
         </span>
-        <button
+        <Button
+          variant="ghost"
+          size="icon-sm"
           onClick={() => onPageChange(pageNumber + 1)}
           disabled={pageNumber >= totalPages}
-          className="p-1 rounded hover:bg-secondary disabled:opacity-30 disabled:cursor-not-allowed"
+          aria-label="Next page"
         >
-          <ChevronRight className="h-4 w-4" />
-        </button>
+          <ChevronRight className="size-4" strokeWidth={1.5} aria-hidden="true" />
+        </Button>
       </div>
-    </div>
+    </nav>
   );
 }

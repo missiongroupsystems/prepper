@@ -1,73 +1,99 @@
 'use client';
 
-import { forwardRef, ButtonHTMLAttributes } from 'react';
-import { Loader2 } from 'lucide-react';
+/**
+ * Button (Mission Systems CI §9, §12.2). A pill — the product's one button shape — with an
+ * accent primary, a hairline-outlined secondary, a text-only ghost and a danger fill.
+ * Hover shifts background/opacity only; never move, scale or shadow.
+ *
+ * Sizes are explicit heights so a button, an input and a select in one row share a baseline:
+ * `sm` 32 · `md` 36 · `lg` 40 · `icon` 36 square · `icon-sm` 32 square. Below `sm` (a phone)
+ * every size steps up to the 44px touch minimum (40px for `sm` / `icon-sm`).
+ *
+ * The pre-redesign names still work so no call site has to change: `default` → primary,
+ * `outline` → secondary, `destructive` → danger; size `default` → md.
+ */
+import { forwardRef, type ButtonHTMLAttributes } from 'react';
+import { ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Spinner } from './Spinner';
 
-interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'default' | 'outline' | 'ghost' | 'destructive' | 'secondary';
-  size?: 'default' | 'sm' | 'lg' | 'icon';
+export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
+export type ButtonSize = 'sm' | 'md' | 'lg' | 'icon' | 'icon-sm';
+
+type LegacyVariant = 'default' | 'outline' | 'destructive';
+type LegacySize = 'default';
+
+const LEGACY_VARIANTS: Record<LegacyVariant, ButtonVariant> = {
+  default: 'primary',
+  outline: 'secondary',
+  destructive: 'danger',
+};
+
+const base =
+  'inline-flex shrink-0 items-center justify-center gap-2 rounded-full font-medium whitespace-nowrap select-none ' +
+  'transition-[background-color,border-color,opacity,color] duration-(--dur-quick) ease-(--ease-out-soft) ' +
+  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ' +
+  'disabled:cursor-not-allowed disabled:opacity-50';
+
+const sizes: Record<ButtonSize, string> = {
+  sm: 'h-8 px-3 text-[13px] max-sm:h-10',
+  md: 'h-9 px-4 text-sm max-sm:h-11',
+  lg: 'h-10 px-5 text-sm max-sm:h-11',
+  icon: 'size-9 px-0 max-sm:size-11',
+  'icon-sm': 'size-8 px-0 max-sm:size-10',
+};
+
+const variants: Record<ButtonVariant, string> = {
+  // Accent fill — the one primary action per view. Press is one step darker.
+  primary:
+    'bg-accent text-accent-foreground hover:opacity-90 active:bg-accent-press active:opacity-100 disabled:hover:opacity-50',
+  // Outlined on the lifted surface — the default non-primary action.
+  secondary:
+    'border border-hairline-strong bg-card text-ink hover:bg-surface-hover active:bg-surface-active',
+  ghost: 'bg-transparent text-ink hover:bg-surface-hover active:bg-surface-active',
+  // Destructive confirm — the danger fill, never the accent.
+  danger: 'bg-danger text-destructive-foreground hover:opacity-90 disabled:hover:opacity-50',
+};
+
+function resolveVariant(variant: ButtonVariant | LegacyVariant): ButtonVariant {
+  return variant in LEGACY_VARIANTS ? LEGACY_VARIANTS[variant as LegacyVariant] : (variant as ButtonVariant);
+}
+
+/** The Button classes, for an anchor or `<Link>` that must look like one. */
+export function buttonClasses(
+  variant: ButtonVariant | LegacyVariant = 'secondary',
+  size: ButtonSize | LegacySize = 'md',
+  className?: string
+): string {
+  return cn(base, sizes[size === 'default' ? 'md' : size], variants[resolveVariant(variant)], className);
+}
+
+export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: ButtonVariant | LegacyVariant;
+  size?: ButtonSize | LegacySize;
+  /** Disables the button and shows a spinner before the label. For a fixed-width pending state use PendingButton. */
   loading?: boolean;
+  /** Append a decorative trailing arrow. */
+  withArrow?: boolean;
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   (
-    {
-      className,
-      variant = 'default',
-      size = 'default',
-      loading = false,
-      disabled,
-      children,
-      ...props
-    },
+    { className, variant = 'primary', size = 'md', loading = false, withArrow, disabled, children, ...props },
     ref
-  ) => {
-    const isDisabled = disabled || loading;
-
-    return (
-      <button
-        ref={ref}
-        disabled={isDisabled}
-        aria-disabled={isDisabled}
-        aria-busy={loading || undefined}
-        className={cn(
-          // 8px radius (rounded-lg) is the functional default — there is no pill
-          // button in product UI; pills are reserved for status/chips (§9).
-          'inline-flex items-center justify-center gap-2 rounded-lg font-medium',
-          'transition-colors duration-[120ms] ease-out',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
-          // Disabled is never opacity alone (§10.1).
-          'disabled:cursor-not-allowed disabled:bg-muted disabled:text-[var(--color-text-disabled)]',
-          {
-            // Primary — accent fill. One per view (§4).
-            'bg-primary text-primary-foreground hover:bg-[color-mix(in_srgb,var(--primary)_88%,white)] active:bg-[color-mix(in_srgb,var(--primary)_78%,white)] disabled:hover:bg-muted':
-              variant === 'default',
-            'border border-border bg-card text-foreground hover:bg-surface-hover active:bg-background-contrast':
-              variant === 'outline',
-            'text-foreground hover:bg-surface-hover active:bg-background-contrast':
-              variant === 'ghost',
-            'bg-destructive text-destructive-foreground hover:bg-[color-mix(in_srgb,var(--destructive)_88%,black)]':
-              variant === 'destructive',
-            'bg-secondary text-secondary-foreground hover:bg-background-contrast':
-              variant === 'secondary',
-          },
-          {
-            // Control heights track the density scale (§6.2).
-            'h-10 px-4 text-sm': size === 'default',
-            'h-8 px-3 text-sm': size === 'sm',
-            'h-12 px-6 text-base': size === 'lg',
-            'h-10 w-10': size === 'icon',
-          },
-          className
-        )}
-        {...props}
-      >
-        {loading && <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />}
-        {children}
-      </button>
-    );
-  }
+  ) => (
+    <button
+      ref={ref}
+      disabled={disabled || loading}
+      aria-busy={loading || undefined}
+      className={buttonClasses(variant, size, className)}
+      {...props}
+    >
+      {loading && <Spinner className="border-current/25 border-t-current" />}
+      {children}
+      {withArrow && <ArrowRight className="size-4" strokeWidth={1.5} aria-hidden="true" />}
+    </button>
+  )
 );
 
 Button.displayName = 'Button';

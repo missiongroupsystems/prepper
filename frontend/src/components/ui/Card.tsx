@@ -1,109 +1,70 @@
-'use client';
-
-import { forwardRef, HTMLAttributes } from 'react';
+/**
+ * Card (§3.2, §9, §12.1). White lifted surface on the warm canvas, 0.5px hairline, 12px radius,
+ * NO shadow — resting surfaces use a line; only things that float get a shadow.
+ *
+ * Unlike Workforce's card, the padding sits on the Card itself (p-5) and the parts stack inside
+ * it — that is the shape ~35 Recipes call sites already use, so it is kept. Pass `p-0` for a
+ * frame around edge-to-edge content.
+ */
+import { forwardRef, type HTMLAttributes } from 'react';
 import { cn } from '@/lib/utils';
 
-interface CardProps extends HTMLAttributes<HTMLDivElement> {
+export interface CardProps extends HTMLAttributes<HTMLDivElement> {
+  /** Beige tile on a white ground (dashboard widgets, nested rows). */
+  sunken?: boolean;
+  /** The whole card is a link or opens something: pointer and a stronger hairline on hover. */
   interactive?: boolean;
 }
 
 export const Card = forwardRef<HTMLDivElement, CardProps>(
-  ({ className, interactive = false, ...props }, ref) => {
-    return (
-      <div
-        ref={ref}
-        className={cn(
-          // Cards: 12px radius, hairline edge, elevation-1 over the sunken canvas (§8, §9).
-          'rounded-xl border border-border bg-card p-5 text-card-foreground shadow-elevation-1',
-          interactive &&
-            'cursor-pointer transition-shadow duration-[120ms] ease-out hover:shadow-elevation-2',
-          className
-        )}
-        {...props}
-      />
-    );
-  }
+  ({ className, sunken, interactive, ...props }, ref) => (
+    <div
+      ref={ref}
+      className={cn(
+        'rounded-lg p-5 text-card-foreground hairline',
+        sunken ? 'bg-surface-sunken' : 'bg-card',
+        interactive &&
+          'cursor-pointer transition-[border-color,background-color] duration-(--dur-quick) hover:border-hairline-strong',
+        className
+      )}
+      {...props}
+    />
+  )
 );
-
 Card.displayName = 'Card';
 
-type CardHeaderProps = HTMLAttributes<HTMLDivElement>;
-
-export const CardHeader = forwardRef<HTMLDivElement, CardHeaderProps>(
-  ({ className, ...props }, ref) => {
-    return (
-      <div
-        ref={ref}
-        className={cn('flex items-start justify-between gap-2', className)}
-        {...props}
-      />
-    );
-  }
+export const CardHeader = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => (
+    <div ref={ref} className={cn('flex items-start justify-between gap-2', className)} {...props} />
+  )
 );
-
 CardHeader.displayName = 'CardHeader';
 
-type CardTitleProps = HTMLAttributes<HTMLHeadingElement>;
-
-export const CardTitle = forwardRef<HTMLHeadingElement, CardTitleProps>(
-  ({ className, ...props }, ref) => {
-    return (
-      <h3
-        ref={ref}
-        // Card / group title: 16px, weight 500 (§5.2). Headings are 500, not 600/700.
-        className={cn('text-base font-medium tracking-[-0.005em] text-foreground', className)}
-        {...props}
-      />
-    );
-  }
+/** Card / group title — 16px, weight 500. */
+export const CardTitle = forwardRef<HTMLHeadingElement, HTMLAttributes<HTMLHeadingElement>>(
+  ({ className, ...props }, ref) => (
+    <h3 ref={ref} className={cn('text-base leading-tight font-medium text-ink', className)} {...props} />
+  )
 );
-
 CardTitle.displayName = 'CardTitle';
 
-type CardDescriptionProps = HTMLAttributes<HTMLParagraphElement>;
-
-export const CardDescription = forwardRef<HTMLParagraphElement, CardDescriptionProps>(
-  ({ className, ...props }, ref) => {
-    return (
-      <p
-        ref={ref}
-        className={cn('text-sm text-muted-foreground', className)}
-        {...props}
-      />
-    );
-  }
+export const CardDescription = forwardRef<HTMLParagraphElement, HTMLAttributes<HTMLParagraphElement>>(
+  ({ className, ...props }, ref) => (
+    <p ref={ref} className={cn('text-sm text-muted-foreground', className)} {...props} />
+  )
 );
-
 CardDescription.displayName = 'CardDescription';
 
-type CardContentProps = HTMLAttributes<HTMLDivElement>;
-
-export const CardContent = forwardRef<HTMLDivElement, CardContentProps>(
-  ({ className, ...props }, ref) => {
-    return (
-      <div
-        ref={ref}
-        className={cn('mt-2 text-sm text-muted-foreground', className)}
-        {...props}
-      />
-    );
-  }
+export const CardContent = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => (
+    <div ref={ref} className={cn('mt-3 text-sm text-muted-foreground', className)} {...props} />
+  )
 );
-
 CardContent.displayName = 'CardContent';
 
-type CardFooterProps = HTMLAttributes<HTMLDivElement>;
-
-export const CardFooter = forwardRef<HTMLDivElement, CardFooterProps>(
-  ({ className, ...props }, ref) => {
-    return (
-      <div
-        ref={ref}
-        className={cn('mt-3 flex items-center gap-2 pt-3 border-t border-border', className)}
-        {...props}
-      />
-    );
-  }
+export const CardFooter = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => (
+    <div ref={ref} className={cn('mt-4 flex items-center gap-3 border-t border-line pt-4', className)} {...props} />
+  )
 );
-
 CardFooter.displayName = 'CardFooter';
