@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import { Providers } from '@/lib/providers';
-import { TopNav } from '@/components/layout';
+import { AppShell } from '@/components/app';
+import { SIDEBAR_BOOT_SCRIPT } from '@/components/app/sidebar-mode';
+import { envMetadataTitle, readAppEnv, readBuild } from '@/components/env-badge/env';
 import { THEME_BOOT_SCRIPT } from '@/lib/theme';
 import './globals.css';
 
@@ -8,7 +10,7 @@ import './globals.css';
 // `--brand-typeface-*` seam; mono is the system stack. No external font host.
 // Icons come from the file conventions: app/icon.svg, app/apple-icon.png, app/manifest.ts.
 export const metadata: Metadata = {
-  title: 'Mission Recipes',
+  title: envMetadataTitle('Mission Recipes', readAppEnv()),
   description: 'Kitchen-first recipe workspace for chefs and operators — part of the Mission Systems suite',
 };
 
@@ -20,17 +22,15 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        {/* No-flash theme: stamps `.dark` + color-scheme before first paint (lib/theme.ts). */}
-        <script dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT }} />
+        {/* No-flash boot: stamps `.dark` + color-scheme (lib/theme.ts) and the rail mode
+            (`data-sidebar`, components/app/sidebar-mode.ts) before first paint. */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT + SIDEBAR_BOOT_SCRIPT }} />
       </head>
       <body className="antialiased">
         <Providers>
-          <div className="flex h-dvh flex-col">
-            <TopNav />
-            <main className="flex-1 min-h-0 overflow-hidden">
-              {children}
-            </main>
-          </div>
+          <AppShell appEnv={readAppEnv()} build={readBuild()}>
+            {children}
+          </AppShell>
         </Providers>
       </body>
     </html>
