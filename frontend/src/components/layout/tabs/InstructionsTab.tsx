@@ -1,64 +1,34 @@
 'use client';
 
+import { ListOrdered } from 'lucide-react';
 import { useAppState } from '@/lib/store';
 import { useRecipe } from '@/lib/hooks';
 import { Instructions } from '@/components/recipe/Instructions';
-import { Card, CardContent, Skeleton } from '@/components/ui';
+import { SectionHeader } from '@/components/app';
+import { Card } from '@/components/ui';
+import { RecipeTabPage, RecipeTabState } from '@/components/recipe-tabs/RecipeTabPage';
 
 export function InstructionsTab() {
   const { selectedRecipeId, userId, userType } = useAppState();
-
   const { data: recipe, isLoading, error } = useRecipe(selectedRecipeId);
 
-  const canEdit =
-    userType === 'admin' || (userId !== null && recipe?.owner_id === userId);
+  const subject = 'its instructions';
+  if (!selectedRecipeId) return <RecipeTabState state="unselected" subject={subject} icon={ListOrdered} />;
+  if (isLoading) return <RecipeTabState state="loading" subject={subject} />;
+  if (error || !recipe) return <RecipeTabState state="error" subject={subject} icon={ListOrdered} />;
 
-  if (!selectedRecipeId) {
-    return (
-      <div className="flex-1 flex items-center justify-center bg-background">
-        <div className="text-center">
-          <p className="text-muted-foreground">
-            Select a recipe from the left panel to view its instructions
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  if (isLoading) {
-    return (
-      <div className="flex-1 bg-background p-6">
-        <div className="max-w-4xl mx-auto">
-          <Skeleton className="h-64 rounded-lg" />
-        </div>
-      </div>
-    );
-  }
-
-  if (error || !recipe) {
-    return (
-      <div className="flex-1 bg-background p-6">
-        <div className="max-w-4xl mx-auto">
-          <div className="rounded-lg bg-[var(--color-feedback-error-tint)] p-4 text-[var(--color-feedback-error)]">
-            Recipe not found or failed to load.
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const canEdit = userType === 'admin' || (userId !== null && recipe.owner_id === userId);
 
   return (
-    <div className="flex-1 overflow-auto bg-background">
-      <div className="p-6 max-w-4xl mx-auto">
-        <Card>
-          <CardContent className="p-6">
-            <h2 className="text-lg font-medium mb-4 text-foreground">
-              Instructions
-            </h2>
-            <Instructions recipe={recipe} canEdit={canEdit} />
-          </CardContent>
-        </Card>
-      </div>
-    </div>
+    <RecipeTabPage>
+      <SectionHeader
+        eyebrow={recipe.name}
+        title="Instructions"
+        description="Method, timers and temperatures. Changes save as you type."
+      />
+      <Card>
+        <Instructions recipe={recipe} canEdit={canEdit} />
+      </Card>
+    </RecipeTabPage>
   );
 }
