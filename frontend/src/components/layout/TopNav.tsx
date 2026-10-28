@@ -2,13 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { FlaskConical, DollarSign, Package, BookOpen, UtensilsCrossed, Settings, LogOut, LucideIcon, Menu, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAppState } from '@/lib/store';
 import { logoutUser } from '@/lib/api';
 import { ConfirmModal } from '@/components/ui';
+import { BrandLogo } from '@/components/brand';
 
 interface NavItem {
   href: string;
@@ -105,14 +105,7 @@ export function TopNav() {
           href="/recipes"
           className="flex items-center mr-4 md:mr-8 rounded-lg"
         >
-          <Image
-            src="/logo/Reciperep logo inline 840x180.png"
-            alt="Mission Recipes"
-            width={140}
-            height={30}
-            className="h-7 w-auto"
-            priority
-          />
+          <BrandLogo className="h-6 w-auto text-accent" />
         </Link>
 
         {/* Only show navigation and menus when logged in */}
@@ -124,7 +117,7 @@ export function TopNav() {
                 onClick={() => setIsMenuOpen((v) => !v)}
                 aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
                 aria-expanded={isMenuOpen}
-                className="rounded-lg p-2 text-muted-foreground transition-colors duration-[120ms] hover:bg-accent hover:text-foreground"
+                className="rounded-lg p-2 text-muted-foreground transition-colors duration-[120ms] hover:bg-surface-hover hover:text-foreground"
               >
                 {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
               </button>
@@ -148,7 +141,7 @@ export function TopNav() {
                         'flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors duration-[120ms]',
                         isActive
                           ? 'bg-background-contrast font-medium text-foreground'
-                          : 'font-normal text-muted-foreground hover:bg-accent hover:text-foreground'
+                          : 'font-normal text-muted-foreground hover:bg-surface-hover hover:text-foreground'
                       )}
                     >
                       <Icon className="h-4 w-4" />
@@ -183,7 +176,7 @@ export function TopNav() {
               )}
               <button
                 onClick={handleLogout}
-                className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors duration-[120ms] hover:bg-accent hover:text-foreground"
+                className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors duration-[120ms] hover:bg-surface-hover hover:text-foreground"
               >
                 <LogOut className="h-4 w-4" />
                 <span className="hidden md:inline">Log out</span>
@@ -223,7 +216,7 @@ export function TopNav() {
                       'flex min-h-11 items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors duration-[120ms]',
                       isActive
                         ? 'bg-background-contrast font-medium text-foreground'
-                        : 'font-normal text-muted-foreground hover:bg-accent hover:text-foreground'
+                        : 'font-normal text-muted-foreground hover:bg-surface-hover hover:text-foreground'
                     )}
                   >
                     <Icon className="h-4 w-4" />
@@ -245,7 +238,7 @@ export function TopNav() {
               )}
               <button
                 onClick={handleLogout}
-                className="flex min-h-11 items-center gap-3 rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors duration-[120ms] hover:bg-accent hover:text-foreground"
+                className="flex min-h-11 items-center gap-3 rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors duration-[120ms] hover:bg-surface-hover hover:text-foreground"
               >
                 <LogOut className="h-4 w-4" />
                 <span>Log out</span>

@@ -62,7 +62,7 @@ export async function POST(request: Request) {
     // Use pre-formatted date from the frontend (avoids server timezone issues)
     const formattedDate = validatedData.formatted_date ?? validatedData.session_date;
 
-    const logoUrl = `${appUrl}/logo/Reciperep%20logo%20inline%20840x180.png`;
+    const logoUrl = `${appUrl}/logo/MS-Recipes-blk-inlinelong.png`;
 
     const buildEmailHtml = (recipientName?: string) => {
     const displayName = recipientName ? escapeHtml(recipientName) : '';
@@ -114,7 +114,7 @@ export async function POST(request: Request) {
                   <!-- Header with logo -->
                   <tr>
                     <td style="background: #fff; border-radius: 16px 16px 0 0; padding: 28px 40px 24px; text-align: center; border-bottom: 1px solid #ede8e0;">
-                      <img src="${logoUrl}" alt="Mission Recipes" width="180" style="display: block; margin: 0 auto; max-width: 180px; height: auto;" />
+                      <img src="${logoUrl}" alt="Mission Recipes" width="210" style="display: block; margin: 0 auto; max-width: 210px; height: auto;" />
                     </td>
                   </tr>
 
@@ -133,7 +133,7 @@ export async function POST(request: Request) {
                         <!-- Greeting -->
                         <tr>
                           <td style="padding-bottom: 16px;">
-                            <h1 style="margin: 0; font-family: 'Playfair Display', Georgia, serif; font-size: 30px; font-weight: 700; line-height: 1.2; color: #1a1a1a;">
+                            <h1 style="margin: 0; font-family: 'Playfair Display', Georgia, serif; font-size: 30px; font-weight: 500; line-height: 1.2; color: #1a1a1a;">
                               ${greetingHtml}
                             </h1>
                           </td>
