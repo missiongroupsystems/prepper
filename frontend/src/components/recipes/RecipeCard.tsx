@@ -3,10 +3,13 @@
 import { memo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ImagePlus, ExternalLink } from 'lucide-react';
-import { Card, CardHeader, CardTitle, CardContent, CardFooter, Badge } from '@/components/ui';
-import { formatCurrency } from '@/lib/utils';
-import type { Recipe, RecipeStatus } from '@/types';
+import { ImagePlus } from 'lucide-react';
+import { Badge, Card } from '@/components/ui';
+import { formatDisplayName } from '@/lib/format/displayName';
+import type { Recipe } from '@/types';
+import { RecipeStatusBadges, costPerPortion } from './recipeBadges';
+
+const IMAGE_SIZE = 56;
 
 interface RecipeCardProps {
   recipe: Recipe;
@@ -19,114 +22,69 @@ interface RecipeCardProps {
   matchedViaSubDish?: boolean;
 }
 
-const STATUS_VARIANTS: Record<RecipeStatus, 'default' | 'success' | 'warning' | 'secondary'> = {
-  draft: 'secondary',
-  active: 'success',
-  archived: 'warning',
-};
-
-export const RecipeCard = memo(function RecipeCard({ recipe, costPerPortion, isOwned, href, outletNames = [], categoryNames = [], allergenNames = [], matchedViaSubDish }: RecipeCardProps) {
+function BadgeGroup({ label, names, variant }: { label: string; names: string[]; variant?: 'warning' }) {
+  if (names.length === 0) return null;
   return (
-    <Link href={href ?? `/recipes/${recipe.id}`} className="block">
-      <Card interactive className="mb-4 h-full">
-        <CardHeader>
-          <div className="flex-1 min-w-0">
-            <CardTitle className="truncate text-xl">{recipe.name}</CardTitle>
-            <p className="text-base text-muted-foreground mt-0.5">
+    <div className="flex flex-col gap-1">
+      <p className="text-xs text-tertiary">{label}</p>
+      <div className="flex flex-wrap gap-1">
+        {names.map((name) => (
+          <Badge key={name} variant={variant}>
+            {formatDisplayName(name)}
+          </Badge>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export const RecipeCard = memo(function RecipeCard({
+  recipe,
+  costPerPortion: explicitCost,
+  isOwned,
+  href,
+  outletNames = [],
+  categoryNames = [],
+  allergenNames = [],
+  matchedViaSubDish,
+}: RecipeCardProps) {
+  const name = formatDisplayName(recipe.name);
+  return (
+    <Link href={href ?? `/recipes/${recipe.id}`} className="block h-full rounded-lg focus-visible:outline-2 focus-visible:outline-ring">
+      <Card interactive className="flex h-full flex-col gap-4">
+        <div className="flex items-start gap-3">
+          <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+            <h3 className="text-base leading-snug font-medium text-ink break-words">{name}</h3>
+            <p className="text-sm text-muted-foreground tabular-nums">
               {recipe.yield_quantity} {recipe.yield_unit}
             </p>
           </div>
-
-          {/* Recipe image */}
           {recipe.image_url ? (
             <Image
               src={recipe.image_url}
-              alt={recipe.name}
-              width={64}
-              height={64}
-              className="w-16 h-16 rounded-md object-cover"
+              alt=""
+              width={IMAGE_SIZE}
+              height={IMAGE_SIZE}
+              className="size-14 shrink-0 rounded-md object-cover"
             />
           ) : (
-            <div className="w-16 h-16 rounded-md bg-secondary flex items-center justify-center text-muted-foreground">
-              <ImagePlus className="h-6 w-6" />
-            </div>
+            <span className="grid size-14 shrink-0 place-items-center rounded-md bg-surface-sunken text-placeholder">
+              <ImagePlus className="size-5" strokeWidth={1.5} aria-hidden="true" />
+            </span>
           )}
-        </CardHeader>
+        </div>
 
-        <CardContent>
-          <div className="flex flex-col gap-3">
-            {/* Status badges */}
-            <div className="flex items-center gap-2 flex-wrap">
-              <Badge variant={STATUS_VARIANTS[recipe.status]} className="text-sm">
-                {recipe.status.charAt(0).toUpperCase() + recipe.status.slice(1)}
-              </Badge>
-              {recipe.is_prep_recipe && (
-                <Badge variant="default" className="text-sm">Prep</Badge>
-              )}
-              {matchedViaSubDish && (
-                <Badge variant="default" className="text-sm">Via Sub-dish</Badge>
-              )}
-              {isOwned && (
-                <Badge className="text-sm bg-primary text-primary-foreground">Owned</Badge>
-              )}
-            </div>
+        <div className="flex flex-wrap items-center gap-1.5">
+          <RecipeStatusBadges recipe={recipe} isOwned={isOwned} matchedViaSubDish={matchedViaSubDish} />
+        </div>
+        <BadgeGroup label="Outlets" names={outletNames} />
+        <BadgeGroup label="Categories" names={categoryNames} />
+        <BadgeGroup label="Allergens" names={allergenNames} variant="warning" />
 
-            {/* Outlets */}
-            {outletNames.length > 0 && (
-              <div className="flex flex-col gap-1">
-                <p className="text-xs font-medium text-muted-foreground">Outlets</p>
-                <div className="flex flex-wrap gap-1">
-                  {outletNames.map((name) => (
-                    <Badge key={name} variant="secondary" className="text-xs">
-                      {name}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Categories */}
-            {categoryNames.length > 0 && (
-              <div className="flex flex-col gap-1">
-                <p className="text-xs font-medium text-muted-foreground">Categories</p>
-                <div className="flex flex-wrap gap-1">
-                  {categoryNames.map((name) => (
-                    <Badge key={name} variant="secondary" className="text-xs">
-                      {name}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Allergens */}
-            {allergenNames.length > 0 && (
-              <div className="flex flex-col gap-1">
-                <p className="text-xs font-medium text-muted-foreground">Allergens</p>
-                <div className="flex flex-wrap gap-1">
-                  {allergenNames.map((name) => (
-                    <Badge key={name} variant="warning" className="text-xs">
-                      {name}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        </CardContent>
-
-        <CardFooter>
-          <div className="flex items-center justify-between w-full">
-            <div className="text-base">
-              <span className="text-muted-foreground">Cost: </span>
-              <span className="font-medium text-foreground">
-                {formatCurrency(costPerPortion ?? (recipe.cost_price != null && recipe.yield_quantity > 0 ? recipe.cost_price / recipe.yield_quantity : recipe.cost_price))}
-              </span>
-              <span className="text-muted-foreground">/portion</span>
-            </div>
-            <ExternalLink className="h-4 w-4 text-muted-foreground" />
-          </div>
-        </CardFooter>
+        <p className="mt-auto flex items-baseline justify-between gap-2 border-t border-line pt-3 text-sm">
+          <span className="text-muted-foreground">Cost per portion</span>
+          <span className="font-medium text-ink tabular-nums">{costPerPortion(recipe, explicitCost)}</span>
+        </p>
       </Card>
     </Link>
   );

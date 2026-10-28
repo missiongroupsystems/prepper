@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { cn } from '@/lib/utils';
+import { FilterGroup, FilterPill } from '@/components/lists/FilterPills';
 import { formatDisplayName } from '@/lib/format/displayName';
 import type { RecipeCategory } from '@/types';
 
@@ -20,48 +20,40 @@ export function RecipeCategoryFilterButtons({
 }: RecipeCategoryFilterButtonsProps) {
   const [showAll, setShowAll] = useState(false);
 
+  if (!categories || categories.length === 0) return null;
+
   const toggleCategory = (categoryId: number) => {
-    if (selectedCategories.includes(categoryId)) {
-      onCategoryChange(selectedCategories.filter((id) => id !== categoryId));
-    } else {
-      onCategoryChange([...selectedCategories, categoryId]);
-    }
+    onCategoryChange(
+      selectedCategories.includes(categoryId)
+        ? selectedCategories.filter((id) => id !== categoryId)
+        : [...selectedCategories, categoryId]
+    );
   };
 
-  if (!categories || categories.length === 0) {
-    return null;
-  }
-
   const visible = showAll ? categories : categories.slice(0, CATEGORY_VISIBLE_LIMIT);
-  const hasMore = categories.length > CATEGORY_VISIBLE_LIMIT;
+  const hiddenCount = categories.length - CATEGORY_VISIBLE_LIMIT;
 
   return (
-    <div className="flex flex-wrap items-center gap-2 mb-4">
-      <span className="text-xs font-medium text-muted-foreground mr-1">
-        Category:
-      </span>
+    <FilterGroup label="Category">
       {visible.map((category) => (
-        <button
+        <FilterPill
           key={category.id}
+          pressed={selectedCategories.includes(category.id)}
           onClick={() => toggleCategory(category.id)}
-          className={cn(
-            'px-3 py-1 text-xs font-medium rounded-full transition-colors',
-            selectedCategories.includes(category.id)
-              ? 'bg-primary text-primary-foreground'
-              : 'bg-secondary text-muted-foreground hover:bg-muted'
-          )}
         >
           {formatDisplayName(category.name)}
-        </button>
+        </FilterPill>
       ))}
-      {hasMore && (
+      {hiddenCount > 0 && (
         <button
+          type="button"
           onClick={() => setShowAll((prev) => !prev)}
-          className="px-3 py-1 text-xs font-medium rounded-full text-muted-foreground hover:text-foreground underline transition-colors"
+          aria-expanded={showAll}
+          className="rounded-full px-2 py-1 text-[13px] text-muted-foreground underline underline-offset-2 hover:text-ink max-sm:min-h-10"
         >
-          {showAll ? 'See less' : `+${categories.length - CATEGORY_VISIBLE_LIMIT} more`}
+          {showAll ? 'Show fewer' : `${hiddenCount} more`}
         </button>
       )}
-    </div>
+    </FilterGroup>
   );
 }
