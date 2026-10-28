@@ -17,8 +17,9 @@ import {
 import { useAppState } from '@/lib/store';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { Badge, Button, Card, CardContent, EditableCell, Input, Modal, Select, Skeleton, Checkbox } from '@/components/ui';
+import { Badge, Button, Card, CardContent, EditableCell, EntityCode, Input, Modal, Select, Skeleton, Checkbox } from '@/components/ui';
 import { formatCurrency } from '@/lib/utils';
+import { formatDisplayName, supplierDisplayName } from '@/lib/format/displayName';
 import type { UpdateSupplierIngredientRequest } from '@/types';
 
 // Unit options (same as ingredient page)
@@ -52,6 +53,7 @@ export default function SupplierPage({ params }: SupplierPageProps) {
   const isAdmin = userType === 'admin';
 
   const { data: supplier, isLoading, error } = useSupplier(supplierId);
+  const displayName = supplierDisplayName(supplier ?? { name: '' });
   const { data: availableIngredientsData } = useIngredients({ active_only: false, page_size: 30 }); // Include inactive too
   const availableIngredients = availableIngredientsData?.items;
   const { data: supplierIngredients = [] } = useSupplierIngredients(supplierId);
@@ -228,9 +230,11 @@ export default function SupplierPage({ params }: SupplierPageProps) {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1">
-                        <h1 className="text-2xl font-medium text-foreground">
+                        {displayName.code && <EntityCode className="mb-1 px-2">{displayName.code}</EntityCode>}
+                        <h1 className="text-2xl font-medium text-foreground break-words">
                           <EditableCell
                             value={supplier.name}
+                            displayValue={displayName.name}
                             onSave={(value) => handleUpdateSupplier({ name: value })}
                             className="text-2xl font-medium"
                           />
@@ -362,7 +366,7 @@ export default function SupplierPage({ params }: SupplierPageProps) {
                           { value: '', label: 'Select ingredient...' },
                           ...availableToAdd.map((i) => ({
                             value: i.id.toString(),
-                            label: i.name,
+                            label: formatDisplayName(i.name),
                           })),
                         ]}
                       />
@@ -381,7 +385,7 @@ export default function SupplierPage({ params }: SupplierPageProps) {
                           { value: '', label: 'Select outlet...' },
                           ...outlets.map((o) => ({
                             value: o.id.toString(),
-                            label: o.name,
+                            label: formatDisplayName(o.name),
                           })),
                         ]}
                       />
@@ -534,11 +538,11 @@ export default function SupplierPage({ params }: SupplierPageProps) {
                                 href={`/ingredients/${ingredient.ingredient_id}`}
                                 className="hover:text-primary"
                               >
-                                {ingredient.ingredient_name}
+                                {formatDisplayName(ingredient.ingredient_name ?? '')}
                               </Link>
                             </td>
                             <td className="py-3 px-2 text-muted-foreground text-xs">
-                              {ingredient.outlet_name ?? '-'}
+                              {ingredient.outlet_name ? formatDisplayName(ingredient.outlet_name) : '-'}
                             </td>
                             <td className="py-3 px-2 text-muted-foreground font-mono text-xs">
                               {editingIngredient === ingredient.id ? (
