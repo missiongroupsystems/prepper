@@ -55,8 +55,8 @@ function RecipeCard({
       className={cn(
         'group relative w-full cursor-pointer rounded-lg border p-3 text-left transition-colors',
         isSelected
-          ? 'border-ring bg-accent'
-          : 'border-border hover:border-ring/50 hover:bg-accent/50'
+          ? 'border-ring bg-surface-hover'
+          : 'border-border hover:border-ring/50 hover:bg-surface-hover/50'
       )}
     >
       <div className="flex items-start justify-between gap-2">

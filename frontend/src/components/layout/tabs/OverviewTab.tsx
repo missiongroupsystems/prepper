@@ -254,7 +254,7 @@ export function OverviewTab() {
                                 if (e.key === 'Escape') { setIsEditingName(false); setNameValue(recipe?.name || ''); }
                               }}
                               autoFocus
-                              className="text-2xl font-bold text-foreground bg-transparent border-b-2 border-primary focus:outline-none flex-1 min-w-0"
+                              className="text-2xl font-medium text-foreground bg-transparent border-b-2 border-primary focus:outline-none flex-1 min-w-0"
                             />
                             <button onClick={handleSaveName} disabled={isUpdating} className="text-[var(--color-feedback-success)] hover:opacity-80 disabled:opacity-50 shrink-0">
                               <Check className="h-5 w-5" />
@@ -517,7 +517,7 @@ export function OverviewTab() {
                               setDescriptionValue(recipe?.description || '');
                             }}
                             disabled={isUpdating}
-                            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted hover:bg-accent disabled:opacity-50 text-foreground text-sm font-medium transition-colors disabled:pointer-events-none"
+                            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted hover:bg-surface-hover disabled:opacity-50 text-foreground text-sm font-medium transition-colors disabled:pointer-events-none"
                           >
                             <X className="h-4 w-4" />
                             Cancel
@@ -647,7 +647,7 @@ export function OverviewTab() {
                       {recipe.selling_price_est && costing.cost_per_portion && (
                         <div className="flex justify-between items-center py-2">
                           <span className="text-muted-foreground">Margin</span>
-                          <span className="font-semibold text-[var(--color-feedback-success)]">
+                          <span className="font-medium text-[var(--color-feedback-success)]">
                             {((1 - costing.cost_per_portion / recipe.selling_price_est) * 100).toFixed(1)}%
                           </span>
                         </div>
@@ -715,7 +715,7 @@ export function OverviewTab() {
               <CardContent className="p-6">
                 <div className="flex items-center gap-2 mb-4">
                   <Wine className="h-5 w-5 text-muted-foreground" />
-                  <h2 className="text-lg font-semibold text-foreground">
+                  <h2 className="text-lg font-medium text-foreground">
                     Tasting History
                   </h2>
                 </div>

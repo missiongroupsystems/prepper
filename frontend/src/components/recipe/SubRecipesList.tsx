@@ -458,7 +458,7 @@ export function SubRecipesList({ recipeId, canEdit }: SubRecipesListProps) {
         <div
           className={cn(
             'rounded-lg border-2 border-dashed border-border p-8 text-center',
-            isOver && 'border-primary bg-accent'
+            isOver && 'border-primary bg-surface-hover'
           )}
         >
           <p className="text-muted-foreground">No sub-recipes yet</p>

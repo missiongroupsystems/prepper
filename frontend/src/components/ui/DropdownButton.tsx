@@ -47,10 +47,10 @@ export function DropdownButton({ label, icon, items, className }: DropdownButton
         onClick={() => setOpen((v) => !v)}
         className={cn(
           'inline-flex items-center gap-2 h-10 px-4 rounded-lg font-medium text-sm transition-colors',
-          'border border-border bg-card hover:bg-accent hover:text-accent-foreground',
+          'border border-border bg-card hover:bg-surface-hover hover:text-foreground',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
           'disabled:pointer-events-none disabled:opacity-50',
-          open && 'bg-accent text-accent-foreground'
+          open && 'bg-surface-hover text-foreground'
         )}
       >
         {icon}
@@ -80,7 +80,7 @@ export function DropdownButton({ label, icon, items, className }: DropdownButton
                 }}
                 className={cn(
                   'flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-sm text-left',
-                  'transition-colors hover:bg-accent hover:text-accent-foreground',
+                  'transition-colors hover:bg-surface-hover hover:text-foreground',
                   'disabled:pointer-events-none disabled:opacity-50'
                 )}
               >

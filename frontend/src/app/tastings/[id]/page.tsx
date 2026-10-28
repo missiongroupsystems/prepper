@@ -141,7 +141,7 @@ function SortableDishItem({
         <button
           type="button"
           onClick={onToggle}
-          className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium text-muted-foreground hover:bg-accent shrink-0"
+          className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium text-muted-foreground hover:bg-surface-hover shrink-0"
         >
           <ChevronDown className={`h-3.5 w-3.5 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
           Feedback
@@ -290,7 +290,7 @@ function SessionRecipesSection({
   return (
     <div className="mb-8">
       <div className="flex items-center justify-between gap-2 mb-4">
-        <h2 className="text-lg font-semibold text-foreground flex items-center gap-2 min-w-0">
+        <h2 className="text-lg font-medium text-foreground flex items-center gap-2 min-w-0">
           <ChefHat className="h-5 w-5 text-muted-foreground shrink-0" />
           <span className="truncate">Session dishes</span>
           {sessionRecipes.length > 0 && (
@@ -367,7 +367,7 @@ function SessionRecipesSection({
                     type="button"
                     onClick={onLoadMoreRecipes}
                     disabled={isLoadingMoreRecipes}
-                    className="w-full px-3 py-2 text-sm text-primary hover:bg-accent font-medium disabled:opacity-50"
+                    className="w-full px-3 py-2 text-sm text-primary hover:bg-surface-hover font-medium disabled:opacity-50"
                   >
                     {isLoadingMoreRecipes ? 'Loading...' : 'Load more dishes'}
                   </button>
@@ -377,7 +377,7 @@ function SessionRecipesSection({
                     type="button"
                     onClick={handleCreateAndSelect}
                     disabled={isCreatingRecipe}
-                    className="w-full px-3 py-2 text-sm text-left flex items-center gap-2 text-primary hover:bg-accent border-t border-border font-medium disabled:opacity-50"
+                    className="w-full px-3 py-2 text-sm text-left flex items-center gap-2 text-primary hover:bg-surface-hover border-t border-border font-medium disabled:opacity-50"
                   >
                     <Plus className="h-4 w-4 shrink-0" />
                     {isCreatingRecipe ? 'Creating...' : <>Create &ldquo;{searchQuery.trim()}&rdquo; as new dish</>}
@@ -476,7 +476,7 @@ function SessionIngredientsSection({
   return (
     <div className="mb-8">
       <div className="flex items-center justify-between gap-2 mb-4">
-        <h2 className="text-lg font-semibold text-foreground flex items-center gap-2 min-w-0">
+        <h2 className="text-lg font-medium text-foreground flex items-center gap-2 min-w-0">
           <span className="shrink-0">🥘</span>
           <span className="truncate">Session ingredients</span>
           {ingredients.length > 0 && (

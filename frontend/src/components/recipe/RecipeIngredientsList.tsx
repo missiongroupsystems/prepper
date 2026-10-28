@@ -150,7 +150,7 @@ export function RecipeIngredientsList({ recipeId, canEdit }: RecipeIngredientsLi
         ref={setNodeRef}
         className={cn(
           'rounded-lg border-2 border-dashed border-border p-8 text-center',
-          isOver && 'border-primary bg-accent'
+          isOver && 'border-primary bg-surface-hover'
         )}
       >
         <p className="text-muted-foreground">No ingredients yet</p>

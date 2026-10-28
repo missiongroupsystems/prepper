@@ -43,9 +43,9 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
             // Primary — accent fill. One per view (§4).
             'bg-primary text-primary-foreground hover:bg-[color-mix(in_srgb,var(--primary)_88%,white)] active:bg-[color-mix(in_srgb,var(--primary)_78%,white)] disabled:hover:bg-muted':
               variant === 'default',
-            'border border-border bg-card text-foreground hover:bg-accent active:bg-background-contrast':
+            'border border-border bg-card text-foreground hover:bg-surface-hover active:bg-background-contrast':
               variant === 'outline',
-            'text-foreground hover:bg-accent active:bg-background-contrast':
+            'text-foreground hover:bg-surface-hover active:bg-background-contrast':
               variant === 'ghost',
             'bg-destructive text-destructive-foreground hover:bg-[color-mix(in_srgb,var(--destructive)_88%,black)]':
               variant === 'destructive',
