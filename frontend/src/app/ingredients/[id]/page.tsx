@@ -639,7 +639,7 @@ export default function IngredientPage({ params }: IngredientPageProps) {
               <CardContent className="p-6">
                 <div className="flex items-center gap-2 mb-4">
                   <Truck className="h-5 w-5 text-muted-foreground" />
-                  <h2 className="text-lg font-semibold text-foreground">
+                  <h2 className="text-lg font-medium text-foreground">
                     Suppliers
                   </h2>
                 </div>

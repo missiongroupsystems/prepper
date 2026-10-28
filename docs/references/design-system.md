@@ -2,6 +2,8 @@
 
 This document outlines the design system for Mission Recipes, a kitchen-first recipe workspace for chefs and operators.
 
+> **Canonical tokens live in [`design.md`](design.md)** (§2 colour, §3 type, §4.3 radii, §8–9 motion and shadows), updated for the 0.1.2 foundations pass. The colour and typography sections below predate it; the Dark Mode, Branding and File Structure sections are current.
+
 ## Overview
 
 The Mission Recipes design system is built on:
@@ -206,36 +208,22 @@ Standard Tailwind spacing with these common patterns:
 
 ## Dark Mode
 
-### Modes Supported
-
-1. **System (default)**: Follows OS preference via `prefers-color-scheme`
-2. **Light**: Manual override with `.light` class on `<html>`
-3. **Dark**: Manual override with `.dark` class on `<html>`
+Shipped again in 0.1.2, matching Mission Workforce. Choices: **System · Light · Dark**; nothing stored means Light. The full token map and plumbing are in [`design.md` §2.6](design.md#26-dark-mode-shipped).
 
 ### Usage
 
 ```tsx
-import { useTheme } from '@/lib/theme';
+import { ThemeToggle, useTheme } from '@/components/theme';
 
-function ThemeToggle() {
-  const { theme, setTheme, resolvedTheme } = useTheme();
+// Ready-made control (radio group):
+<ThemeToggle />
 
-  return (
-    <select value={theme} onChange={(e) => setTheme(e.target.value)}>
-      <option value="system">System</option>
-      <option value="light">Light</option>
-      <option value="dark">Dark</option>
-    </select>
-  );
-}
+// Or read / set the choice yourself:
+const { choice, resolvedTheme, setChoice } = useTheme();
+setChoice('dark'); // 'system' | 'light' | 'dark'
 ```
 
-### Dark Mode Adjustments
-
-- Background: `220 20% 8%` (dark blue-gray)
-- Foreground: `0 0% 95%` (near white)
-- Cards: `220 15% 12%`
-- Core colors: Lightened for visibility on dark backgrounds
+Style with tokens (`bg-card`, `text-muted-foreground`, `border-border`) and dark mode follows for free. Reach for the `dark:` variant only when a token can't express the difference.
 
 ---
 
@@ -243,44 +231,44 @@ function ThemeToggle() {
 
 ### Logo
 
-The current logo features a friendly chef character with the wordmark. Located in `public/logo/`:
+The Mission Recipes lockups (Mission Systems suite) are single-colour SVGs in `public/logo/`:
 
-> **Note:** These logo files still use the legacy `reciperep-*` names and artwork. They are pending replacement with Mission Recipes assets.
+| File | Lockup |
+|------|--------|
+| `MS-Recipes-blk-inlinelong.svg` | Mark + "Mission Recipes", one line (primary) |
+| `MS-Recipes-blk-inlineshort.svg` | Mark + "Recipes", one line |
+| `MS-Recipes-blk-sidestack.svg` | Mark beside a stacked wordmark |
+| `MS-Recipes-blk-stackleft.svg` | Mark over a left-aligned stacked wordmark |
+| `MS-Recipes-blk-stackcentre.svg` | Mark over a centred stacked wordmark |
+| `MS-Recipes-blk-icon.svg` | The mark alone |
+| `MS-Recipes-blk-favicon.svg` | The mark reversed out of a forest rounded square |
+| `MS-Recipes-blk-inlinelong.png` | 840px PNG of the inline lockup, for email clients |
 
-| File | Dimensions | Usage |
-|------|------------|-------|
-| `reciperep-logo_inline-960x180.png` | 960×180 | Header navigation, full logo |
-| `reciperep-favicon-512x512.png` | 512×512 | Source for favicon/icons |
+The files carry a fixed forest fill. **In the UI, use `BrandLogo`**: it inlines the paths with `fill="currentColor"`, so `text-accent` paints it and it lifts to the lighter green in dark mode.
 
-**TopNav implementation:**
 ```tsx
-<Image
-  src="/logo/reciperep-logo_inline-960x180.png"
-  alt="Mission Recipes"
-  width={120}
-  height={22}
-  className="h-6 w-auto"
-  priority
-/>
+import { BrandLogo } from '@/components/brand';
+
+<BrandLogo className="h-6 w-auto text-accent" />                 // full (default)
+<BrandLogo variant="short" className="h-6 w-auto text-accent" /> // mark + "Recipes"
+<BrandLogo variant="mark" className="size-6 text-accent" />      // mark only
 ```
+
+TopNav uses the full variant. The tasting invitation email (`app/api/send-tasting-invitation/route.ts`) uses the PNG, because email clients don't render SVG reliably.
 
 ### Favicon & Icons
 
-Icons are configured in `layout.tsx` metadata and stored in `src/app/`:
+All come from Next's file conventions; `layout.tsx` sets no `icons` metadata.
 
 | File | Purpose |
 |------|---------|
-| `icon.png` | Standard favicon (512×512) |
-| `apple-icon.png` | Apple touch icon (512×512) |
+| `src/app/icon.svg` | SVG favicon (the `favicon` lockup) |
+| `src/app/apple-icon.png` | 180×180 Apple touch icon, full-bleed forest |
+| `src/app/manifest.ts` | Web app manifest, "Mission Recipes" |
+| `public/icons/icon-192.png`, `icon-512.png` | PWA icons |
+| `public/icons/icon-maskable-512.png` | Maskable PWA icon, mark inside the 80% safe zone |
 
-```tsx
-export const metadata: Metadata = {
-  icons: {
-    icon: '/icon.png',
-    apple: '/apple-icon.png',
-  },
-};
-```
+The PNGs are rendered from the SVGs with `rsvg-convert`.
 
 ---
 
@@ -289,34 +277,26 @@ export const metadata: Metadata = {
 ```
 frontend/
 ├── public/
-│   └── logo/
-│       ├── reciperep-logo_inline-960x180.png  # Header logo
-│       └── reciperep-favicon-512x512.png      # Source favicon
+│   ├── fonts/satoshi/            # Satoshi variable (regular + italic)
+│   ├── logo/                     # MS-Recipes-blk-* lockups + email PNG
+│   └── icons/                    # PWA icons
 ├── src/
+│   ├── styles/tokens.css         # raw tokens, light + dark
 │   ├── app/
-│   │   ├── globals.css          # Design tokens & base styles
-│   │   ├── layout.tsx           # Font loading, metadata, providers
-│   │   ├── icon.png             # Favicon
-│   │   ├── apple-icon.png       # Apple touch icon
-│   │   └── design-system/
-│   │       └── page.tsx         # Design system showcase
+│   │   ├── globals.css           # @theme map, base styles, utilities
+│   │   ├── layout.tsx            # no-flash theme script, metadata, providers
+│   │   ├── icon.svg · apple-icon.png · manifest.ts
+│   │   └── design-system/        # showcase (rendered in Settings → Design)
 │   ├── components/
-│   │   ├── layout/
-│   │   │   └── TopNav.tsx       # Navigation with logo
-│   │   └── ui/
-│   │       ├── Button.tsx       # Action buttons
-│   │       ├── Card.tsx         # Card components
-│   │       ├── Badge.tsx        # Status badges
-│   │       ├── Input.tsx        # Text inputs
-│   │       ├── Select.tsx       # Dropdowns
-│   │       └── Textarea.tsx     # Multi-line inputs
+│   │   ├── brand/BrandLogo.tsx
+│   │   ├── theme/                # ThemeProvider, useTheme, ThemeToggle
+│   │   ├── layout/TopNav.tsx
+│   │   └── ui/                   # Button, Card, Badge, Input, Select, Textarea, …
 │   └── lib/
-│       ├── utils.ts             # cn() helper
-│       ├── theme.tsx            # Theme provider & hook
-│       └── providers.tsx        # App providers
-└── docs/
-    └── references/
-        └── design-system.md     # This file
+│       ├── theme.ts              # theme rule + THEME_BOOT_SCRIPT
+│       ├── utils.ts              # cn() helper
+│       └── providers.tsx         # app providers
+└── docs/references/design-system.md
 ```
 
 ---

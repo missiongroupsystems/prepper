@@ -76,7 +76,7 @@ export function EditableCell({
   return (
     <span
       onClick={() => setIsEditing(true)}
-      className={`cursor-pointer rounded-md px-1 py-0.5 transition-colors duration-[120ms] hover:bg-accent ${className}`}
+      className={`cursor-pointer rounded-md px-1 py-0.5 transition-colors duration-[120ms] hover:bg-surface-hover ${className}`}
     >
       {display || <span className="text-muted-foreground italic">{placeholder || '-'}</span>}
     </span>

@@ -224,7 +224,7 @@ function StagedIngredientCard({
           <button
             onClick={onRemove}
             aria-label={`Remove ${staged.ingredient.name}`}
-            className="rounded p-1 text-muted-foreground hover:text-foreground hover:bg-accent"
+            className="rounded p-1 text-muted-foreground hover:text-foreground hover:bg-surface-hover"
           >
             <X className="h-5 w-5" />
           </button>
@@ -249,7 +249,7 @@ function StagedIngredientCard({
                 const newQty = Math.max(1, staged.quantity - 1);
                 onQuantityChange(parseFloat(newQty.toFixed(1)));
               }}
-              className="rounded p-1 text-muted-foreground hover:text-foreground hover:bg-accent"
+              className="rounded p-1 text-muted-foreground hover:text-foreground hover:bg-surface-hover"
               title="Decrease quantity"
               aria-label="Decrease quantity"
             >
@@ -265,7 +265,7 @@ function StagedIngredientCard({
             />
             <button
               onClick={() => onQuantityChange(parseFloat((staged.quantity + 1).toFixed(1)))}
-              className="rounded p-1 text-muted-foreground hover:text-foreground hover:bg-accent"
+              className="rounded p-1 text-muted-foreground hover:text-foreground hover:bg-surface-hover"
               title="Increase quantity"
               aria-label="Increase quantity"
             >
@@ -287,7 +287,7 @@ function StagedIngredientCard({
             onClick={() => setIsExpanded(!isExpanded)}
             aria-label={isExpanded ? 'Hide ingredient details' : 'Show ingredient details'}
             aria-expanded={isExpanded}
-            className="rounded p-1.5 text-muted-foreground hover:text-foreground hover:bg-accent"
+            className="rounded p-1.5 text-muted-foreground hover:text-foreground hover:bg-surface-hover"
           >
             {isExpanded ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
           </button>
@@ -703,7 +703,7 @@ function StagedRecipeCard({
           <button
             onClick={onRemove}
             aria-label={`Remove ${staged.recipe.name}`}
-            className="rounded p-1 text-muted-foreground hover:text-foreground hover:bg-accent"
+            className="rounded p-1 text-muted-foreground hover:text-foreground hover:bg-surface-hover"
           >
             <X className="h-5 w-5" />
           </button>
@@ -721,7 +721,7 @@ function StagedRecipeCard({
                 const newQty = Math.max(1, staged.quantity - 1);
                 onQuantityChange(parseFloat(newQty.toFixed(1)));
               }}
-              className="rounded p-1 text-muted-foreground hover:text-foreground hover:bg-accent"
+              className="rounded p-1 text-muted-foreground hover:text-foreground hover:bg-surface-hover"
               title="Decrease quantity"
               aria-label="Decrease quantity"
             >
@@ -737,7 +737,7 @@ function StagedRecipeCard({
             />
             <button
               onClick={() => onQuantityChange(parseFloat((staged.quantity + 1).toFixed(1)))}
-              className="rounded p-1 text-muted-foreground hover:text-foreground hover:bg-accent"
+              className="rounded p-1 text-muted-foreground hover:text-foreground hover:bg-surface-hover"
               title="Increase quantity"
               aria-label="Increase quantity"
             >
@@ -749,7 +749,7 @@ function StagedRecipeCard({
             onClick={() => setIsExpanded(!isExpanded)}
             aria-label={isExpanded ? 'Hide recipe details' : 'Show recipe details'}
             aria-expanded={isExpanded}
-            className="rounded p-1.5 text-muted-foreground hover:text-foreground hover:bg-accent"
+            className="rounded p-1.5 text-muted-foreground hover:text-foreground hover:bg-surface-hover"
           >
             {isExpanded ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
           </button>
@@ -940,7 +940,7 @@ function TableItemDropdown({
                             </div>
                           </div>
                           {ing.id === selectedIngredientId && (
-                            <span className="text-xs font-semibold text-[var(--color-feedback-success)] flex-shrink-0">✓</span>
+                            <span className="text-xs font-medium text-[var(--color-feedback-success)] flex-shrink-0">✓</span>
                           )}
                         </div>
                       </button>
@@ -979,7 +979,7 @@ function TableItemDropdown({
                             </div>
                           </div>
                           {recipe.id === selectedRecipeId && (
-                            <span className="text-xs font-semibold text-[var(--color-feedback-success)] flex-shrink-0">✓</span>
+                            <span className="text-xs font-medium text-[var(--color-feedback-success)] flex-shrink-0">✓</span>
                           )}
                         </div>
                       </button>

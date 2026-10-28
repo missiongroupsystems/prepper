@@ -123,7 +123,7 @@ export function Modal({
           {!disableClose && (
             <button
               onClick={onClose}
-              className="rounded-lg p-1 text-[var(--color-text-tertiary)] transition-colors duration-[120ms] hover:bg-accent hover:text-foreground"
+              className="rounded-lg p-1 text-[var(--color-text-tertiary)] transition-colors duration-[120ms] hover:bg-surface-hover hover:text-foreground"
               aria-label="Close modal"
             >
               <X className="h-5 w-5" />

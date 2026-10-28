@@ -6,6 +6,7 @@ All notable changes to Mission Recipes are documented here.
 
 ## Index
 
+- **[0.1.2](#012---2026-10-28)** — Redesign Phase 1 Foundations: Workforce-Aligned Tokens (`styles/tokens.css`), Dark Mode Rebuilt with No-Flash Script, Variable Satoshi & System Mono, MS-Recipes Logos, Favicon & PWA Icons
 - **[0.1.1](#011---2026-10-28)** — Rename to Mission Recipes: Product Name Across UI, Email & Docs, One-Time `prepper_*` → `mission_recipes_*` Storage Key Migration
 - **[0.1.0](#010---2026-07-14)** — Post-CI Review Remediation: E2E Suite Un-Rotted (Semantic Selectors), Contrast Fix on Canvas Empty States, `archived` No Longer Reads as an Error & Version-Tree De-Zinced
 - **[0.0.50](#0050---2026-07-14)** — Mission Systems CI: Self-Hosted Satoshi, Three-Tier Token Architecture, Forest Accent Budget, Semantic Feedback Palette, Dark Mode Removed & Product-Wide Sentence Case (106 Files)
@@ -59,6 +60,69 @@ All notable changes to Mission Recipes are documented here.
 - **[0.0.3](#003---2024-11-27)** — Database Migration: Alembic Initial Tables to Supabase + PostgreSQL JSON Compatibility Fix
 - **[0.0.2](#002---2024-11-27)** — Frontend Implementation: Next.js 15 Recipe Canvas with Drag-and-Drop, Autosave & TanStack Query
 - **[0.0.1](#001---2024-11-27)** — Backend Foundation: FastAPI + SQLModel with 17 API Endpoints, Domain Services & Unit Conversion
+---
+
+## [0.1.2] - 2026-10-28
+
+Phase 1 of the Mission Recipes redesign: the foundations later phases build on, aligned with Mission Workforce (the suite's reference app). No behaviour, API or hook changes.
+
+### Changed
+
+#### Tokens aligned with Workforce
+
+- Raw tokens moved to a new `src/styles/tokens.css` (`:root`/`.light` and `.dark`, the only place hex appears). `globals.css` maps them to Tailwind with `@theme inline`, so the ~140 files using `bg-card`, `text-muted-foreground`, `border-border`, `bg-primary` and the rest inherit the change unedited.
+- Surfaces: the canvas `--background` is now `#faf9f6` (it pointed at the sunken beige before), with cards `#fff`, sunken `#f6f5f1`, hover/active as low-alpha ink, and selected `#eef2ef`.
+- Text tiers: ink `#171717`, muted deep `#55534c` (`text-muted-foreground`), muted `#6b6962` (`text-tertiary`).
+- Lines: `--line`, `--hairline` and `--hairline-strong`, plus `--input` `#807d76` as the separate perceivable control border.
+- Accent: forest `#1d3a2a` (dark `#7fc79a`), with `accent-soft`, `accent-press` and `ring`. **`bg-accent` is now the brand**, as in Workforce; the 32 neutral-hover call sites were renamed to `bg-surface-hover` (and `text-accent-foreground` hovers to `text-foreground`), so they look the same.
+- Semantic success, warning, info and danger, each with `-subtle`, plus Tier-2 status pairs (draft, pending, settled, attention, blocked, alt) with `status-*` utilities. The domain pills (`status-testing`, `-approved`, …) now map onto them.
+- Radius: sm 6, md 8, lg 12, xl 16, pill 999. `rounded-lg` was 8px and `rounded-xl` 12px, so cards and controls round a step more. Motion tokens: 120, 160 and 200ms, plus two easings. Shell geometry tokens (rail, bar, 1080px content measure) are ready for Phase 2.
+- The plan-29 names still read through `var()` in components (`--color-feedback-*`, `--color-text-*`, …) stay as a legacy bridge onto the new tokens.
+- `tailwind.config.ts` (content globs only) is removed; v4 detects sources itself.
+
+#### Fonts
+
+- Satoshi is now the **variable** font (regular + italic, weight axis 300–900), copied from Workforce. It replaces the 5 static cuts and sits behind a `--brand-typeface-{display,text}` seam.
+- Mono is the system `ui-monospace` stack. The Geist Mono `next/font/google` import (an external font host) is gone.
+- The weight band is enforced: 15 `font-semibold`/`font-bold` uses and one inline `font-weight: 700` in the tasting email now use 500, and `font-synthesis: none` is set.
+- `tnum` is the tabular-figures utility (`tabular` is kept as an alias).
+
+#### Logos and icons
+
+- The 7 `MS-Recipes-blk-*` SVG lockups are in `public/logo/`. All were checked as safe: no scripts, no external refs, single colour (the favicon is two-tone by design).
+- A new `components/brand/BrandLogo` (`full` | `short` | `mark`) inlines the paths with `currentColor`, so it paints in `text-accent` and lifts in dark mode. TopNav uses it.
+- New icons: `app/icon.svg` (SVG favicon), `app/apple-icon.png` (180, full-bleed), and PWA icons in `public/icons/` (192, 512, maskable 512), plus `app/manifest.ts` ("Mission Recipes").
+- The tasting invitation email uses a new `MS-Recipes-blk-inlinelong.png`.
+- The old `Reciperep*`/`reciperep-*` PNGs, `favicon.ico` and `icon.png` are deleted.
+
+#### Design-system page
+
+Rebuilt as `page.tsx` plus `_sections/` (brand, themes, tokens, type, components), all under 300 lines each. It shows the logo set, both themes side by side, the surface, text, line, accent, semantic and status tokens, radii, the type scale and the theme toggle. The page renders inside Settings → Design.
+
+### Added
+
+#### Dark mode, rebuilt
+
+- `@custom-variant dark` on a `.dark` class on `<html>`, with a `.dark` token map copied from Workforce.
+- `lib/theme.ts` holds the choices (System · Light · Dark, default Light), the resolve rule and `THEME_BOOT_SCRIPT`. That inline `<head>` script reads `mission_recipes_theme` (falling back to the legacy `prepper-theme`) and sets `.dark` and `color-scheme` before first paint. `<html>` has `suppressHydrationWarning`, and the hard-coded `colorScheme: 'light'` is gone.
+- `components/theme/ThemeProvider` (`useTheme()` → `{ choice, resolvedTheme, setChoice }`) syncs across tabs. `ThemeToggle` is a radio group, shown only on the design-system page until Phase 2 places it.
+- Sonner toasts follow the resolved theme.
+- New `e2e/theme.spec.ts` covers three cases: a stored dark choice applies before hydration (client chunks blocked), the legacy key is honoured, and toggling persists across a reload.
+
+### Known gaps (Phase 3)
+
+- ReactFlow version trees (`VersionsTab.tsx`, `rnd/r/[recipeId]/page.tsx`) pass hex edge and grid colours as props. They don't follow dark mode.
+- `RecipeImageCarousel` uses `bg-white` dots on photos, which is fine in both themes but untokenised.
+- The tasting invitation email keeps its own terracotta palette and Playfair heading. Email can't use CSS variables, but its palette should move to the brand.
+- The Google "G" on the login page keeps Google's brand hex, as required.
+- `bg-muted` and `bg-secondary` keep their surface meaning (they collide with Workforce's text-tone names). Phase 3 should migrate them to `bg-surface-sunken`.
+
+### Verification
+
+- `npm run lint`: 0 errors (87 pre-existing warnings, none in touched files).
+- `npm run build`: passes.
+- `npx playwright test e2e/storage-migration.spec.ts e2e/theme.spec.ts --project=chromium --no-deps`: 5 passed.
+
 ---
 
 ## [0.1.1] - 2026-10-28
