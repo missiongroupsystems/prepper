@@ -18,8 +18,8 @@ export interface TreeColors {
 const EDGE_TOKEN = '--muted';
 const GRID_TOKEN = '--hairline';
 const SEPARATOR = '|';
-/** Light-theme values for the server render; the tree only draws on the client. */
-const SERVER_SNAPSHOT = ['#6b6962', 'rgba(23, 23, 23, 0.16)'].join(SEPARATOR);
+/** Empty on the server, so ReactFlow falls back to its defaults; the tree only draws on the client. */
+const SERVER_SNAPSHOT = SEPARATOR;
 
 function subscribe(onChange: () => void): () => void {
   const observer = new MutationObserver(onChange);
