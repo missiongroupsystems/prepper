@@ -23,8 +23,9 @@ test.use({ storageState: { cookies: [], origins: [] } });
 
 async function openShowcase(page: Page) {
   await page.route('**/api/v1/**', (route) => route.abort());
-  await page.goto('/login');
-  await page.evaluate(({ key, auth }) => localStorage.setItem(key, JSON.stringify(auth)), {
+  // Seed before any app script runs (as app-shell.spec does). Writing it after /login has loaded
+  // races the store's auth sync, which can still hold the empty pre-login state and clear it.
+  await page.addInitScript(({ key, auth }) => localStorage.setItem(key, JSON.stringify(auth)), {
     key: AUTH_KEY,
     auth: MOCK_AUTH,
   });

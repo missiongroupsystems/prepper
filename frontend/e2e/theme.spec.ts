@@ -69,14 +69,13 @@ test.describe('Theme', () => {
   });
 
   test('toggling persists across a reload', async ({ page }) => {
-    await page.goto('/login');
-    await page.evaluate(
-      ({ authKey, themeKey, auth }) => {
-        localStorage.setItem(authKey, JSON.stringify(auth));
-        localStorage.removeItem(themeKey);
-      },
-      { authKey: AUTH_KEY, themeKey: THEME_KEY, auth: MOCK_AUTH }
-    );
+    // Seed the session before any app script runs (as app-shell.spec does): written after /login
+    // has loaded, it races the store's auth sync, which can clear it. A fresh context has no
+    // stored theme, so the test starts from the light default.
+    await page.addInitScript(({ authKey, auth }) => localStorage.setItem(authKey, JSON.stringify(auth)), {
+      authKey: AUTH_KEY,
+      auth: MOCK_AUTH,
+    });
 
     // The design-system page renders inside Settings → Design (AuthGuard has no /design-system route).
     await page.goto('/settings');
