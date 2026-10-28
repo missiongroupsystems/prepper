@@ -393,7 +393,7 @@ export default function OutletPage({ params }: OutletPageProps) {
             <Card>
               <CardContent className="p-6">
                 <div className="flex items-center gap-2 mb-4">
-                  <h2 className="text-lg font-semibold text-foreground">
+                  <h2 className="text-lg font-medium text-foreground">
                     Outlet recipe
                   </h2>
                 </div>
@@ -635,7 +635,7 @@ export default function OutletPage({ params }: OutletPageProps) {
               <Card>
                 <CardContent className="p-6">
                   <div className="flex items-center gap-2 mb-4">
-                    <h2 className="text-lg font-semibold text-muted-foreground">
+                    <h2 className="text-lg font-medium text-muted-foreground">
                       Recipes from parent outlet
                     </h2>
                     <span className="text-xs text-muted-foreground italic">
