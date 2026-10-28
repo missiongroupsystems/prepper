@@ -1,32 +1,29 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
-import { Plus, Trash2 } from 'lucide-react';
+/**
+ * Add ingredient — a SidePanel (the list stays in view) with two groups: the ingredient itself,
+ * then the suppliers it can be bought from. The tag is picked by the categorisation agent on
+ * create. Name kept from the modal it replaced so callers are unchanged.
+ */
+import { useMemo, useState } from 'react';
+import { Plus } from 'lucide-react';
+import { toast } from 'sonner';
 import { useCreateIngredient, useAddIngredientSupplier, useSuppliers, useCategorizeIngredient, useOutlets } from '@/lib/hooks';
 import { useAppState } from '@/lib/store';
-import { Button, Input, Select, Modal, Checkbox } from '@/components/ui';
-import { toast } from 'sonner';
-import type { Supplier, Outlet } from '@/types';
+import { Button, Checkbox, Input, Select } from '@/components/ui';
+import { FormPanel } from '@/components/forms/FormPanel';
+import { FieldRow, FormField, FormSection, fieldA11y } from '@/components/forms/FormField';
+import {
+  SupplierEntryFields,
+  UNIT_OPTIONS,
+  missingSupplierFields,
+  type SupplierEntry,
+  type SupplierEntryField,
+} from './SupplierEntryFields';
 
-const UNIT_OPTIONS = [
-  { value: 'g', label: 'g (grams)' },
-  { value: 'kg', label: 'kg (kilograms)' },
-  { value: 'ml', label: 'ml (milliliters)' },
-  { value: 'l', label: 'l (liters)' },
-  { value: 'pcs', label: 'pcs (pieces)' },
-];
-
-interface SupplierEntry {
-  id: string; // Temporary ID for list management
-  supplier_id: string;
-  supplier_name: string;
-  sku: string;
-  pack_size: string;
-  pack_unit: string;
-  price_per_pack: string;
-  is_preferred: boolean;
-  outlet_id: string;
-}
+const LOOKUP_PAGE_SIZE = 30;
+const DEFAULT_UNIT = 'g';
+const DEFAULT_CURRENCY = 'SGD';
 
 interface AddIngredientModalProps {
   isOpen: boolean;
@@ -38,131 +35,80 @@ export function AddIngredientModal({ isOpen, onClose }: AddIngredientModalProps)
   const createIngredient = useCreateIngredient();
   const addIngredientSupplier = useAddIngredientSupplier();
   const categorizeIngredient = useCategorizeIngredient();
-  const { data: suppliersData } = useSuppliers({ page_size: 30 });
-  const suppliers = suppliersData?.items ?? [];
-  const { data: outletsData } = useOutlets({ page_size: 30 });
+  const { data: suppliersData } = useSuppliers({ page_size: LOOKUP_PAGE_SIZE });
+  const suppliers = useMemo(() => suppliersData?.items ?? [], [suppliersData]);
+  const { data: outletsData } = useOutlets({ page_size: LOOKUP_PAGE_SIZE });
   const outlets = outletsData?.items ?? [];
 
   const [name, setName] = useState('');
-  const [baseUnit, setBaseUnit] = useState('g');
+  const [baseUnit, setBaseUnit] = useState(DEFAULT_UNIT);
   const [cost, setCost] = useState('');
   const [isHalal, setIsHalal] = useState(false);
   const [supplierEntries, setSupplierEntries] = useState<SupplierEntry[]>([]);
+  const [attempted, setAttempted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Get suppliers that haven't been added yet
-  const availableSuppliers = useMemo(() => {
-    const addedSupplierIds = new Set(supplierEntries.map((e) => e.supplier_id));
-    return suppliers.filter((s) => !addedSupplierIds.has(s.id.toString()));
-  }, [suppliers, supplierEntries]);
+  const usedSupplierIds = useMemo(() => new Set(supplierEntries.map((e) => e.supplier_id)), [supplierEntries]);
+  const canAddSupplier = suppliers.some((s) => !usedSupplierIds.has(s.id.toString()));
+  const nameError = attempted && !name.trim() ? 'Ingredient name is required' : undefined;
 
-  // Reset form only after successful submission
-  const resetForm = useCallback(() => {
+  const resetForm = () => {
     setName('');
-    setBaseUnit('g');
+    setBaseUnit(DEFAULT_UNIT);
     setCost('');
     setIsHalal(false);
     setSupplierEntries([]);
-    setIsSubmitting(false);
-  }, []);
-
-  const handleClose = useCallback(() => {
-    if (!isSubmitting) {
-      onClose();
-    }
-  }, [isSubmitting, onClose]);
+    setAttempted(false);
+  };
 
   const handleAddSupplierEntry = () => {
-    if (availableSuppliers.length === 0) return;
-
-    const newEntry: SupplierEntry = {
-      id: crypto.randomUUID(),
-      supplier_id: '',
-      supplier_name: '',
-      sku: '',
-      pack_size: '',
-      pack_unit: baseUnit,
-      price_per_pack: '',
-      is_preferred: supplierEntries.length === 0, // First supplier is preferred by default
-      outlet_id: outletId ? outletId.toString() : '',
-    };
-    setSupplierEntries((prev) => [...prev, newEntry]);
+    setSupplierEntries((prev) => [
+      ...prev,
+      {
+        id: crypto.randomUUID(),
+        supplier_id: '',
+        sku: '',
+        pack_size: '',
+        pack_unit: baseUnit,
+        price_per_pack: '',
+        // The first supplier is preferred by default.
+        is_preferred: prev.length === 0,
+        outlet_id: outletId ? outletId.toString() : '',
+      },
+    ]);
   };
 
   const handleRemoveSupplierEntry = (id: string) => {
     setSupplierEntries((prev) => {
       const updated = prev.filter((e) => e.id !== id);
-      // If we removed the preferred supplier and there are still entries, make the first one preferred
+      // Removing the preferred supplier hands the role to the first one left.
       if (updated.length > 0 && !updated.some((e) => e.is_preferred)) {
-        updated[0].is_preferred = true;
+        updated[0] = { ...updated[0], is_preferred: true };
       }
       return updated;
     });
   };
 
-  const handleSupplierEntryChange = (id: string, field: keyof SupplierEntry, value: string | boolean) => {
-    setSupplierEntries((prev) =>
-      prev.map((entry) => {
-        if (entry.id !== id) {
-          return entry;
-        }
-
-        const updated = { ...entry, [field]: value };
-
-        // If supplier_id changed, update supplier_name
-        if (field === 'supplier_id') {
-          const supplier = suppliers.find((s) => s.id.toString() === value);
-          updated.supplier_name = supplier?.name ?? '';
-        }
-
-        return updated;
-      })
-    );
+  const handleSupplierEntryChange = (id: string, field: SupplierEntryField, value: string | boolean) => {
+    setSupplierEntries((prev) => prev.map((entry) => (entry.id === id ? { ...entry, [field]: value } : entry)));
   };
 
-  const isSupplierEntryValid = (entry: SupplierEntry) => {
-    return (
-      entry.supplier_id &&
-      entry.outlet_id &&
-      entry.pack_size &&
-      entry.pack_unit &&
-      entry.price_per_pack
-    );
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name.trim()) {
-      toast.error('Name is required');
-      return;
-    }
-
-    // Validate supplier entries
-    const validSupplierEntries = supplierEntries.filter(isSupplierEntryValid);
-    const invalidEntries = supplierEntries.filter((e) => e.supplier_id && !isSupplierEntryValid(e));
-    if (invalidEntries.length > 0) {
-      toast.error('Please complete all supplier fields or remove incomplete entries');
-      return;
-    }
+  const handleSubmit = async () => {
+    setAttempted(true);
+    if (!name.trim() || supplierEntries.some((e) => missingSupplierFields(e).length > 0)) return;
 
     setIsSubmitting(true);
-
     try {
-      // get the category ID (AGENT CALL)
-      const categoryData = await categorizeIngredient.mutateAsync(name);
-      const categoryId = categoryData.category_id;
-
-      // Create the ingredient first
+      const { category_id } = await categorizeIngredient.mutateAsync(name);
       const newIngredient = await createIngredient.mutateAsync({
         name: name.trim(),
         base_unit: baseUnit,
         cost_per_base_unit: cost ? parseFloat(cost) : null,
         is_halal: isHalal,
-        category_id: categoryId,
+        category_id,
       });
 
-      // Then add suppliers via the join table
-      for (const entry of validSupplierEntries) {
+      for (const entry of supplierEntries) {
         await addIngredientSupplier.mutateAsync({
           ingredientId: newIngredient.id,
           data: {
@@ -173,18 +119,15 @@ export function AddIngredientModal({ isOpen, onClose }: AddIngredientModalProps)
             pack_size: parseFloat(entry.pack_size),
             pack_unit: entry.pack_unit,
             price_per_pack: parseFloat(entry.price_per_pack),
-            currency: 'SGD',
+            currency: DEFAULT_CURRENCY,
             is_preferred: entry.is_preferred,
             source: 'manual',
           },
         });
       }
 
-      const supplierCount = validSupplierEntries.length;
-      const message = supplierCount > 0
-        ? `Ingredient created with ${supplierCount} supplier${supplierCount > 1 ? 's' : ''}`
-        : 'Ingredient created';
-      toast.success(message);
+      const count = supplierEntries.length;
+      toast.success(count > 0 ? `Ingredient created with ${count} supplier${count > 1 ? 's' : ''}` : 'Ingredient created');
       resetForm();
       onClose();
     } catch {
@@ -195,259 +138,84 @@ export function AddIngredientModal({ isOpen, onClose }: AddIngredientModalProps)
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title="Add new ingredient" maxWidth="max-w-2xl">
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Basic Info Section */}
-        <div className="space-y-4">
-          <h3 className="text-sm font-medium text-foreground">
-            Basic information
-          </h3>
-
-          <div>
-            <label className="block text-xs font-medium text-muted-foreground mb-1">
-              Ingredient name *
-            </label>
+    <FormPanel
+      open={isOpen}
+      onClose={onClose}
+      title="Add ingredient"
+      description="Its tag is suggested automatically from the name."
+      size="lg"
+      onSubmit={handleSubmit}
+      submitLabel="Create ingredient"
+      pending={isSubmitting}
+    >
+      <FormSection title="Ingredient">
+        <FormField id="ingredient-name" label="Name" error={nameError}>
+          <Input
+            {...fieldA11y('ingredient-name', nameError)}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="e.g. Olive oil, chicken breast"
+            autoFocus
+          />
+        </FormField>
+        <FieldRow>
+          <FormField id="ingredient-unit" label="Base unit">
+            <Select
+              {...fieldA11y('ingredient-unit')}
+              value={baseUnit}
+              onChange={(e) => setBaseUnit(e.target.value)}
+              options={UNIT_OPTIONS}
+            />
+          </FormField>
+          <FormField id="ingredient-cost" label="Cost per unit" optional>
             <Input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="e.g., Olive Oil, Chicken Breast"
+              {...fieldA11y('ingredient-cost')}
+              inputMode="decimal"
+              className="tabular-nums"
+              value={cost}
+              onChange={(e) => setCost(e.target.value)}
+              onBlur={() => {
+                const n = parseFloat(cost);
+                if (!Number.isNaN(n)) setCost(String(n));
+              }}
+              placeholder="0.00"
             />
-          </div>
+          </FormField>
+        </FieldRow>
+        <Checkbox checked={isHalal} onChange={(e) => setIsHalal(e.target.checked)} label="Halal" />
+      </FormSection>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-medium text-muted-foreground mb-1">
-                Base unit *
-              </label>
-              <Select
-                value={baseUnit}
-                onChange={(e) => setBaseUnit(e.target.value)}
-                options={UNIT_OPTIONS}
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-muted-foreground mb-1">
-                Cost per unit (optional)
-              </label>
-              <Input
-                type="text"
-                inputMode="decimal"
-                value={cost}
-                onChange={(e) => setCost(e.target.value)}
-                onBlur={() => { const n = parseFloat(cost); if (!isNaN(n)) setCost(String(n)); }}
-                placeholder="0.00"
-              />
-            </div>
-          </div>
-
-          <div>
-            <Checkbox
-              checked={isHalal}
-              onChange={(e) => setIsHalal(e.target.checked)}
-              label="Halal"
+      <FormSection
+        title="Suppliers"
+        description="Optional. Link who sells it and the pack it comes in."
+        actions={
+          <Button type="button" variant="secondary" size="sm" onClick={handleAddSupplierEntry} disabled={!canAddSupplier}>
+            <Plus className="size-4" strokeWidth={1.5} aria-hidden="true" />
+            Add supplier
+          </Button>
+        }
+      >
+        {supplierEntries.length === 0 ? (
+          <p className="rounded-lg border border-dashed border-line px-4 py-6 text-center text-sm text-tertiary">
+            No suppliers linked yet.
+          </p>
+        ) : (
+          supplierEntries.map((entry, index) => (
+            <SupplierEntryFields
+              key={entry.id}
+              entry={entry}
+              index={index}
+              suppliers={suppliers}
+              outlets={outlets}
+              outletLocked={!!outletId}
+              usedSupplierIds={supplierEntries.filter((e) => e.id !== entry.id).map((e) => e.supplier_id)}
+              showErrors={attempted}
+              onChange={handleSupplierEntryChange}
+              onRemove={handleRemoveSupplierEntry}
             />
-          </div>
-        </div>
-
-        {/* Suppliers Section */}
-        <div className="border-t border-border pt-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-medium text-foreground">
-              Suppliers (optional)
-            </h3>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={handleAddSupplierEntry}
-              disabled={availableSuppliers.length === 0 && supplierEntries.length === suppliers.length}
-            >
-              <Plus className="h-4 w-4 mr-1" />
-              Add supplier
-            </Button>
-          </div>
-
-          {supplierEntries.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-4 border border-dashed border-border rounded-lg">
-              No suppliers added. Click &quot;Add supplier&quot; to link suppliers to this ingredient.
-            </p>
-          ) : (
-            <div className="space-y-4">
-              {supplierEntries.map((entry, index) => (
-                <SupplierEntryForm
-                  key={entry.id}
-                  entry={entry}
-                  index={index}
-                  suppliers={suppliers}
-                  outlets={outlets}
-                  userOutletId={outletId}
-                  usedSupplierIds={supplierEntries.filter((e) => e.id !== entry.id).map((e) => e.supplier_id)}
-                  baseUnit={baseUnit}
-                  onChange={handleSupplierEntryChange}
-                  onRemove={handleRemoveSupplierEntry}
-                />
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Footer */}
-        <div className="flex justify-end gap-3 pt-4 border-t border-border">
-          <Button type="button" variant="outline" onClick={handleClose}>
-            Cancel
-          </Button>
-          <Button type="submit" disabled={isSubmitting || !name.trim()}>
-            {isSubmitting ? 'Creating...' : 'Create ingredient'}
-          </Button>
-        </div>
-      </form>
-    </Modal>
-  );
-}
-
-interface SupplierEntryFormProps {
-  entry: SupplierEntry;
-  index: number;
-  suppliers: Supplier[];
-  outlets: Outlet[];
-  userOutletId: number | null;
-  usedSupplierIds: string[];
-  baseUnit: string;
-  onChange: (id: string, field: keyof SupplierEntry, value: string | boolean) => void;
-  onRemove: (id: string) => void;
-}
-
-function SupplierEntryForm({
-  entry,
-  index,
-  suppliers,
-  outlets,
-  userOutletId,
-  usedSupplierIds,
-  baseUnit,
-  onChange,
-  onRemove,
-}: SupplierEntryFormProps) {
-  const availableSuppliers = suppliers.filter(
-    (s) => !usedSupplierIds.includes(s.id.toString()) || s.id.toString() === entry.supplier_id
-  );
-
-  return (
-    <div className="p-4 bg-secondary rounded-lg border border-border">
-      <div className="flex items-center justify-between mb-3">
-        <span className="text-sm font-medium text-foreground">
-          Supplier {index + 1}
-        </span>
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          onClick={() => onRemove(entry.id)}
-          className="text-[var(--color-feedback-error)] hover:bg-[var(--color-feedback-error-tint)]"
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        <div>
-          <label className="block text-xs font-medium text-muted-foreground mb-1">
-            Supplier *
-          </label>
-          <Select
-            value={entry.supplier_id}
-            onChange={(e) => onChange(entry.id, 'supplier_id', e.target.value)}
-            options={[
-              { value: '', label: 'Select supplier...' },
-              ...availableSuppliers.map((s) => ({
-                value: s.id.toString(),
-                label: s.name,
-              })),
-            ]}
-          />
-        </div>
-
-        <div>
-          <label className="block text-xs font-medium text-muted-foreground mb-1">
-            Outlet *
-          </label>
-          <Select
-            value={entry.outlet_id}
-            onChange={(e) => onChange(entry.id, 'outlet_id', e.target.value)}
-            disabled={!!userOutletId}
-            options={[
-              { value: '', label: 'Select outlet...' },
-              ...outlets.map((o) => ({
-                value: o.id.toString(),
-                label: o.name,
-              })),
-            ]}
-          />
-        </div>
-
-        <div>
-          <label className="block text-xs font-medium text-muted-foreground mb-1">
-            SKU
-          </label>
-          <Input
-            type="text"
-            placeholder="e.g., SKU-001"
-            value={entry.sku}
-            onChange={(e) => onChange(entry.id, 'sku', e.target.value)}
-          />
-        </div>
-
-        <div>
-          <label className="block text-xs font-medium text-muted-foreground mb-1">
-            Pack size *
-          </label>
-          <Input
-            type="text"
-            inputMode="decimal"
-            placeholder="0.00"
-            value={entry.pack_size}
-            onChange={(e) => onChange(entry.id, 'pack_size', e.target.value)}
-            onBlur={() => { const n = parseFloat(entry.pack_size); if (!isNaN(n)) onChange(entry.id, 'pack_size', String(n)); }}
-          />
-        </div>
-
-        <div>
-          <label className="block text-xs font-medium text-muted-foreground mb-1">
-            Pack unit *
-          </label>
-          <Select
-            value={entry.pack_unit}
-            onChange={(e) => onChange(entry.id, 'pack_unit', e.target.value)}
-            options={[
-              { value: '', label: 'Select unit...' },
-              ...UNIT_OPTIONS,
-            ]}
-          />
-        </div>
-
-        <div>
-          <label className="block text-xs font-medium text-muted-foreground mb-1">
-            Price per pack *
-          </label>
-          <Input
-            type="text"
-            inputMode="decimal"
-            placeholder="0.00"
-            value={entry.price_per_pack}
-            onChange={(e) => onChange(entry.id, 'price_per_pack', e.target.value)}
-            onBlur={() => { const n = parseFloat(entry.price_per_pack); if (!isNaN(n)) onChange(entry.id, 'price_per_pack', String(n)); }}
-          />
-        </div>
-
-      </div>
-
-      <div className="mt-3">
-        <Checkbox
-          checked={entry.is_preferred}
-          onChange={(e) => onChange(entry.id, 'is_preferred', e.target.checked)}
-          label="Preferred supplier"
-        />
-      </div>
-    </div>
+          ))
+        )}
+      </FormSection>
+    </FormPanel>
   );
 }

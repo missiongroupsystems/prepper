@@ -1,137 +1,126 @@
 'use client';
 
-import { useState, useCallback } from 'react';
-import { useCreateOutlet, useOutlets } from '@/lib/hooks';
-import { Button, Input, Select, Modal } from '@/components/ui';
+/**
+ * Add outlet — a SidePanel: what the outlet is called, then where it sits in the brand /
+ * location hierarchy. The server rejects a parent that would make a cycle. The name is kept
+ * from the modal it replaced so callers are unchanged.
+ */
+import { useState } from 'react';
 import { toast } from 'sonner';
+import { useCreateOutlet, useOutlets } from '@/lib/hooks';
+import { Input, Select } from '@/components/ui';
+import { FormPanel } from '@/components/forms/FormPanel';
+import { FieldRow, FormField, FormSection, fieldA11y } from '@/components/forms/FormField';
 import type { OutletType } from '@/types';
+
+const LOOKUP_PAGE_SIZE = 30;
+
+export const OUTLET_TYPE_OPTIONS = [
+  { value: 'brand', label: 'Brand' },
+  { value: 'location', label: 'Location' },
+];
 
 interface AddOutletModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-const OUTLET_TYPE_OPTIONS = [
-  { value: 'brand', label: 'Brand' },
-  { value: 'location', label: 'Location' },
-];
-
 export function AddOutletModal({ isOpen, onClose }: AddOutletModalProps) {
   const createOutlet = useCreateOutlet();
-  const { data: allOutletsData } = useOutlets({ page_size: 30 });
+  const { data: allOutletsData } = useOutlets({ page_size: LOOKUP_PAGE_SIZE });
   const allOutlets = allOutletsData?.items ?? [];
 
   const [name, setName] = useState('');
   const [code, setCode] = useState('');
   const [outletType, setOutletType] = useState<OutletType>('brand');
-  const [parentOutletId, setParentOutletId] = useState<string>('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [parentOutletId, setParentOutletId] = useState('');
+  const [attempted, setAttempted] = useState(false);
+  const nameError = attempted && !name.trim() ? 'Outlet name is required' : undefined;
+  const codeError = attempted && !code.trim() ? 'Outlet code is required' : undefined;
 
-  const resetForm = useCallback(() => {
+  const resetForm = () => {
     setName('');
     setCode('');
     setOutletType('brand');
     setParentOutletId('');
-    setIsSubmitting(false);
-  }, []);
+    setAttempted(false);
+  };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name.trim()) {
-      toast.error('Outlet name is required');
-      return;
-    }
-    if (!code.trim()) {
-      toast.error('Outlet code is required');
-      return;
-    }
-
-    setIsSubmitting(true);
-
-    try {
-      await createOutlet.mutateAsync({
+  const handleSubmit = () => {
+    setAttempted(true);
+    if (!name.trim() || !code.trim()) return;
+    createOutlet.mutate(
+      {
         name: name.trim(),
         code: code.trim(),
         outlet_type: outletType,
-        parent_outlet_id: parentOutletId ? parseInt(parentOutletId) : null,
-      });
-
-      toast.success('Outlet created');
-      resetForm();
-      onClose();
-    } catch {
-      toast.error('Failed to create outlet');
-    } finally {
-      setIsSubmitting(false);
-    }
+        parent_outlet_id: parentOutletId ? parseInt(parentOutletId, 10) : null,
+      },
+      {
+        onSuccess: () => {
+          toast.success('Outlet created');
+          resetForm();
+          onClose();
+        },
+        onError: () => toast.error('Failed to create outlet'),
+      }
+    );
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Add outlet">
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block text-xs font-medium text-muted-foreground mb-1">
-            Outlet name *
-          </label>
-          <Input
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="e.g., Main Branch, Downtown Location"
-          />
-        </div>
+    <FormPanel
+      open={isOpen}
+      onClose={onClose}
+      title="Add outlet"
+      onSubmit={handleSubmit}
+      submitLabel="Create outlet"
+      pending={createOutlet.isPending}
+    >
+      <FormSection title="Outlet">
+        <FieldRow>
+          <FormField id="outlet-name" label="Name" error={nameError}>
+            <Input
+              {...fieldA11y('outlet-name', nameError)}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="e.g. Main branch"
+              autoFocus
+            />
+          </FormField>
+          <FormField id="outlet-code" label="Code" error={codeError} hint="A short tag, e.g. CS or TBH.">
+            <Input
+              {...fieldA11y('outlet-code', codeError, true)}
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              placeholder="e.g. MBR"
+            />
+          </FormField>
+        </FieldRow>
+      </FormSection>
 
-        <div>
-          <label className="block text-xs font-medium text-muted-foreground mb-1">
-            Code *
-          </label>
-          <Input
-            value={code}
-            onChange={(e) => setCode(e.target.value)}
-            placeholder="e.g., CS, TBH, MBR"
-          />
-        </div>
-
-        <div>
-          <label className="block text-xs font-medium text-muted-foreground mb-1">
-            Outlet type
-          </label>
-          <Select
-            value={outletType}
-            onChange={(e) => setOutletType(e.target.value as OutletType)}
-            options={OUTLET_TYPE_OPTIONS}
-          />
-        </div>
-
-        <div>
-          <label className="block text-xs font-medium text-muted-foreground mb-1">
-            Parent outlet (optional)
-          </label>
-          <select
-            value={parentOutletId}
-            onChange={(e) => setParentOutletId(e.target.value)}
-            className="w-full px-3 py-2 border border-input rounded-lg bg-card text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-          >
-            <option value="">-- None --</option>
-            {allOutlets
-              .filter((outlet) => outlet.id) // Filter out any invalid outlets
-              .map((outlet) => (
-                <option key={outlet.id} value={outlet.id}>
-                  {outlet.name} ({outlet.code})
-                </option>
-              ))}
-          </select>
-        </div>
-
-        {/* Footer */}
-        <div className="flex justify-end gap-3 pt-4 border-t border-border">
-          <Button type="button" variant="outline" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button type="submit" disabled={isSubmitting || !name.trim() || !code.trim()}>
-            {isSubmitting ? 'Creating...' : 'Create outlet'}
-          </Button>
-        </div>
-      </form>
-    </Modal>
+      <FormSection title="Hierarchy" description="Locations usually sit under a brand.">
+        <FieldRow>
+          <FormField id="outlet-type" label="Type">
+            <Select
+              {...fieldA11y('outlet-type')}
+              value={outletType}
+              onChange={(e) => setOutletType(e.target.value as OutletType)}
+              options={OUTLET_TYPE_OPTIONS}
+            />
+          </FormField>
+          <FormField id="outlet-parent" label="Parent outlet" optional>
+            <Select
+              {...fieldA11y('outlet-parent')}
+              value={parentOutletId}
+              onChange={(e) => setParentOutletId(e.target.value)}
+              options={[
+                { value: '', label: 'None' },
+                ...allOutlets.map((o) => ({ value: o.id.toString(), label: `${o.name} (${o.code})` })),
+              ]}
+            />
+          </FormField>
+        </FieldRow>
+      </FormSection>
+    </FormPanel>
   );
 }

@@ -1,9 +1,14 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+/** Add dish category — a SidePanel; the name is kept from the modal it replaced. */
 import { useCreateRecipeCategory } from '@/lib/hooks';
-import { Button, Input, Modal, Textarea } from '@/components/ui';
-import { toast } from 'sonner';
+import { NameDescriptionCreatePanel } from '@/components/forms/NameDescriptionPanels';
+
+export const RECIPE_CATEGORY_COPY = {
+  noun: 'category',
+  namePlaceholder: 'e.g. Starters, mains, desserts',
+  descriptionPlaceholder: 'e.g. Cold starters served before the main course',
+};
 
 interface AddRecipeCategoryModalProps {
   isOpen: boolean;
@@ -12,78 +17,12 @@ interface AddRecipeCategoryModalProps {
 
 export function AddRecipeCategoryModal({ isOpen, onClose }: AddRecipeCategoryModalProps) {
   const createRecipeCategory = useCreateRecipeCategory();
-
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const resetForm = useCallback(() => {
-    setName('');
-    setDescription('');
-    setIsSubmitting(false);
-  }, []);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name.trim()) {
-      toast.error('Category name is required');
-      return;
-    }
-
-    setIsSubmitting(true);
-
-    try {
-      await createRecipeCategory.mutateAsync({
-        name: name.trim(),
-        description: description.trim() || null,
-      });
-
-      toast.success('Recipe category created');
-      resetForm();
-      onClose();
-    } catch {
-      toast.error('Failed to create recipe category');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Add recipe category">
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block text-xs font-medium text-muted-foreground mb-1">
-            Category Name *
-          </label>
-          <Input
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="e.g., Appetizers, Main Courses, Desserts"
-          />
-        </div>
-
-        <div>
-          <label className="block text-xs font-medium text-muted-foreground mb-1">
-            Description (optional)
-          </label>
-          <Textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="e.g., Cold appetizers served before main course"
-            rows={3}
-          />
-        </div>
-
-        {/* Footer */}
-        <div className="flex justify-end gap-3 pt-4 border-t border-border">
-          <Button type="button" variant="outline" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button type="submit" disabled={isSubmitting || !name.trim()}>
-            {isSubmitting ? 'Creating...' : 'Create Category'}
-          </Button>
-        </div>
-      </form>
-    </Modal>
+    <NameDescriptionCreatePanel
+      open={isOpen}
+      onClose={onClose}
+      copy={RECIPE_CATEGORY_COPY}
+      create={createRecipeCategory.mutateAsync}
+    />
   );
 }
