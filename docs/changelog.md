@@ -6,6 +6,7 @@ All notable changes to Mission Recipes are documented here.
 
 ## Index
 
+- **[0.1.6](#016---2026-10-28)** — Menu Sketch Editor Layout: 1080px Measure, Section Hierarchy, Restyled Dish Cards on 2A Primitives, 1,860-Line Page Split into Components
 - **[0.1.5](#015---2026-10-28)** — Full, Readable Entity Names: Display-Time Formatter for ALL-CAPS FMH Names, Split SKU Codes, No Truncation on Cards
 - **[0.1.4](#014---2026-10-28)** — Redesign Phase 2B: Collapsible Left Rail + Top Bar Replace TopNav, Page & SectionHeader, Environment Badge, AuthGuard Hydration Fix
 - **[0.1.3](#013---2026-10-28)** — Redesign Phase 2A: Workforce UI Primitives (Pill Buttons, Status Badges, Framed Table, Sunken Fields, Select Panel, Menu/Segmented/TabRail, Dialog vs SidePanel, EmptyState, Restyled Toasts)
@@ -63,6 +64,28 @@ All notable changes to Mission Recipes are documented here.
 - **[0.0.3](#003---2024-11-27)** — Database Migration: Alembic Initial Tables to Supabase + PostgreSQL JSON Compatibility Fix
 - **[0.0.2](#002---2024-11-27)** — Frontend Implementation: Next.js 15 Recipe Canvas with Drag-and-Drop, Autosave & TanStack Query
 - **[0.0.1](#001---2024-11-27)** — Backend Foundation: FastAPI + SQLModel with 17 API Endpoints, Domain Services & Unit Conversion
+---
+
+## [0.1.6] - 2026-10-28
+
+### Changed
+
+#### Menu sketch editor: room to breathe and a max width
+
+The editor at `/menu-sketch/[id]`, the screen the team uses day to day, ran edge to edge. Its dish cards stacked cramped full-width inputs with tiny labels. Behaviour is unchanged: autosave, drag-and-drop of dishes and sections, comments, feedback, preview, fork and notes all work as before.
+
+- **Width**: the content is centred on Workforce's 1080px measure and uses Workforce page padding, through a local `PageMeasure` wrapper. Phase 3 replaces it with the shared `Page`.
+- **Hierarchy**:
+  - The menu name is a proper page title, with the version badge and the actions (view toggle, preview, comments, fork) grouped in the header.
+  - Each section has a clear title row with quiet drag, collapse and remove controls, and generous spacing between sections.
+- **Dish cards and list rows** are rebuilt on the 2A primitives:
+  - The dish name reads as the card title.
+  - Adding ingredients is a quieter secondary row.
+  - Sale, cost and margin form a labelled row with tabular numbers; margin is a computed value, not a disabled input.
+  - Descriptions grow with their content.
+  - Highlight, tags, R&D and comments sit in a footer.
+- **Code**: `page.tsx` went from about 1,860 lines to 212. It is split into `_components/`: header, section, dish card and row, add-dish and add-section inputs, notes drawer, preview, plus shared helpers and a sortable-order hook. None of the files exceeds 230 lines.
+
 ---
 
 ## [0.1.5] - 2026-10-28
