@@ -2,7 +2,7 @@
 
 > Mission Recipes' instance of the **Mission Design System** — one design language across every Mission / Ebb & Flow product (Mission Systems, Grapestack, Beacon, Bearhug, Lighthouse, Geddit, Mission Recipes, Supadriver, SupaSchedule, Launchpad).
 >
-> This file is the **target contract** for Mission Recipes (the kitchen-first recipe workspace, packaged in this repo as `prepper`). The Mission language was authored for calm, editorial marketing surfaces; Mission Recipes is a dense operational app (recipe canvas, ingredients, costing, tasting sessions, outlets, versioning). Where the two pull apart, this doc records the adaptation explicitly rather than copying Mission blindly. The live implementation in `frontend/src/app/globals.css` and `frontend/src/app/layout.tsx` is the source of truth for tokens; when this doc and the code disagree, fix whichever is wrong for the phase you're in.
+> This file is the **target contract** for Mission Recipes (the kitchen-first recipe workspace, packaged in this repo as `prepper`). The Mission language was authored for calm, editorial marketing surfaces; Mission Recipes is a dense operational app (recipe canvas, ingredients, costing, tasting sessions, outlets, versioning). Where the two pull apart, this doc records the adaptation explicitly rather than copying Mission blindly. The live implementation in `frontend/src/styles/tokens.css`, `frontend/src/app/globals.css` and `frontend/src/app/layout.tsx` is the source of truth for tokens; when this doc and the code disagree, fix whichever is wrong for the phase you're in.
 
 The feel in one sentence: **white and warm-beige surfaces, one dark-green brand accent, hairline-thin lines, generous space on empty/onboarding surfaces and disciplined density on data surfaces, quiet motion — calm, editorial, human, never loud — while recipe/ingredient/cost status stays instantly legible.**
 
@@ -14,6 +14,7 @@ This doc describes the **target**. Mission Recipes starts from its prior **terra
 
 | Phase | Scope | Status |
 |---|---|---|
+| **Redesign P1** | Foundations aligned with Workforce: tokens (`styles/tokens.css`), dark mode, variable Satoshi, system mono, MS-Recipes logos, favicon/PWA icons | ✅ done (0.1.2). Phase 2 = primitives + left-rail shell; Phase 3 = page-by-page adoption. |
 | Font | Three faces (Fractul + CoFo Sans + CoFo Sans Mono) → **one family**, single swap seam | ✅ done — Polymath stand-in wired via seam vars; Fractul/CoFo/CoFo-Mono dropped, Typekit kit → `weg5tjh`. Self-host Euclid when licensed (a no-op swap). |
 | 0 | Token-adherence audit (find hardcoded colors/borders/shadows/caps) | ✅ done — sweep found ~3,100 hardcoded color classes (2,559 neutral), 144 `font-bold`/`semibold`, 48 `shadow-*`, 34 `game-card`, 31 ALL-CAPS (`uppercase`), 25 heading `tracking-*`, 6 `flow-ui-*` |
 | 0.5 | Tokenisation — route hardcoded **neutral** colors through semantic tokens, behavior-preserving | ✅ done (neutrals) — multi-agent sweep over 90 files: 1,178 classes → tokens, 926 `dark:` neutral pairs collapsed, neutrals 2,559 → 2 (intentional logo-on-dark swatches on the design-system page). Chromatic colors (game-card rarity, unsaved-amber, error reds, inverted black/white "Owned" badge, `prose-zinc`, ReactFlow hex props) deliberately deferred to **Phase 3** — see worklist below. |
@@ -67,81 +68,75 @@ Concrete colour/spacing values below marked _(tune in Phase 1)_ are targets to b
 
 ## 2. Color
 
-Mission Recipes uses a **two-tier** color model. This is the central adaptation of Mission for an operational app.
+> **Shipped in 0.1.2 (redesign Phase 1).** Values and roles now match Mission Workforce, the suite's reference app. Raw values live in `frontend/src/styles/tokens.css` (`:root` and `.dark`, the **only** place hex appears); `frontend/src/app/globals.css` maps them to Tailwind with `@theme inline`, so every utility resolves through the live token and dark mode needs no component edits.
 
-- **Tier 1 — Brand & interactive chrome:** exactly one accent. Mission's restraint applies in full.
-- **Tier 2 — Functional status:** a small, desaturated, warm palette reserved for operational state (recipe lifecycle, ingredient status, inventory/cost health). It exists for legibility, never decoration.
+Two tiers, as before:
 
-> **Token-naming note (Mission Recipes ≠ Geddit):** Mission Recipes' brand token is **`--primary`** (with `--ring`), and its existing `--accent` token is a *neutral warm surface*, not the brand. Mission/Geddit name the brand `--accent`. Keep Mission Recipes' names — flip `--primary`/`--ring` to forest green; leave `--accent` as the neutral surface it already is. Don't blind-rename or every `bg-accent` flips visually.
+- **Tier 1 — Brand & interactive chrome:** exactly one accent.
+- **Tier 2 — Functional status:** a small, muted palette for operational state. Legibility, never decoration.
 
-### 2.1 The brand accent — exactly one
+> **Token-naming note (changed in 0.1.2).** `--accent` / `bg-accent` / `text-accent` is now the **brand forest**, as in Workforce. The old neutral-hover meaning moved to `bg-surface-hover` (32 call sites renamed). `--primary` still exists and aliases the accent. Two shadcn-era names collide with Workforce and keep their **surface** meaning because ~140 call sites use them: `bg-muted` and `bg-secondary` are the sunken beige. For text use `text-muted-foreground` (muted deep) and `text-tertiary` (muted). Never use `text-secondary` or `text-muted` here; they resolve to surfaces.
 
-```
---primary: 147 33% 17%;   /* deep, muted forest green ≈ #1d3a2a */   (tune in Phase 1)
---ring:    var(--primary);
-```
+### 2.1 Surfaces
 
-One brand accent for the entire system. Used for: primary pill buttons, eyebrows/kickers, active states (canvas tabs, active drop zones, view-mode toggles), hover arrows, links-on-hover, focus rings, small interactive marks. It is **seasoning, not a flood** — on light pages it appears only in eyebrows, buttons, and tiny interactive marks.
+| Token | Light | Dark | Utilities | Role |
+|---|---|---|---|---|
+| `--background` | `#faf9f6` | `#0d100e` | `bg-background` | Canvas, the page behind cards. |
+| `--card` / `--popover` | `#ffffff` | `#141816` | `bg-card`, `bg-popover` | Lifted panels, dialogs, menus. |
+| `--surface-sunken` | `#f6f5f1` | `#0f1311` | `bg-surface-sunken`, `bg-muted`, `bg-secondary` | Inputs, insets, the neutral badge, segmented tracks. |
+| `--surface-hover` | ink 4% | white 5% | `bg-surface-hover` | Row, item and ghost-button hover. |
+| `--surface-active` | ink 7% | white 8% | `bg-surface-active` | Pressed. |
+| `--surface-selected` | `#eef2ef` | `#1b2a22` | `bg-surface-selected`, `bg-background-contrast` | Active nav item, selected rows. |
 
-**Replaces the legacy terracotta primary** (`15 65% 50%`). Every place that reads `--primary` / `--ring` (buttons, focus rings, canvas active/drop states from 0.0.49) inherits forest green automatically.
+### 2.2 Text
 
-### 2.2 Neutrals — whites, warm beiges, warm greys
+| Token | Light | Dark | Utilities | Role |
+|---|---|---|---|---|
+| `--ink` | `#171717` | `#e9ece9` | `text-foreground`, `text-ink` | Primary (17.9:1). |
+| `--muted-deep` | `#55534c` | `#b4bab5` | `text-muted-foreground`, `text-muted-deep` | Secondary: labels, sub-text (7.7:1). |
+| `--muted` | `#6b6962` | `#9aa19c` | `text-tertiary` | Tertiary: captions, helper text, eyebrows (5.5:1). |
+| `--faded` | `#8d8a82` | `#6d746f` | `text-disabled`, `text-faded` | Disabled and decorative only. |
+| `--placeholder` | `#a8a59d` | `#5f6661` | `text-placeholder` | Input placeholders. |
 
-Two surfaces, warm ink-greys, one warm near-black. The greys are **warm** (a hint of stone/clay), never cold. Tokens stay HSL.
+### 2.3 Lines
 
-**App-shell convention (Mission Recipes):** Mission Recipes keeps its **top-nav shell** (`TopNav` + `TopAppBar`, `flex h-dvh flex-col`), not Geddit's sidebar. The beige-canvas / white-card relationship still holds: the **warm beige is the canvas** (page ground + top bar share one tone), and **white cards are raised on top**. The top bar is parted from content by a 0.5px hairline. Geddit's sidebar specifics are N/A here.
+| Token | Light | Dark | Utilities | Role |
+|---|---|---|---|---|
+| `--line` | ink 10% | white 8% | `border-line` | Quiet shell dividers. |
+| `--hairline` | ink 16% | white 14% | `border-border`, `hairline*` (0.5px) | Dividers, card edges. |
+| `--hairline-strong` | ink 28% | white 22% | `border-hairline-strong` | Column tops, emphasis. |
+| `--input` | `#807d76` | white 34% | `border-input`, `border-control` | The perceivable 1px **control** border (4.1:1). A hairline fails as a control boundary. |
 
-| Token | Current (HSL) | Target (HSL ≈ hex) | Role |
+### 2.4 The brand accent — exactly one
+
+| Token | Light | Dark | Utilities |
 |---|---|---|---|
-| `--background` (canvas) | `40 30% 97%` parchment | `48 20% 96%` ≈ `#f6f5f1` warm beige | App-shell ground — top bar + page. |
-| `--card` / `--popover` | `40 25% 96%` cream | `0 0% 100%` `#ffffff` | Raised surfaces (cards, dropdowns, dialogs). |
-| `--foreground` (ink) | `220 20% 13%` cool | `40 6% 11%` ≈ `#171717` warm | Primary text. Stands in for black. |
-| `--muted-foreground` | `0 0% 55%` | `48 5% 41%` ≈ `#6b6962` warm grey | Secondary text, ledes, captions. |
-| `--secondary` / `--muted` / `--accent` | warm creams `35 15–20% 92–94%` | warm beige tints (retune toward `#efeee9`) | Quiet fills, hover grounds. |
-| `--border` / `--input` | `35 15% 85%` solid 1px | hairline rgba (see §2.3), 0.5px | Dividers, table lines, inputs. |
+| `--accent` | `#1d3a2a` | `#7fc79a` | `bg-accent`, `text-accent`, `bg-primary`, `text-primary` |
+| `--accent-foreground` | `#ffffff` | `#0f1611` | `text-accent-foreground`, `text-primary-foreground` |
+| `--accent-soft` | `#eef2ef` | `#16241c` | `bg-accent-soft` (its only tint) |
+| `--accent-press` | `#142a1e` | `#6ab486` | `bg-accent-press` |
+| `--ring` | = accent | = accent | `ring-ring`, `:focus-visible` outline |
 
-Rhythm comes from alternating white ↔ beige ↔ dark-green, never from stacking grey boxes. This **replaces the legacy parchment (`40 30% 97%`) surfaces.**
+Spent only on its named roles: the primary button, the active/selected state, focus, and brand chrome (the logo).
 
-### 2.3 Hairlines
+### 2.5 Semantic feedback and Tier-2 status
 
-```
---hairline:        hsl(40 6% 11% / 0.16);   /* default dividers — tinted ink */
---hairline-strong: hsl(40 6% 11% / 0.28);   /* column tops, emphasis */
-```
+Feedback: `--success #2f6b46`, `--warning #8a5a1f`, `--info #335a7a`, `--danger #9a3b2e`, each with a `-subtle` tint (`bg-success-subtle`, `text-danger`, …). `destructive` aliases `danger`. Success green is deliberately **not** the brand forest.
 
-Tinted ink at low opacity, never solid grey. On dark surfaces use white at `0.16`–`0.45`. Default rendered weight **0.5px**. These replace Tailwind `border` usage on cards, tables, and dividers (currently a solid `--border`). New tokens to add in Phase 3.
+Tier-2 status pairs, each `--status-X` + `--status-X-bg`, applied with the `status-X` utility (tint background + status text): `draft` (warm neutral), `pending` (= info), `settled` (= success), `attention` (= warning), `blocked` (= danger), `alt` (purple). Recipes' domain pill classes map onto them: `status-testing` → pending; `status-approved` / `status-active` / `status-optimal` → settled; `status-archived` / `status-low` → blocked; `status-excess` → attention; `status-inactive` → sunken neutral.
 
-### 2.4 Functional status palette (Tier 2)
+The plan-29 names that components still read through `var()` (`--color-feedback-*`, `--color-text-*`, `--surface-tooltip`, `--border-strong`, `--color-scrim`, …) remain as a **legacy bridge** in `tokens.css`, aliasing the tokens above so they flip with the theme. Phase 3 retires them page by page.
 
-Recipe/ingredient/cost state must be readable at a glance, so Mission Recipes keeps a status palette — but **re-tuned into Mission's muted, warm, desaturated register**. The token *names* and `.status-*` utilities stay; only their *values* change. Lower saturation than legacy; hues warm-shifted; each still distinguishable. _(values tune in Phase 1)_
+### 2.6 Dark mode (shipped)
 
-Used **only** by status badges/labels and health indicators — never as page chrome, buttons, or links.
+Dark is back, matching Workforce's hand-tuned map (values in the tables above).
 
-| Semantic (Mission Recipes token) | Legacy (HSL) | Target — muted/warm | Applies to |
-|---|---|---|---|
-| `--status-draft` (slate) | `220 10% 50%` | warm grey `30 6% 52%` | recipe draft, inactive |
-| `--status-testing` (teal) | `160 50% 40%` | muted teal `185 28% 40%` | testing / in-progress |
-| `--status-approved` (green) | `140 50% 35%` | sage `145 30% 38%` | approved, active, optimal |
-| `--status-low` (red) | `0 70% 47%` | brick `8 45% 46%` | low, archived, error |
-| `--status-excess` (amber) | `35 80% 50%` | ochre `38 48% 48%` | excess, warning |
-
-Each keeps its `-bg` (tint) pair as today. **Note the deliberate distinction:** Tier-2 "approved" sage is *not* the same as the Tier-1 brand forest green — status green and brand green must stay visually separable so a green badge never reads as an interactive element. Recipe lifecycle (draft → testing → approved → archived), ingredient (active/inactive) and inventory (optimal/low/excess) all map through this table and keep their `.status-*` classes.
-
-### 2.5 Dark sections (inverted) & dark mode
-
-**Dark sections** (empty/onboarding surfaces only): full dark-green canvas (`background: hsl(var(--primary))`). Headings `#ffffff`; body white at reduced alpha (`0.78` ledes, `0.68` secondary, `0.72` kickers); hairlines/pill outlines white `0.45`; inverted pills near-solid white `0.94` with forest-green text.
-
-**Dark mode (kept, re-tuned).** Mission Recipes retains its full user-toggled light/dark theme — no feature regression (the `mission_recipes_theme` localStorage toggle + `.dark` class on `<html>` stays). The `.dark` tokens re-tune to Mission's **warm-dark** palette _(tune in Phase 1)_:
-
-| Token | Current (dark) | Target (dark) |
-|---|---|---|
-| `--background` | `220 20% 8%` cool | warm near-black `40 6% 8%` ≈ `#161512` |
-| `--card` | `220 15% 12%` | one step up, warm `42 6% 10%` ≈ `#1d1c18` |
-| `--foreground` | `0 0% 95%` | white at full / alpha tiers |
-| `--primary` (brand) | terracotta lifted | forest green lifted for contrast |
-| `--border` / hairlines | `220 15% 20%` | white `0.12`–`0.2` |
-
-Functional status colors lighten for contrast on dark, as today.
+- `@custom-variant dark (&:is(.dark *))`: the `.dark` class on `<html>` drives it, never the OS media query directly.
+- Choice is **System · Light · Dark**, persisted under `THEME_STORAGE_KEY` (`mission_recipes_theme`). Nothing stored means Light. The legacy `prepper-theme` value is migrated.
+- `lib/theme.ts` holds the pure rule and `THEME_BOOT_SCRIPT`, the inline `<head>` script in `app/layout.tsx` that sets `.dark` and `color-scheme` before first paint (and keeps following the OS for System). `<html suppressHydrationWarning>`.
+- `components/theme/ThemeProvider.tsx` exposes `useTheme()` → `{ choice, resolvedTheme, setChoice }`. `ThemeToggle.tsx` is a radio group; it appears on the design-system page only, until Phase 2 places it in the top bar or user menu.
+- `.light` and `.dark` also work as **subtree scopes** (the aliases are restated on both), which is how the design-system page shows the two themes side by side.
+- Sonner toasts receive the resolved theme.
 
 ---
 
@@ -149,32 +144,27 @@ Functional status colors lighten for contrast on dark, as today.
 
 ### 3.1 Typeface
 
-**One typeface, one family, via a single swap seam.** Mission Recipes today ships **three** faces — `fractul-variable` (headings/display), `cofo-sans-variable` (body/UI), `cofo-sans-mono-variable` (numerics) — loaded via Adobe Typekit kit `syo6zfp`, with `Manrope` + `Geist_Mono` (Google) as fallbacks. **This violates the one-family rule and is the largest open migration.**
+**One family: Satoshi**, self-hosted as a **variable** font (weight axis 300–900, normal + italic) from `public/fonts/satoshi/Satoshi-Variable*.woff2`, copied from Workforce. It replaces the five static cuts. No external font host.
 
-**Done (Phase 1 spike):** collapsed to a **single family — Polymath** (Typekit kit `weg5tjh`, the Mission Polymath kit) behind a swap seam in `frontend/src/app/globals.css`, so the family name lives in exactly one place:
+The seam, as in Workforce (`styles/tokens.css`):
 
 ```css
---brand-typeface-display: "polymath"; /* headings */
---brand-typeface-text:    "polymath"; /* body, UI, data */
+--brand-typeface-display: "Satoshi";
+--brand-typeface-text:    "Satoshi";
+/* → --font-sans-seam / --font-display-seam → @theme --font-sans / --font-display */
 ```
 
-`--font-display`/`--font-sans`/`--font-mono` (in the `@theme inline` block) now all resolve through these seam vars; `body` and `h1–h6` reference them too. Fractul, CoFo Sans and CoFo Sans Mono are dropped; `Manrope` + `Geist_Mono` (Google) remain only as fallbacks while Polymath loads. **To swap to Euclid when licensed:** self-host the woff2 (`@font-face`, `font-display: swap`), set both seam vars to `"euclid-circular-b"`, and drop the Typekit `<link>` in `layout.tsx` — a no-op everywhere else. The heading↔body distinction is then created through **weight, size, colour and optical letter-spacing** (§3.3) — *not* separate font cuts. **Hierarchy is size + colour at weight 500; never bold.**
-
-**Mono folds into the text face** with tabular figures (`font-feature-settings: "tnum"`) so numeric columns in costing/ingredient/cost tables align without a true monospace — retiring `cofo-sans-mono-variable`.
+**Mono** is the system stack (`ui-monospace, "SF Mono", Menlo, Consolas, monospace`) for IDs, SKUs and codes only. The Geist Mono `next/font/google` import is gone. Numbers in Satoshi use **`tnum`** (the suite name; `tabular` is kept as an alias). `th`, `td` and `input[type=number]` get tabular figures by default.
 
 ### 3.2 Weight band
 
-A deliberately narrow band — weight does the work ALL-CAPS would do elsewhere:
+| Weight | Where |
+|---|---|
+| 400 | Body, UI text, table cells. |
+| 500 | Headings, buttons, labels, emphasis, metric values. |
+| 300 | Only ≥24px display moments. |
 
-| Weight | Name | Where |
-|---|---|---|
-| 300 | Light | **All body copy**, ledes, captions, large display quotes. |
-| 400 | Regular | Nav items, small UI labels, table cell text, inline. |
-| 500 | Medium | **All headings**, eyebrows, buttons, names, metric/cost values, tags, table headers. The workhorse for emphasis. |
-| 600 | Semibold | Rare — reserved for the few cases 500 doesn't separate. |
-| 700 | Bold | Avoid. |
-
-Rule of thumb: **headings 500, body 300, almost nothing between.** Phase 2 sweeps the 144 current `font-bold`/`font-semibold` usages down to this band.
+**Nothing bolder than 500.** `font-synthesis: none` stops a stray 600/700 from faking a bolder cut. The 0.1.2 sweep moved the last 15 `font-semibold`/`font-bold` uses, plus one inline `font-weight: 700` in the tasting email, to 500.
 
 ### 3.3 Two type scales
 
@@ -208,7 +198,7 @@ A fluid `clamp()` scale is for empty/onboarding/hero surfaces. A **compact UI sc
 
 | Heading | `letter-spacing` |
 |---|---|
-| `h1` | `-0.018em` |
+| `h1` | `-0.02em` |
 | `h2` | `-0.014em` |
 | `h3` | `-0.01em` |
 | `h4`–`h6` | `-0.006em` |
@@ -217,7 +207,7 @@ A fluid `clamp()` scale is for empty/onboarding/hero surfaces. A **compact UI sc
 ### 3.4 Text color
 
 - **Headings:** `--foreground` (warm ink) on light; `#ffffff` on dark.
-- **Eyebrows / section labels:** `--primary` (forest) on light; `rgba(255,255,255,0.72)` on dark. *Always the brand — the single most identifying cue.*
+- **Eyebrows / section labels:** the `eyebrow` utility — 12px, 500, `text-tertiary`. Not accent-coloured (Workforce rule since 0.1.2).
 - **Ledes / secondary intros:** `--muted-foreground`.
 - **Body:** `--muted-foreground` when supporting; `--foreground` at 300 for long prose.
 - **Captions / timestamps / meta:** lightest warm grey.
@@ -244,13 +234,15 @@ App surfaces use the existing shell gutters (`p-4 md:p-6 lg:p-8`). Marketing/sta
 
 ### 4.3 Corner radii
 
-| Radius | Used on |
-|---|---|
-| `999px` | Pills, buttons, tags, chips, status badges, dots, avatars. |
-| `16px` | Dropdown/nav panels, dialogs, sheets. |
-| `10–12px` | Icon chips, small inline buttons, dropdown item hover. |
+| Token | Value | Utility | Used on |
+|---|---|---|---|
+| `--radius-sm` | 6px | `rounded-sm` | Small chips, inline controls. |
+| `--radius-md` | 8px | `rounded-md` | Inputs, menu items. |
+| `--radius-lg` | 12px | `rounded-lg` | Cards. |
+| `--radius-xl` | 16px | `rounded-xl` (and `rounded-2xl`) | Dialogs, side panels, popovers. |
+| `--radius-pill` | 999px | `rounded-pill` | Buttons, badges, avatars, segmented controls. |
 
-App cards use `rounded-lg` (~8px). **Retune `--radius` from the current `0.75rem` (12px) to `0.5rem` (8px)**; the `--radius-sm/md/lg/xl` scale follows. Pills override to fully-round.
+The scale moved up one step in 0.1.2 to match Workforce: `rounded-lg` was 8px and is now 12px, `rounded-xl` was 12px and is now 16px. Phase 2 primitives choose the right step per component.
 
 ### 4.4 Breakpoints
 
@@ -285,19 +277,29 @@ Stroke-based, single-color, one drawing language. Mission Recipes uses **`lucide
 
 ## 8. Motion
 
-**Quiet, slow-ish, self-completing** — the page settling, never demanding attention.
+**Feedback, not scenery.** Tokens in `tokens.css`:
 
-- **Easing vocabulary:** `cubic-bezier(0.16,1,0.3,1)` entrances · plain `0.2s ease` small UI hovers.
-- **Durations:** UI hovers `0.15–0.2s`; entrances `0.7–0.9s`; dropdowns `0.18s`.
-- **Reduced motion is mandatory and already shipped** (0.0.49): the `@media (prefers-reduced-motion: reduce)` block in `globals.css` neutralises transitions, animations, and smooth scroll. Any new motion must respect it.
+| Token | Value | Use |
+|---|---|---|
+| `--dur-quick` | 120ms | Hover, press, toggle. |
+| `--dur-base` | 160ms | Menus, popovers, segment moves. |
+| `--dur-entrance` | 200ms | Dialogs, side panels, toasts. |
+| `--ease-out-expo` | `cubic-bezier(0.16, 1, 0.3, 1)` | Entrances. |
+| `--ease-out-soft` | `cubic-bezier(0.2, 0.7, 0.2, 1)` | Small UI moves. |
 
-**Remove the legacy lift/scale utilities.** `.flow-ui-hover-lift` (translate + shadow on hover) and `.flow-ui-active-scale` (scale-on-press) — plus the `game-card-hover` lift and `mono-gradient` decoration — embody the lift/scale/shadow/gradient style Mission rejects. Phase 3/4 removes them (6 `flow-ui-*` + 34 `game-card` + 2 `mono-gradient` usages to migrate first).
+Use them as `duration-(--dur-quick)` and `ease-out-expo`. **Reduced motion is mandatory**: the `@media (prefers-reduced-motion: reduce)` block in `globals.css` neutralises transitions, animations and smooth scroll. Any new motion must respect it.
 
 ---
 
 ## 9. Shadows
 
-Nearly invisible; exactly one job — lifting a floating panel/dropdown off the canvas. Soft, long, very low-opacity, ink-tinted (never black): dropdown `0 24px 60px rgba(23,23,23,0.08)`. **No shadow on buttons, sections, or static cards** — those use a 0.5px hairline. When in doubt, reach for a hairline, not a shadow. (Phase 0 found 48 `shadow-*` usages to triage — most should become hairlines.)
+Resting surfaces use a hairline, not a shadow. Ink-tinted, never black, with dark variants:
+
+| Token | Utility | Use |
+|---|---|---|
+| `--shadow-card` | `shadow-card`, `shadow-elevation-1` | The chosen segment, a barely-lifted chip. |
+| `--shadow-raised` | `shadow-elevation-2` | Dropdowns (legacy name). |
+| `--shadow-pop` | `shadow-pop`, `shadow-elevation-3` | Dialogs, side panels, popovers. |
 
 ---
 
@@ -305,20 +307,28 @@ Nearly invisible; exactly one job — lifting a floating panel/dropdown off the 
 
 ```
 frontend/
+├── public/
+│   ├── fonts/satoshi/        # Satoshi-Variable.woff2, Satoshi-VariableItalic.woff2
+│   ├── logo/                 # MS-Recipes-blk-*.svg (7 lockups) + inlinelong.png (email)
+│   └── icons/                # icon-192, icon-512, icon-maskable-512 (PWA)
 ├── src/
+│   ├── styles/tokens.css     # raw tokens: :root/.light + .dark (only place for hex) + aliases
 │   ├── app/
-│   │   ├── globals.css   # tokens (color, status, dark), base styles, reduced-motion
-│   │   └── layout.tsx    # Typekit link (three faces → one), TopNav, Providers
+│   │   ├── globals.css       # @font-face, @custom-variant dark, @theme inline map, base, utilities
+│   │   ├── layout.tsx        # no-flash theme script, metadata, Providers, TopNav
+│   │   ├── icon.svg · apple-icon.png · manifest.ts
+│   │   └── design-system/    # page.tsx + _sections/ (brand, themes, tokens, type, components)
 │   ├── components/
-│   │   ├── ui/           # primitives (Button→pill, Card, Badge, Modal, Input…)
-│   │   ├── layout/       # TopNav, TopAppBar, CanvasLayout, LeftPanel, RightPanel, tabs/
-│   │   └── ...
+│   │   ├── brand/BrandLogo.tsx      # full | short | mark, currentColor
+│   │   ├── theme/                   # ThemeProvider (useTheme), ThemeToggle
+│   │   ├── ui/                      # primitives (Phase 2 restyles)
+│   │   └── layout/                  # TopNav, panels, tabs (Phase 2 replaces the shell)
 │   └── lib/
-│       ├── api.ts        # typed fetch wrapper
-│       └── hooks/        # TanStack Query hooks
+│       ├── theme.ts          # choices, resolve rule, THEME_BOOT_SCRIPT
+│       └── storage-keys.ts   # THEME_STORAGE_KEY + legacy migration
 ```
 
-`docs/references/design.md` (this file) is Mission Recipes' portable contract. The Mission master lives in the Mission Systems repo; keep Mission Recipes-specific adaptations (two-tier color, compact UI scale, top-nav shell, dark mode, `--primary`-as-brand naming) in sync conceptually, not by copy-paste.
+The shell tokens Phase 2 consumes are already defined: `--shell-rail` 232px (`w-rail`), `--shell-rail-narrow` 64px, `--shell-bar` 58px (`h-bar`), `--content-max` 1080px (`max-w-content`), `--content-pad-x/-y`.
 
 ---
 
@@ -328,6 +338,6 @@ frontend/
 2. **Brand green is chrome; status hues are data.** Never style a button or link with a status color, never a badge with the brand accent.
 3. **Sentence case, always.** No ALL-CAPS, including table headers and tags (31 to fix).
 4. **Hairline before border, nothing before shadow.**
-5. **Body is 300, headings are 500.** Reach for weight, not size or caps, to create emphasis (144 bold/semibold to band down).
+5. **Body is 400, headings are 500, nothing bolder.**
 6. **Pick the right scale** — display for empty/onboarding, compact UI for the canvas and data.
 7. **Status must stay legible** — desaturated, but never so quiet a chef can't scan recipe/ingredient/cost state.
