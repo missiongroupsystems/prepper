@@ -15,6 +15,7 @@ import {
   useMenuSketchComments,
 } from '@/lib/hooks';
 import * as api from '@/lib/api';
+import { Page } from '@/components/app';
 import type { MenuSketchSectionItem, MenuSketchSectionItemComment } from '@/types';
 import { CommentsPanel } from './CommentsPanel';
 import { DishCommentsModal } from './DishCommentsModal';
@@ -22,7 +23,6 @@ import { AddSectionInput } from './_components/AddSectionInput';
 import { EditorHeader } from './_components/EditorHeader';
 import { MenuSketchPreview } from './_components/MenuSketchPreview';
 import { NotesDrawer } from './_components/NotesDrawer';
-import { PageMeasure } from './_components/PageMeasure';
 import { SectionBlock } from './_components/SectionBlock';
 import type { DisplayOptions, ViewMode } from './_components/shared';
 import { Sortable, useSortableOrder } from './_components/sortable';
@@ -128,7 +128,7 @@ export default function MenuSketchEditorPage() {
   }
 
   return (
-    <div className="flex h-full overflow-hidden bg-background">
+    <Page fill className="flex-row bg-background">
       <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
         <EditorHeader
           name={name}
@@ -151,7 +151,7 @@ export default function MenuSketchEditorPage() {
         />
 
         <div className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto">
-          <PageMeasure>
+          <Page>
             {previewMode ? (
               <MenuSketchPreview
                 name={name}
@@ -187,7 +187,7 @@ export default function MenuSketchEditorPage() {
                 <AddSectionInput sketchId={sketch.id} nextOrderNo={sections.length} />
               </div>
             )}
-          </PageMeasure>
+          </Page>
         </div>
 
         <NotesDrawer notes={sketch.notes} onSave={handleNotesSave} />
@@ -207,6 +207,6 @@ export default function MenuSketchEditorPage() {
           onClose={() => setActiveDishComments(null)}
         />
       )}
-    </div>
+    </Page>
   );
 }
