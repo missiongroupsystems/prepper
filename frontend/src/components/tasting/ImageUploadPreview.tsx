@@ -1,9 +1,12 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
-import { Upload, X, Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui';
-import type { TastingNoteImage } from '@/types';
+import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
+import { Upload, X } from 'lucide-react';
+import { toast } from 'sonner';
+import { FieldHint, Label, Spinner } from '@/components/ui';
+import { cn } from '@/lib/utils';
+import { PHOTO_GRID } from './NotePhotos';
+import type { NoteImage } from './feedbackConfig';
 
 export interface ImageWithId {
   id: number | null;
@@ -14,20 +17,17 @@ export interface ImageWithId {
 
 interface ImageUploadPreviewProps {
   onImagesSelected: (images: ImageWithId[]) => void;
-  uploadedImages?: TastingNoteImage[];
-  onRemoveImage?: (imageId: number) => Promise<void>;
+  uploadedImages?: NoteImage[];
   isLoading?: boolean;
-  isRemoving?: boolean;
 }
 
 export function ImageUploadPreview({
   onImagesSelected,
   uploadedImages = [],
-  onRemoveImage,
   isLoading = false,
-  isRemoving = false,
 }: ImageUploadPreviewProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const inputId = useId();
   const [selectedImages, setSelectedImages] = useState<ImageWithId[]>(() =>
     uploadedImages.map((img) => ({
       id: img.id,
@@ -36,7 +36,6 @@ export function ImageUploadPreview({
       removed: false,
     }))
   );
-  const [removingImageId, setRemovingImageId] = useState<number | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
 
@@ -68,7 +67,7 @@ export function ImageUploadPreview({
         const file = files[i];
 
         if (file.size > MAX_FILE_SIZE) {
-          alert(`"${file.name}" exceeds 5MB limit and was skipped.`);
+          toast.error(`"${file.name}" is over 5 MB and was skipped.`);
           continue;
         }
         const reader = new FileReader();
@@ -112,7 +111,7 @@ export function ImageUploadPreview({
   };
 
   const handleRemoveUploaded = (imageId: number) => {
-    // Mark as removed locally, don't call onRemoveImage yet
+    // Mark as removed locally; the parent deletes it when the note is saved.
     // Will be deleted when user saves
     const updated = selectedImages.map((img) =>
       img.id === imageId ? { ...img, removed: true } : img
@@ -121,110 +120,96 @@ export function ImageUploadPreview({
     onImagesSelected(updated);
   };
 
+  const newImages = selectedImages.filter((img) => img.id === null);
+  const keptImages = selectedImages.filter((img) => img.id !== null && !img.removed);
+
   return (
-    <div className="space-y-4">
-      {/* Upload area */}
-      <div>
-        <label className="block text-sm font-medium text-muted-foreground mb-2">
-          Add images
-        </label>
-        <div className="relative">
-          <input
-            ref={fileInputRef}
-            type="file"
-            multiple
-            accept="image/*"
-            onChange={handleFileSelect}
-            className="hidden"
-            disabled={isProcessing || isLoading}
-          />
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={isProcessing || isLoading}
-            onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); }}
-            onDragLeave={(e) => { e.preventDefault(); setIsDragging(false); }}
-            onDrop={async (e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); if (e.dataTransfer.files.length) await handleFiles(e.dataTransfer.files); }}
-            className={`w-full border-2 border-dashed rounded-xl p-6 text-center hover:border-muted-foreground transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${isDragging ? 'border-[var(--color-feedback-info)] bg-[var(--color-feedback-info-tint)]' : 'border-border'}`}
-          >
-            {isProcessing ? (
-              <Loader2 className="h-6 w-6 text-primary mx-auto mb-2 animate-spin" />
-            ) : (
-              <Upload className="h-6 w-6 text-muted-foreground mx-auto mb-2" />
-            )}
-            <p className="text-sm text-muted-foreground">
-              {isProcessing ? 'Processing images...' : 'Click to select images or drag and drop'}
-            </p>
-          </button>
-        </div>
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-1.5">
+        <Label htmlFor={inputId}>Photos</Label>
+        <input
+          ref={fileInputRef}
+          id={inputId}
+          type="file"
+          multiple
+          accept="image/*"
+          onChange={handleFileSelect}
+          className="sr-only"
+          disabled={isProcessing || isLoading}
+        />
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={isProcessing || isLoading}
+          onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); }}
+          onDragLeave={(e) => { e.preventDefault(); setIsDragging(false); }}
+          onDrop={async (e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); if (e.dataTransfer.files.length) await handleFiles(e.dataTransfer.files); }}
+          className={cn(
+            'flex w-full flex-col items-center gap-2 rounded-lg border border-dashed p-5 text-center text-sm text-muted-foreground transition-colors hover:border-hairline-strong disabled:cursor-not-allowed disabled:opacity-50',
+            isDragging ? 'border-info bg-info-subtle' : 'border-line'
+          )}
+        >
+          {isProcessing ? <Spinner className="size-5" /> : <Upload className="size-5" strokeWidth={1.5} aria-hidden="true" />}
+          {isProcessing ? 'Processing photos…' : 'Choose photos or drop them here'}
+        </button>
+        <FieldHint>Up to 5 MB each.</FieldHint>
       </div>
 
-      {/* New images (id: null) */}
-      {selectedImages.some((img) => img.id === null) && (
-        <div>
-          <p className="text-sm text-muted-foreground mb-2">
-            New images ({selectedImages.filter((img) => img.id === null).length})
-          </p>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-            {selectedImages.map(
-              (image, index) =>
-                image.id === null && (
-                  <div
-                    key={`new-${index}`}
-                    className="relative group rounded-lg overflow-hidden bg-muted aspect-square"
-                  >
-                    <img
-                      src={`data:image/png;base64,${image.data}`}
-                      alt={`New ${index + 1}`}
-                      className="w-full h-full object-cover"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveSelected(index)}
-                      className="absolute inset-0 bg-[var(--color-scrim)] opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
-                      disabled={isLoading}
-                    >
-                      <X className="h-4 w-4 text-[var(--color-text-inverse)]" />
-                    </button>
-                  </div>
-                )
-            )}
-          </div>
-        </div>
+      {newImages.length > 0 && (
+        <PhotoGroup title={`New photos (${newImages.length})`}>
+          {selectedImages.map(
+            (image, index) =>
+              image.id === null && (
+                <PhotoTile
+                  key={`new-${index}`}
+                  src={`data:image/png;base64,${image.data}`}
+                  alt={`New photo ${index + 1}`}
+                  onRemove={() => handleRemoveSelected(index)}
+                  disabled={isLoading}
+                />
+              )
+          )}
+        </PhotoGroup>
       )}
 
-      {/* Existing images (id: not null and not removed) */}
-      {selectedImages.some((img) => img.id !== null && !img.removed) && (
-        <div>
-          <p className="text-sm text-muted-foreground mb-2">
-            Uploaded images ({selectedImages.filter((img) => img.id !== null && !img.removed).length})
-          </p>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-            {selectedImages.map(
-              (image) =>
-                image.id !== null && !image.removed && (
-                  <div
-                    key={image.id}
-                    className="relative group rounded-lg overflow-hidden bg-muted aspect-square"
-                  >
-                    <img
-                      src={image.image_url}
-                      alt="Uploaded"
-                      className="w-full h-full object-cover"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveUploaded(image.id!)}
-                      className="absolute inset-0 bg-[var(--color-scrim)] opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
-                    >
-                      <X className="h-4 w-4 text-[var(--color-text-inverse)]" />
-                    </button>
-                  </div>
-                )
-            )}
-          </div>
-        </div>
+      {keptImages.length > 0 && (
+        <PhotoGroup title={`Saved photos (${keptImages.length})`}>
+          {keptImages.map((image) => (
+            <PhotoTile
+              key={image.id}
+              src={image.image_url ?? ''}
+              alt="Saved photo"
+              onRemove={() => handleRemoveUploaded(image.id as number)}
+            />
+          ))}
+        </PhotoGroup>
       )}
+    </div>
+  );
+}
+
+function PhotoGroup({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <div className="flex flex-col gap-2">
+      <p className="text-[13px] font-medium text-muted-foreground tabular-nums">{title}</p>
+      <div className={PHOTO_GRID}>{children}</div>
+    </div>
+  );
+}
+
+function PhotoTile({ src, alt, onRemove, disabled }: { src: string; alt: string; onRemove: () => void; disabled?: boolean }) {
+  return (
+    <div className="relative aspect-square overflow-hidden rounded-md bg-surface-sunken">
+      <img src={src} alt={alt} className="size-full object-cover" />
+      <button
+        type="button"
+        onClick={onRemove}
+        disabled={disabled}
+        aria-label={`Remove ${alt.toLowerCase()}`}
+        className="absolute top-1 right-1 flex size-8 items-center justify-center rounded-full bg-card/90 text-ink shadow-pop transition-colors hover:bg-card max-sm:size-10"
+      >
+        <X className="size-4" strokeWidth={1.5} aria-hidden="true" />
+      </button>
     </div>
   );
 }
