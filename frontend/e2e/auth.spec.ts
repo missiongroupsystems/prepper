@@ -147,7 +147,7 @@ test.describe('Login Page (/login)', () => {
     test('stored redirect URL is used after login', async ({ page }) => {
       await page.goto('/login');
       await page.evaluate(() => {
-        localStorage.setItem('prepper_last_route', '/recipes');
+        localStorage.setItem('mission_recipes_last_route', '/recipes');
       });
       const loginPage = new LoginPage(page);
       await loginPage.login(TEST_USER.email, TEST_USER.password);
@@ -208,7 +208,7 @@ test.describe('Login Page (/login)', () => {
     test('malformed stored redirect URL falls back to /outlets safely', async ({ page }) => {
       await page.goto('/login');
       await page.evaluate(() => {
-        localStorage.setItem('prepper_last_route', 'javascript:alert(1)');
+        localStorage.setItem('mission_recipes_last_route', 'javascript:alert(1)');
       });
       const loginPage = new LoginPage(page);
       await loginPage.login(TEST_USER.email, TEST_USER.password);
@@ -361,7 +361,7 @@ test.describe('Auth Guard', () => {
     test('expired/revoked token does not cause a redirect loop', async ({ page }) => {
       await page.goto('/login'); // Start on a real page so localStorage works
       await page.evaluate(() => {
-        localStorage.setItem('prepper_auth', JSON.stringify({
+        localStorage.setItem('mission_recipes_auth', JSON.stringify({
           userId: 'expired-user',
           jwt: 'expired.jwt.token',
           userType: 'normal',
@@ -382,7 +382,7 @@ test.describe('Auth Guard', () => {
       // Inject valid auth state then navigate to /login
       await page.goto('/login');
       await page.evaluate((auth) => {
-        localStorage.setItem('prepper_auth', JSON.stringify(auth));
+        localStorage.setItem('mission_recipes_auth', JSON.stringify(auth));
       }, {
         userId: 'test-user',
         jwt: 'valid.mock.token',
@@ -404,7 +404,7 @@ test.describe('Auth Guard', () => {
     test('authenticated users visiting /register are redirected away', async ({ page }) => {
       await page.goto('/login');
       await page.evaluate((auth) => {
-        localStorage.setItem('prepper_auth', JSON.stringify(auth));
+        localStorage.setItem('mission_recipes_auth', JSON.stringify(auth));
       }, {
         userId: 'test-user',
         jwt: 'valid.mock.token',

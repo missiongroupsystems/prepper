@@ -62,9 +62,9 @@ test.describe('Top Navigation', () => {
   test.describe('Edge Cases', () => {
     test('very long username does not break the nav bar layout', async ({ page }) => {
       await page.evaluate(() => {
-        const auth = JSON.parse(localStorage.getItem('prepper_auth') || '{}');
+        const auth = JSON.parse(localStorage.getItem('mission_recipes_auth') || '{}');
         auth.username = 'a'.repeat(80);
-        localStorage.setItem('prepper_auth', JSON.stringify(auth));
+        localStorage.setItem('mission_recipes_auth', JSON.stringify(auth));
       });
       await page.reload();
       const nav = page.locator('nav').first();

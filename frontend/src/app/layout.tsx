@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Manrope, Geist_Mono } from 'next/font/google';
 import { Providers } from '@/lib/providers';
+import { LEGACY_THEME_STORAGE_KEY, THEME_STORAGE_KEY } from '@/lib/storage-keys';
 import { TopNav } from '@/components/layout';
 import './globals.css';
 
@@ -16,7 +17,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Reciperep - Recipe Management',
+  title: 'Mission Recipes',
   description: 'Kitchen-first recipe workspace for chefs and operators',
   icons: {
     icon: '/logo/reciperep-favicon-512x512.png',
@@ -37,7 +38,7 @@ export default function RootLayout({
         {/* Prevent FOUC: apply theme class before first paint (critical for mobile) */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem('prepper-theme')||'system';var d=t==='system'?window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light':t;document.documentElement.classList.add(d);document.documentElement.style.colorScheme=d}catch(e){}})()`,
+            __html: `(function(){try{var t=localStorage.getItem('${THEME_STORAGE_KEY}')||localStorage.getItem('${LEGACY_THEME_STORAGE_KEY}')||'system';var d=t==='system'?window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light':t;document.documentElement.classList.add(d);document.documentElement.style.colorScheme=d}catch(e){}})()`,
           }}
         />
       </head>

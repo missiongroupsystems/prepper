@@ -40,7 +40,7 @@ test.describe('Tasting Sessions List Page (/tastings)', () => {
     const url = `/tastings/${seed.sessionId}`;
     // Ensure AuthGuard race condition redirects back to our target (not /outlets)
     await page.addInitScript((target: string) => {
-      window.localStorage.setItem('prepper_last_route', target);
+      window.localStorage.setItem('mission_recipes_last_route', target);
     }, url);
     // Try clicking the session link if visible; fall back to direct navigation
     const sessionLink = page.locator(`a[href*="/tastings/${seed.sessionId}"]`).first();
@@ -215,7 +215,7 @@ test.describe('Tasting Note Detail Page (/tastings/[id]/r/[recipeId])', () => {
     }
     const url = `/tastings/${seed.sessionId}/r/${seed.recipeId}`;
     await page.addInitScript((target: string) => {
-      window.localStorage.setItem('prepper_last_route', target);
+      window.localStorage.setItem('mission_recipes_last_route', target);
     }, url);
     await page.goto(url);
     await page.waitForURL(/\/r\/\d+/, { timeout: 15_000 });
@@ -229,7 +229,7 @@ test.describe('Tasting Note Detail Page (/tastings/[id]/r/[recipeId])', () => {
 
       const url = `/tastings/${seed.sessionId}/r/${seed.recipeId}`;
       await page.addInitScript((target: string) => {
-        window.localStorage.setItem('prepper_last_route', target);
+        window.localStorage.setItem('mission_recipes_last_route', target);
       }, url);
       await page.goto(url);
       await page.waitForURL(/\/r\/\d+/, { timeout: 15_000 });

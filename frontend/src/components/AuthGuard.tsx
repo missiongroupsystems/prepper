@@ -3,6 +3,7 @@
 import { useEffect, Suspense } from 'react';
 import { usePathname, useSearchParams, useRouter } from 'next/navigation';
 import { useAppState } from '@/lib/store';
+import { LAST_ROUTE_STORAGE_KEY } from '@/lib/storage-keys';
 
 const PUBLIC_ROUTES = ['/', '/login', '/register'];
 
@@ -49,7 +50,6 @@ const PASSTHROUGH_ROUTE_PATTERNS = [
 function isValidRoute(pathname: string): boolean {
   return VALID_ROUTE_PATTERNS.some((pattern) => pattern.test(pathname));
 }
-const LAST_ROUTE_KEY = 'prepper_last_route';
 const DEFAULT_ROUTE = '/recipes';
 
 /** Only allow relative paths that start with `/` (no `//`, `javascript:`, etc.) */
@@ -59,13 +59,13 @@ function isValidRedirectPath(path: string): boolean {
 
 function getLastRoute(): string {
   if (typeof window === 'undefined') return '/';
-  const stored = localStorage.getItem(LAST_ROUTE_KEY);
+  const stored = localStorage.getItem(LAST_ROUTE_STORAGE_KEY);
   return stored && isValidRedirectPath(stored) ? stored : DEFAULT_ROUTE;
 }
 
 function setLastRoute(route: string) {
   if (typeof window === 'undefined') return;
-  localStorage.setItem(LAST_ROUTE_KEY, route);
+  localStorage.setItem(LAST_ROUTE_STORAGE_KEY, route);
 }
 
 // Separate component for search params to isolate Suspense boundary

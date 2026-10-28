@@ -5,6 +5,8 @@
  * This allows the API layer to communicate with React Context without circular dependencies.
  */
 
+import { LAST_ROUTE_STORAGE_KEY } from '@/lib/storage-keys';
+
 type LogoutCallback = () => void;
 let logoutCallback: LogoutCallback | null = null;
 
@@ -15,7 +17,7 @@ export function registerLogoutCallback(callback: LogoutCallback) {
 export function triggerLogout() {
   // Clear the stored route to prevent redirecting back to a protected page
   if (typeof window !== 'undefined') {
-    localStorage.removeItem('prepper_last_route');
+    localStorage.removeItem(LAST_ROUTE_STORAGE_KEY);
   }
 
   if (logoutCallback) {

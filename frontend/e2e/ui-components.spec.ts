@@ -623,7 +623,7 @@ test.describe('Authorization & Access Control', () => {
       await page.waitForLoadState('load');
       // Set an obviously invalid/expired JWT
       await page.evaluate(() => {
-        localStorage.setItem('prepper_auth', JSON.stringify({
+        localStorage.setItem('mission_recipes_auth', JSON.stringify({
           userId: 'some-user',
           jwt: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwidXNlcl90eXBlIjoiYWRtaW4iLCJleHAiOjF9.INVALID',
           userType: 'admin',

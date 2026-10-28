@@ -73,7 +73,7 @@ export default function DesignSystemPage() {
       <div className="mx-auto max-w-6xl px-4 py-6 sm:p-6 md:p-8 lg:p-12">
         {/* Header */}
         <div className="mb-12">
-          <h1 className="text-3xl font-medium text-foreground mb-2">Reciperep Design System</h1>
+          <h1 className="text-3xl font-medium text-foreground mb-2">Mission Recipes Design System</h1>
           <p className="text-muted-foreground">
             A kitchen-first design system with warm, terracotta-inspired colors and three-font typography.
           </p>
@@ -122,7 +122,7 @@ export default function DesignSystemPage() {
               <div className="p-6 rounded-lg bg-card border border-border">
                 <Image
                   src="/logo/Reciperep logo inline 840x180.png"
-                  alt="Reciperep Logo Inline"
+                  alt="Mission Recipes Logo Inline"
                   width={280}
                   height={60}
                   className="h-12 w-auto"
@@ -131,7 +131,7 @@ export default function DesignSystemPage() {
               <div className="p-6 rounded-lg bg-zinc-900 border border-border">
                 <Image
                   src="/logo/Reciperep logo inline 840x180.png"
-                  alt="Reciperep Logo Inline"
+                  alt="Mission Recipes Logo Inline"
                   width={280}
                   height={60}
                   className="h-12 w-auto"
@@ -146,7 +146,7 @@ export default function DesignSystemPage() {
               <div className="p-4 rounded-lg bg-card border border-border">
                 <Image
                   src="/logo/Reciperep logoicon 260x260.png"
-                  alt="Reciperep Logo Icon"
+                  alt="Mission Recipes Logo Icon"
                   width={64}
                   height={64}
                   className="h-16 w-16"
@@ -155,7 +155,7 @@ export default function DesignSystemPage() {
               <div className="p-4 rounded-lg bg-zinc-900 border border-border">
                 <Image
                   src="/logo/Reciperep logoicon 260x260.png"
-                  alt="Reciperep Logo Icon"
+                  alt="Mission Recipes Logo Icon"
                   width={64}
                   height={64}
                   className="h-16 w-16"
@@ -171,7 +171,7 @@ export default function DesignSystemPage() {
                 <div className="p-2 rounded-lg bg-card border border-border">
                   <Image
                     src="/logo/reciperep-favicon-512x512.png"
-                    alt="Reciperep Favicon"
+                    alt="Mission Recipes Favicon"
                     width={32}
                     height={32}
                     className="h-8 w-8"
@@ -183,7 +183,7 @@ export default function DesignSystemPage() {
                 <div className="p-2 rounded-lg bg-card border border-border">
                   <Image
                     src="/logo/reciperep-favicon-512x512.png"
-                    alt="Reciperep Favicon"
+                    alt="Mission Recipes Favicon"
                     width={48}
                     height={48}
                     className="h-12 w-12"
@@ -195,7 +195,7 @@ export default function DesignSystemPage() {
                 <div className="p-2 rounded-lg bg-card border border-border">
                   <Image
                     src="/logo/reciperep-favicon-512x512.png"
-                    alt="Reciperep Favicon"
+                    alt="Mission Recipes Favicon"
                     width={64}
                     height={64}
                     className="h-16 w-16"
@@ -464,7 +464,7 @@ export default function DesignSystemPage() {
                 <div className="flex items-center gap-2">
                   <Image
                     src="/logo/Reciperep logoicon 260x260.png"
-                    alt="Reciperep"
+                    alt="Mission Recipes"
                     width={20}
                     height={20}
                     className="h-5 w-5"

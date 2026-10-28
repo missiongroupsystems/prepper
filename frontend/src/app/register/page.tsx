@@ -95,7 +95,7 @@ export default function RegisterPage() {
     <div className="flex min-h-full items-center justify-center p-4">
       <Card className="w-full max-w-sm">
         <CardHeader>
-          <CardTitle className="text-center text-xl">Join Reciperep</CardTitle>
+          <CardTitle className="text-center text-xl">Join Mission Recipes</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleRegister} className="space-y-4">

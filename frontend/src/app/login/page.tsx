@@ -10,6 +10,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { useAppState } from '@/lib/store';
 import { loginUser } from '@/lib/api';
 import { createClient } from '@/lib/supabase/client';
+import { LAST_ROUTE_STORAGE_KEY } from '@/lib/storage-keys';
 import type { AuthApiError } from '@/types';
 
 export default function LoginPage() {
@@ -49,14 +50,14 @@ export default function LoginPage() {
       const params = new URLSearchParams(window.location.search);
       const redirectParam = params.get('redirect');
       const storedRedirect = localStorage.getItem('tasting_redirect_url');
-      const storedLastRoute = localStorage.getItem('prepper_last_route');
+      const storedLastRoute = localStorage.getItem(LAST_ROUTE_STORAGE_KEY);
       const raw = redirectParam || storedRedirect || storedLastRoute || '/outlets';
       const destination = isValidRedirectPath(raw) ? raw : '/outlets';
 
       // Persist destination so AuthGuard picks it up when it detects auth
       // state change (prevents race condition where AuthGuard redirects to
       // a stale route before router.push fires)
-      localStorage.setItem('prepper_last_route', destination);
+      localStorage.setItem(LAST_ROUTE_STORAGE_KEY, destination);
 
       // Clean up one-time tasting redirect
       if (storedRedirect) {
@@ -79,7 +80,7 @@ export default function LoginPage() {
     <div className="flex min-h-full items-center justify-center p-4">
       <Card className="w-full max-w-sm">
         <CardHeader>
-          <CardTitle className="text-center text-xl">Log in to Reciperep</CardTitle>
+          <CardTitle className="text-center text-xl">Log in to Mission Recipes</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">

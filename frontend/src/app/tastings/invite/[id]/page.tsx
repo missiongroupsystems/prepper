@@ -2,9 +2,9 @@
 
 import { useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import { AUTH_STORAGE_KEY } from '@/lib/storage-keys';
 
 const TASTING_REDIRECT_KEY = 'tasting_redirect_url';
-const AUTH_STORAGE_KEY = 'prepper_auth';
 
 export default function TastingInvitePage() {
   const router = useRouter();

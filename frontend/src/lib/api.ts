@@ -130,6 +130,7 @@ export interface OutletListParams extends ListParams {
   is_active?: boolean | null;
 }
 import { refreshAccessToken, triggerLogout, type RefreshTokenResult } from '@/lib/auth-interceptor';
+import { AUTH_STORAGE_KEY } from '@/lib/storage-keys';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
 
@@ -145,7 +146,7 @@ function readAuthFromStorage() {
     return { jwt: null, refreshToken: null };
   }
   try {
-    const stored = localStorage.getItem('prepper_auth');
+    const stored = localStorage.getItem(AUTH_STORAGE_KEY);
     if (stored) {
       const auth = JSON.parse(stored);
       return { jwt: auth.jwt, refreshToken: auth.refreshToken };
@@ -159,12 +160,12 @@ function readAuthFromStorage() {
 function updateTokensInStorage(newJwt: string, newRefreshToken: string) {
   if (typeof window === 'undefined') return;
   try {
-    const stored = localStorage.getItem('prepper_auth');
+    const stored = localStorage.getItem(AUTH_STORAGE_KEY);
     if (stored) {
       const auth = JSON.parse(stored);
       auth.jwt = newJwt;
       auth.refreshToken = newRefreshToken;
-      localStorage.setItem('prepper_auth', JSON.stringify(auth));
+      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(auth));
     }
   } catch {
     // Ignore parse errors

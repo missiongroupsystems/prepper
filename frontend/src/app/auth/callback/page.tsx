@@ -6,6 +6,7 @@ import type { Session } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase/client';
 import { useAppState } from '@/lib/store';
 import { completeOAuth } from '@/lib/api';
+import { LAST_ROUTE_STORAGE_KEY } from '@/lib/storage-keys';
 
 const DEFAULT_DESTINATION = '/outlets';
 const BRIDGE_TIMEOUT_MS = 15_000;
@@ -59,11 +60,11 @@ export default function AuthCallbackPage() {
       }
 
       const storedRedirect = localStorage.getItem('tasting_redirect_url');
-      const storedLastRoute = localStorage.getItem('prepper_last_route');
+      const storedLastRoute = localStorage.getItem(LAST_ROUTE_STORAGE_KEY);
       const raw = storedRedirect || storedLastRoute || DEFAULT_DESTINATION;
       const destination = isValidRedirectPath(raw) ? raw : DEFAULT_DESTINATION;
 
-      localStorage.setItem('prepper_last_route', destination);
+      localStorage.setItem(LAST_ROUTE_STORAGE_KEY, destination);
       if (storedRedirect) localStorage.removeItem('tasting_redirect_url');
 
       router.replace(destination);

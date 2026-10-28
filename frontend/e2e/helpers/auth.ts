@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test';
 
-const AUTH_KEY = 'prepper_auth';
+const AUTH_KEY = 'mission_recipes_auth';
 
 export interface AuthState {
   userId: string;

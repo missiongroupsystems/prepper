@@ -44,7 +44,7 @@ export async function POST(request: Request) {
     // Check if SendGrid is configured
     const sendGridApiKey = process.env.SENDGRID_API_KEY;
     const senderEmail = process.env.SENDER_EMAIL;
-    const senderName = process.env.SENDER_NAME || 'RecipePrep';
+    const senderName = process.env.SENDER_NAME || 'Mission Recipes';
     if (!sendGridApiKey || !senderEmail) {
       return Response.json(
         { error: 'Email service not configured' },
@@ -102,7 +102,7 @@ export async function POST(request: Request) {
         <head>
           <meta charset="UTF-8" />
           <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-          <title>You're Invited – RecipePrep Tasting Session</title>
+          <title>You're Invited – Mission Recipes Tasting Session</title>
           <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
         </head>
         <body style="margin: 0; padding: 0; background-color: #f0ebe3; font-family: 'DM Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #1a1a1a; -webkit-font-smoothing: antialiased;">
@@ -114,7 +114,7 @@ export async function POST(request: Request) {
                   <!-- Header with logo -->
                   <tr>
                     <td style="background: #fff; border-radius: 16px 16px 0 0; padding: 28px 40px 24px; text-align: center; border-bottom: 1px solid #ede8e0;">
-                      <img src="${logoUrl}" alt="RecipePrep" width="180" style="display: block; margin: 0 auto; max-width: 180px; height: auto;" />
+                      <img src="${logoUrl}" alt="Mission Recipes" width="180" style="display: block; margin: 0 auto; max-width: 180px; height: auto;" />
                     </td>
                   </tr>
 
@@ -143,7 +143,7 @@ export async function POST(request: Request) {
                         <tr>
                           <td style="padding-bottom: 36px;">
                             <p style="margin: 0; font-size: 15px; font-weight: 300; line-height: 1.7; color: #555;">
-                              We'd love to have you join us for an exclusive tasting session on <strong>RecipePrep</strong> — your feedback helps us craft something truly delicious. See the details below and save your spot.
+                              We'd love to have you join us for an exclusive tasting session on <strong>Mission Recipes</strong> — your feedback helps us craft something truly delicious. See the details below and save your spot.
                             </p>
                           </td>
                         </tr>
@@ -233,7 +233,7 @@ export async function POST(request: Request) {
                   <tr>
                     <td style="background: #f5f0e8; border-radius: 0 0 16px 16px; padding: 22px 40px; text-align: center; border-top: 1px solid #ede8e0;">
                       <p style="margin: 0; font-size: 12px; color: #aaa; font-weight: 300; line-height: 1.8;">
-                        This is an automated message from RecipePrep. Please do not reply to this email.
+                        This is an automated message from Mission Recipes. Please do not reply to this email.
                       </p>
                     </td>
                   </tr>

@@ -3,8 +3,7 @@
 import { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
 import { registerLogoutCallback } from '@/lib/auth-interceptor';
 import { getQueryClient } from '@/lib/query-client-ref';
-
-const AUTH_STORAGE_KEY = 'prepper_auth';
+import { AUTH_STORAGE_KEY } from '@/lib/storage-keys';
 
 // Module-level save handler — kept outside React to avoid re-render loops
 let _canvasSaveHandler: (() => Promise<void>) | null = null;

@@ -325,7 +325,7 @@ setup('authenticate as normal user', async ({ page }) => {
 
   await page.goto('/');
   await page.evaluate((authData) => {
-    localStorage.setItem('prepper_auth', JSON.stringify(authData));
+    localStorage.setItem('mission_recipes_auth', JSON.stringify(authData));
   }, auth);
 
   // Verify auth works by navigating to a protected page
@@ -347,7 +347,7 @@ setup('authenticate as manager user', async ({ page }) => {
 
   await page.goto('/');
   await page.evaluate((authData) => {
-    localStorage.setItem('prepper_auth', JSON.stringify(authData));
+    localStorage.setItem('mission_recipes_auth', JSON.stringify(authData));
   }, auth);
 
   await page.goto('/menu');
@@ -375,7 +375,7 @@ setup('authenticate as admin user', async ({ page }) => {
 
   await page.goto('/');
   await page.evaluate((authData) => {
-    localStorage.setItem('prepper_auth', JSON.stringify(authData));
+    localStorage.setItem('mission_recipes_auth', JSON.stringify(authData));
   }, auth);
 
   await page.goto('/outlets');

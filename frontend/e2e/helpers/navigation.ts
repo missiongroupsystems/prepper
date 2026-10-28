@@ -4,7 +4,7 @@
  * All goTo* functions:
  *  - Prefer direct URL navigation via seed data (faster, no list-page scraping)
  *  - Fall back to scraping the list page when seed data is unavailable
- *  - Set prepper_last_route via addInitScript to survive any AuthGuard redirect
+ *  - Set mission_recipes_last_route via addInitScript to survive any AuthGuard redirect
  *  - Return false (not throw) when no matching entity can be found — callers
  *    should test.skip() on a false return value
  */
@@ -14,7 +14,7 @@ import { readSeedUserData, readSeedAdminData } from './seed';
 /** Persist a last-route hint so AuthGuard redirects back to the target page. */
 async function setLastRoute(page: Page, url: string): Promise<void> {
   await page.addInitScript((target: string) => {
-    window.localStorage.setItem('prepper_last_route', target);
+    window.localStorage.setItem('mission_recipes_last_route', target);
   }, url);
 }
 
@@ -134,7 +134,7 @@ export async function goToMenuPreview(page: Page, menuId?: number): Promise<bool
   // Navigate through /menu first to establish browser history for the back button.
   // addInitScript ensures AuthGuard redirects back to the target on load.
   await page.addInitScript((target: string) => {
-    window.localStorage.setItem('prepper_last_route', target);
+    window.localStorage.setItem('mission_recipes_last_route', target);
   }, previewUrl ?? '/menu');
 
   await page.goto('/menu');

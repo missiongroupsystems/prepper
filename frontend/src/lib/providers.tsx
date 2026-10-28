@@ -7,6 +7,11 @@ import { AppProvider } from './store';
 import { ThemeProvider } from './theme';
 import { AuthGuard } from '@/components/AuthGuard';
 import { setQueryClientRef } from './query-client-ref';
+import { migrateLegacyStorageKeys } from './storage-keys';
+
+// Runs once when the client bundle loads — before any component renders or
+// effect reads auth / last-route from localStorage. No-op on the server.
+migrateLegacyStorageKeys();
 
 export function Providers({ children }: { children: ReactNode }) {
   const [queryClient] = useState(() => {

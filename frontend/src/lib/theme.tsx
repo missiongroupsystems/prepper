@@ -7,6 +7,7 @@ import {
   useState,
   ReactNode,
 } from 'react';
+import { THEME_STORAGE_KEY } from './storage-keys';
 
 type Theme = 'light' | 'dark' | 'system';
 
@@ -18,7 +19,7 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-const STORAGE_KEY = 'prepper-theme';
+const STORAGE_KEY = THEME_STORAGE_KEY;
 
 function getSystemTheme(): 'light' | 'dark' {
   if (typeof window === 'undefined') return 'light';

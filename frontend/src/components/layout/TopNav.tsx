@@ -107,7 +107,7 @@ export function TopNav() {
         >
           <Image
             src="/logo/Reciperep logo inline 840x180.png"
-            alt="Reciperep"
+            alt="Mission Recipes"
             width={140}
             height={30}
             className="h-7 w-auto dark:hidden"
@@ -115,7 +115,7 @@ export function TopNav() {
           />
           <Image
             src="/logo/Reciperep logo inline light 840x180.png"
-            alt="Reciperep"
+            alt="Mission Recipes"
             width={140}
             height={30}
             className="h-7 w-auto hidden dark:block"
