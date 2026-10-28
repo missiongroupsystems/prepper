@@ -47,10 +47,10 @@ export const RecipeListRow = memo(function RecipeListRow({ recipe, costPerPortio
                   <Badge variant="default" className="text-xs">Prep</Badge>
                 )}
                 {matchedViaSubDish && (
-                  <Badge variant="default" className="text-xs">Via Sub-dish</Badge>
+                  <Badge variant="default" className="text-xs">Via sub-dish</Badge>
                 )}
                 {isOwned && (
-                  <Badge className="text-xs bg-inverse text-inverse-foreground">Owned</Badge>
+                  <Badge className="text-xs bg-primary text-primary-foreground">Owned</Badge>
                 )}
                 {categoryNames.map((name) => (
                   <Badge key={name} variant="secondary" className="text-xs">{name}</Badge>
@@ -61,7 +61,7 @@ export const RecipeListRow = memo(function RecipeListRow({ recipe, costPerPortio
               </div>
 
               <div className="text-right">
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-muted-foreground tabular-nums">
                   <span className="font-medium text-foreground">
                     {formatCurrency(costPerPortion ?? (recipe.cost_price != null && recipe.yield_quantity > 0 ? recipe.cost_price / recipe.yield_quantity : recipe.cost_price))}
                   </span>

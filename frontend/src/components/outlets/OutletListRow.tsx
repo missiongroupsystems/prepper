@@ -11,10 +11,11 @@ interface OutletListRowProps {
 }
 
 export function OutletListRow({ outlet, parentOutletName, href }: OutletListRowProps) {
-  const outletTypeVariants: Record<string, 'default' | 'secondary' | 'warning'> = {
+  // Outlet type is decorative, not a state — every type gets the neutral pill.
+  const outletTypeVariants: Record<string, 'default' | 'secondary'> = {
     franchise: 'default',
     corporate: 'secondary',
-    delivery: 'warning',
+    delivery: 'secondary',
   };
 
   return (

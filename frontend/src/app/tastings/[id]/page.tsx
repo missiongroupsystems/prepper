@@ -116,7 +116,7 @@ function SortableDishItem({
     <div
       ref={setNodeRef}
       style={style}
-      className="bg-secondary rounded-lg"
+      className="bg-secondary rounded-xl"
     >
       <div className="flex items-center gap-1 p-3">
         {isCreator && (
@@ -132,7 +132,7 @@ function SortableDishItem({
         )}
         <div className="flex items-center gap-2 font-medium text-foreground flex-1 min-w-0">
           {reviewedRecipeIds.has(sr.recipe_id) ? (
-            <CheckCircle className="h-4 w-4 text-[hsl(var(--status-approved))] shrink-0" />
+            <CheckCircle className="h-4 w-4 text-[var(--color-feedback-success)] shrink-0" />
           ) : (
             <div className="h-4 w-4 rounded-full border-2 border-border shrink-0" />
           )}
@@ -141,7 +141,7 @@ function SortableDishItem({
         <button
           type="button"
           onClick={onToggle}
-          className="flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium text-muted-foreground hover:bg-accent shrink-0"
+          className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium text-muted-foreground hover:bg-accent shrink-0"
         >
           <ChevronDown className={`h-3.5 w-3.5 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
           Feedback
@@ -149,7 +149,7 @@ function SortableDishItem({
         {isCreator && (
           <button
             onClick={() => onRemoveRecipe(sr.recipe_id)}
-            className="p-1.5 rounded-md hover:bg-destructive/10 text-muted-foreground hover:text-destructive shrink-0"
+            className="p-1.5 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive shrink-0"
             title="Remove from session"
           >
             <X className="h-4 w-4" />
@@ -290,9 +290,9 @@ function SessionRecipesSection({
   return (
     <div className="mb-8">
       <div className="flex items-center justify-between gap-2 mb-4">
-        <h2 className="text-lg font-medium text-foreground flex items-center gap-2 min-w-0">
-          <ChefHat className="h-5 w-5 text-supplier shrink-0" />
-          <span className="truncate">Session Dishes</span>
+        <h2 className="text-lg font-semibold text-foreground flex items-center gap-2 min-w-0">
+          <ChefHat className="h-5 w-5 text-muted-foreground shrink-0" />
+          <span className="truncate">Session dishes</span>
           {sessionRecipes.length > 0 && (
             <Badge variant="secondary" className="text-xs shrink-0">
               {sessionRecipes.filter((sr) => reviewedRecipeIds.has(sr.recipe_id)).length}/{sessionRecipes.length} reviewed
@@ -306,19 +306,19 @@ function SessionRecipesSection({
             onClick={handleOpenAddRecipe}
           >
             <Plus className="h-4 w-4 mr-1" />
-            <span className="hidden sm:inline">Add Dishes</span>
+            <span className="hidden sm:inline">Add dishes</span>
             <span className="sm:hidden">Add</span>
           </Button>
         )}
       </div>
 
       {isCreator && showAddRecipe && (
-        <Card className="mb-4 border-supplier/40 bg-supplier-bg">
+        <Card className="mb-4 border-border bg-muted/50">
           <CardContent className="pt-4">
             <div className="space-y-3">
               <div>
                 <label className="block text-sm font-medium text-muted-foreground mb-1">
-                  Search Dishes
+                  Search dishes
                 </label>
                 <SearchInput
                   value={searchQuery}
@@ -328,7 +328,7 @@ function SessionRecipesSection({
                   className="w-full"
                 />
               </div>
-              <div className="max-h-48 overflow-y-auto border border-border rounded-md">
+              <div className="max-h-48 overflow-y-auto border border-border rounded-lg">
                 {availableRecipes.length === 0 ? (
                   <div className="p-3 text-sm text-muted-foreground text-center">
                     {searchQuery ? 'No dishes match your search' : 'No dishes available'}
@@ -344,7 +344,7 @@ function SessionRecipesSection({
                         onClick={() => handleToggleRecipe(recipe.id)}
                         className={`w-full text-left px-3 py-2 text-sm border-b border-border last:border-b-0 flex items-center justify-between ${
                           isSelected
-                            ? 'bg-primary/10 text-primary'
+                            ? 'bg-background-contrast text-foreground'
                             : 'text-foreground hover:bg-secondary'
                         }`}
                       >
@@ -367,7 +367,7 @@ function SessionRecipesSection({
                     type="button"
                     onClick={onLoadMoreRecipes}
                     disabled={isLoadingMoreRecipes}
-                    className="w-full px-3 py-2 text-sm text-supplier hover:bg-supplier-bg font-medium disabled:opacity-50"
+                    className="w-full px-3 py-2 text-sm text-primary hover:bg-accent font-medium disabled:opacity-50"
                   >
                     {isLoadingMoreRecipes ? 'Loading...' : 'Load more dishes'}
                   </button>
@@ -377,7 +377,7 @@ function SessionRecipesSection({
                     type="button"
                     onClick={handleCreateAndSelect}
                     disabled={isCreatingRecipe}
-                    className="w-full px-3 py-2 text-sm text-left flex items-center gap-2 text-supplier hover:bg-supplier-bg border-t border-border font-medium disabled:opacity-50"
+                    className="w-full px-3 py-2 text-sm text-left flex items-center gap-2 text-primary hover:bg-accent border-t border-border font-medium disabled:opacity-50"
                   >
                     <Plus className="h-4 w-4 shrink-0" />
                     {isCreatingRecipe ? 'Creating...' : <>Create &ldquo;{searchQuery.trim()}&rdquo; as new dish</>}
@@ -476,9 +476,9 @@ function SessionIngredientsSection({
   return (
     <div className="mb-8">
       <div className="flex items-center justify-between gap-2 mb-4">
-        <h2 className="text-lg font-medium text-foreground flex items-center gap-2 min-w-0">
-          <span className="text-amber-500 shrink-0">🥘</span>
-          <span className="truncate">Session Ingredients</span>
+        <h2 className="text-lg font-semibold text-foreground flex items-center gap-2 min-w-0">
+          <span className="shrink-0">🥘</span>
+          <span className="truncate">Session ingredients</span>
           {ingredients.length > 0 && (
             <Badge variant="secondary" className="text-xs shrink-0">
               {ingredients.length}
@@ -509,12 +509,12 @@ function SessionIngredientsSection({
           {ingredients.map((item) => (
             <div
               key={item.id}
-              className="flex items-center justify-between p-3 bg-secondary rounded-lg"
+              className="flex items-center justify-between p-3 bg-secondary rounded-xl"
             >
               <div className="min-w-0 flex-1">
                 <Link
                   href={`/tastings/${sessionId}/i/${item.id}`}
-                  className="font-medium text-foreground hover:text-amber-600 dark:hover:text-amber-400"
+                  className="font-medium text-foreground hover:text-primary"
                 >
                   {item.name}
                 </Link>
@@ -790,8 +790,8 @@ export default function TastingSessionDetailPage() {
   if (is403Error) {
     return (
       <div className="p-6">
-        <div className="rounded-lg bg-destructive/10 p-4 text-destructive">
-          <p className="font-medium">Access Denied</p>
+        <div className="rounded-xl bg-[var(--color-feedback-error-tint)] p-4 text-[var(--color-feedback-error)]">
+          <p className="font-medium">Access denied</p>
           <p className="text-sm mt-1">You are not invited to this tasting session.</p>
           <Link href="/rnd" className="text-destructive hover:underline text-sm mt-2 inline-block">
             Back to R&D
@@ -804,7 +804,7 @@ export default function TastingSessionDetailPage() {
   if (!session) {
     return (
       <div className="p-6">
-        <div className="rounded-lg bg-destructive/10 p-4 text-destructive">
+        <div className="rounded-xl bg-[var(--color-feedback-error-tint)] p-4 text-[var(--color-feedback-error)]">
           Tasting session not found.
         </div>
       </div>
@@ -814,8 +814,8 @@ export default function TastingSessionDetailPage() {
   if (!isInvited) {
     return (
       <div className="p-6">
-        <div className="rounded-lg bg-destructive/10 p-4 text-destructive">
-          <p className="font-medium">Access Denied</p>
+        <div className="rounded-xl bg-[var(--color-feedback-error-tint)] p-4 text-[var(--color-feedback-error)]">
+          <p className="font-medium">Access denied</p>
           <p className="text-sm mt-1">You are not invited to this tasting session.</p>
           <Link href="/rnd" className="text-destructive hover:underline text-sm mt-2 inline-block">
             Back to R&D
@@ -854,7 +854,7 @@ export default function TastingSessionDetailPage() {
               )}
             </h1>
             {isCreator && (
-              <Badge variant="success" className="text-xs shrink-0">Your Session</Badge>
+              <Badge variant="success" className="text-xs shrink-0">Your session</Badge>
             )}
           </div>
           <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
@@ -879,11 +879,11 @@ export default function TastingSessionDetailPage() {
                 </span>
               )}
               {isCreator && showCalendar && (
-                <div className="absolute z-20 top-full left-0 mt-1 bg-card border border-border rounded-lg shadow-lg p-3">
+                <div className="absolute z-20 top-full left-0 mt-1 bg-card border border-border rounded-xl shadow-elevation-2 p-3">
                   <style>{`
                     .rdp-root {
-                      --rdp-accent-color: hsl(var(--primary));
-                      --rdp-accent-background-color: hsl(var(--color-forest-light));
+                      --rdp-accent-color: var(--color-brand-accent);
+                      --rdp-accent-background-color: var(--surface-selected);
                     }
                   `}</style>
                   <DayPicker
@@ -897,13 +897,13 @@ export default function TastingSessionDetailPage() {
                   />
                   <div className="border-t border-border mt-3 pt-3">
                     <label className="block text-xs font-medium text-muted-foreground mb-2">
-                      Select Time
+                      Select time
                     </label>
                     <div className="flex items-center gap-2">
                       <select
                         value={selectedHour}
                         onChange={(e) => setSelectedHour(e.target.value)}
-                        className="flex-1 px-3 py-2 border border-input rounded-md bg-card text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
+                        className="flex-1 px-3 py-2 border border-input rounded-lg bg-card text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
                       >
                         {hours.map((h) => (
                           <option key={h} value={h}>
@@ -915,7 +915,7 @@ export default function TastingSessionDetailPage() {
                       <select
                         value={selectedMinute}
                         onChange={(e) => setSelectedMinute(e.target.value)}
-                        className="flex-1 px-3 py-2 border border-input rounded-md bg-card text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
+                        className="flex-1 px-3 py-2 border border-input rounded-lg bg-card text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
                       >
                         {minutes.map((m) => (
                           <option key={m} value={m}>
@@ -926,7 +926,7 @@ export default function TastingSessionDetailPage() {
                       <select
                         value={selectedPeriod}
                         onChange={(e) => setSelectedPeriod(e.target.value as 'AM' | 'PM')}
-                        className="flex-1 px-3 py-2 border border-input rounded-md bg-card text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
+                        className="flex-1 px-3 py-2 border border-input rounded-lg bg-card text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
                       >
                         <option value="AM">AM</option>
                         <option value="PM">PM</option>
@@ -937,7 +937,7 @@ export default function TastingSessionDetailPage() {
                     <button
                       type="button"
                       onClick={handleDateTimeConfirm}
-                      className="flex-1 px-3 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-md text-sm font-medium transition-colors"
+                      className="flex-1 px-3 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg text-sm font-medium transition-colors"
                     >
                       Save
                     </button>
@@ -954,7 +954,7 @@ export default function TastingSessionDetailPage() {
                         }
                         setShowCalendar(false);
                       }}
-                      className="flex-1 px-3 py-2 border border-input hover:bg-secondary rounded-md text-sm font-medium transition-colors"
+                      className="flex-1 px-3 py-2 border border-input hover:bg-secondary rounded-lg text-sm font-medium transition-colors"
                     >
                       Cancel
                     </button>
@@ -1016,11 +1016,11 @@ export default function TastingSessionDetailPage() {
               }}
             >
               {copied ? (
-                <Check className="h-4 w-4 mr-1.5 text-[hsl(var(--status-approved))]" />
+                <Check className="h-4 w-4 mr-1.5 text-[var(--color-feedback-success)]" />
               ) : (
                 <Copy className="h-4 w-4 mr-1.5" />
               )}
-              {copied ? 'Copied!' : 'Copy Invite Link'}
+              {copied ? 'Copied!' : 'Copy invite link'}
             </Button>
           </div>
 
@@ -1071,7 +1071,7 @@ export default function TastingSessionDetailPage() {
                   Are you sure? This will delete the session and all its notes.
                 </p>
                 <Button variant="destructive" size="sm" onClick={handleDeleteSession}>
-                  Yes, Delete
+                  Yes, delete
                 </Button>
                 <Button variant="outline" size="sm" onClick={() => setConfirmDelete(false)}>
                   Cancel

@@ -111,7 +111,7 @@ export default function LoginPage() {
               />
             </div>
             {error && (
-              <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+              <div role="alert" className="rounded-lg bg-[var(--color-feedback-error-tint)] p-3 text-sm text-[var(--color-feedback-error)]">
                 {error}
               </div>
             )}
@@ -180,8 +180,8 @@ export default function LoginPage() {
 
           <p className="mt-4 text-center text-sm text-muted-foreground">
             Don&apos;t have an account?{' '}
-            <Link href="/register" className="font-medium text-foreground hover:underline">
-              Sign Up
+            <Link href="/register" className="font-medium text-[var(--color-text-link)] hover:underline">
+              Sign up
             </Link>
           </p>
         </CardContent>

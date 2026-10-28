@@ -17,9 +17,9 @@ interface DishFeedbackModalProps {
 export function DishFeedbackModal({ dishName, notes, onClose }: DishFeedbackModalProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+      <div className="absolute inset-0 bg-[var(--color-scrim)]" onClick={onClose} />
 
-      <div className="relative z-10 flex max-h-[80vh] w-full max-w-md flex-col rounded-lg border border-border bg-card shadow-xl">
+      <div className="relative z-10 flex max-h-[80vh] w-full max-w-md flex-col rounded-2xl border border-border bg-card shadow-elevation-3">
         {/* Header */}
         <div className="shrink-0 flex items-center justify-between border-b border-border px-4 py-3">
           <div>
@@ -68,10 +68,10 @@ export function DishFeedbackModal({ dishName, notes, onClose }: DishFeedbackModa
                   {note.decision && (
                     <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-medium ${
                       note.decision === 'approved'
-                        ? 'bg-[hsl(var(--status-approved-bg))] text-[hsl(var(--status-approved))]'
+                        ? 'bg-[var(--color-feedback-success-tint)] text-[var(--color-feedback-success)]'
                         : note.decision === 'rejected'
                         ? 'bg-destructive/15 text-destructive'
-                        : 'bg-warning-bg text-warning'
+                        : 'bg-[var(--color-feedback-warning-tint)] text-[var(--color-feedback-warning)]'
                     }`}>
                       {note.decision === 'approved' ? 'Approved' : note.decision === 'rejected' ? 'Rejected' : 'Needs work'}
                     </span>

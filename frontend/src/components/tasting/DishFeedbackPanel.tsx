@@ -105,16 +105,16 @@ export function DishFeedbackPanel({ recipeId, sessionId, currentUserId, isPartic
             className="flex items-center gap-1.5 w-full py-2 text-xs font-medium text-muted-foreground hover:text-foreground"
           >
             <ChevronDown className={`h-3.5 w-3.5 transition-transform ${showAddForm ? 'rotate-180' : ''}`} />
-            Add Feedback
+            Add feedback
           </button>
           {showAddForm && (
-            <Card className="border-supplier/40 bg-supplier-bg">
+            <Card className="border-border bg-muted/50">
               <CardContent className="pt-4">
                 <FeedbackForm
                   initialData={{ taster_name: username || '' }}
                   onSubmit={handleAddNote}
                   onCancel={() => setShowAddForm(false)}
-                  submitLabel="Add Feedback"
+                  submitLabel="Add feedback"
                   showImages={true}
                 />
               </CardContent>

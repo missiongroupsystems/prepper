@@ -21,6 +21,12 @@ import { Badge, Skeleton } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import type { Recipe, RecipeStatus } from '@/types';
 
+// ReactFlow paints edges and the dot grid into SVG presentation attributes, which
+// do not resolve CSS custom properties — these must be literals. Values mirror the
+// warm ink ramp (--c-ink-300 / a beige hairline); never a cold grey.
+const TREE_EDGE_COLOR = '#8d8a82';
+const TREE_GRID_COLOR = '#e6e3dc';
+
 const STATUS_VARIANTS: Record<RecipeStatus, 'default' | 'success' | 'warning' | 'secondary'> = {
   draft: 'secondary',
   active: 'success',
@@ -40,9 +46,9 @@ const VersionNode = memo(({ data }: NodeProps<VersionNodeType>) => {
   return (
     <div
       className={cn(
-        'cursor-pointer rounded-lg border p-4 transition-all hover:shadow-md min-w-[280px] max-w-[320px]',
+        'cursor-pointer rounded-lg border p-4 transition-shadow hover:shadow-elevation-2 min-w-[280px] max-w-[320px]',
         isCurrentRecipe
-          ? 'border-primary bg-primary/5 shadow-primary/10'
+          ? 'border-primary bg-background-contrast'
           : 'border-border bg-card hover:border-border'
       )}
     >
@@ -227,10 +233,10 @@ function buildVersionGraph(
         target: String(recipe.id),
         type: 'smoothstep',
         animated: false,
-        style: { stroke: '#71717a', strokeWidth: 2 },
+        style: { stroke: TREE_EDGE_COLOR, strokeWidth: 2 },
         markerEnd: {
           type: MarkerType.ArrowClosed,
-          color: '#71717a',
+          color: TREE_EDGE_COLOR,
           width: 20,
           height: 20,
         },
@@ -327,7 +333,7 @@ export function VersionsTab() {
     return (
       <div className="flex-1 bg-background p-6">
         <div className="max-w-2xl mx-auto">
-          <div className="rounded-lg bg-destructive/10 p-4 text-destructive">
+          <div className="rounded-lg bg-[var(--color-feedback-error-tint)] p-4 text-[var(--color-feedback-error)]">
             Failed to load version history
           </div>
         </div>
@@ -389,7 +395,7 @@ export function VersionsTab() {
           maxZoom={1}
           proOptions={{ hideAttribution: true }}
         >
-          <Background color="#e4e4e7" gap={16} />
+          <Background color={TREE_GRID_COLOR} gap={16} />
         </ReactFlow>
       </div>
 

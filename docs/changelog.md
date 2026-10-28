@@ -6,8 +6,10 @@ All notable changes to Mission Recipes are documented here.
 
 ## Index
 
-- **[0.0.51](#0051---2026-10-28)** — Rename to Mission Recipes: Product Name Across UI, Email & Docs, One-Time `prepper_*` → `mission_recipes_*` Storage Key Migration
-- **[0.0.50](#0050---2026-06-26)** — Mission Design System Adoption: Forest/Beige Editorial Tokens, Single-Family Polymath Typography, Pill/Hairline Components, `game-card` Retirement & Neutral + Chromatic Tokenisation
+- **[0.1.1](#011---2026-10-28)** — Rename to Mission Recipes: Product Name Across UI, Email & Docs, One-Time `prepper_*` → `mission_recipes_*` Storage Key Migration
+- **[0.1.0](#010---2026-07-14)** — Post-CI Review Remediation: E2E Suite Un-Rotted (Semantic Selectors), Contrast Fix on Canvas Empty States, `archived` No Longer Reads as an Error & Version-Tree De-Zinced
+- **[0.0.50](#0050---2026-07-14)** — Mission Systems CI: Self-Hosted Satoshi, Three-Tier Token Architecture, Forest Accent Budget, Semantic Feedback Palette, Dark Mode Removed & Product-Wide Sentence Case (106 Files)
+- **[0.0.49.1](#00491---2026-06-26)** — Interim Mission Design System Pass (dev/dani, superseded by 0.0.50)
 - **[0.0.49](#0049---2026-06-16)** — Recipe Canvas Polish: Design-Token Migration (266 Hardcoded `zinc-*` Pairs Removed), Terracotta Active/Drop States, Reduced-Motion Support & Cost-Pill Contrast Fix
 - **[0.0.48](#0048---2026-05-22)** — Tasting Session Inline Feedback: Collapsible Per-Dish Feedback Panel Replaces Modal
 - **[0.0.47](#0047---2026-05-20)** — Tasting Session Dish Reordering: Drag-and-Drop Sequence Control for Session Creators
@@ -59,7 +61,7 @@ All notable changes to Mission Recipes are documented here.
 - **[0.0.1](#001---2024-11-27)** — Backend Foundation: FastAPI + SQLModel with 17 API Endpoints, Domain Services & Unit Conversion
 ---
 
-## [0.0.51] - 2026-10-28
+## [0.1.1] - 2026-10-28
 
 ### Changed
 
@@ -68,16 +70,209 @@ All notable changes to Mission Recipes are documented here.
 The product is now **Mission Recipes**, the Recipes application in the Mission Systems suite. It was previously called Prepper (in the repo and docs) and RecipeRep (in the UI). No behaviour changes.
 
 - **UI copy**: the page title, login and register headings, nav and design-system logo alt text, and the tasting invitation email (sender name, title, body and footer) all say "Mission Recipes". The email also contained a stray "RecipePrep" variant, which is fixed too.
-- **Storage keys**: `prepper_auth`, `prepper_last_route` and `prepper-theme` became `mission_recipes_auth`, `mission_recipes_last_route` and `mission_recipes_theme`, and all of them are now defined in a new `lib/storage-keys.ts`. `migrateLegacyStorageKeys()` runs once when `providers.tsx` loads. It copies each legacy value to its new key if that key is empty, then removes the legacy key, so existing users stay logged in and keep their theme. The inline no-flash theme script in `layout.tsx` also falls back to the legacy key on the first load. Covered by `e2e/storage-migration.spec.ts`.
+- **Storage keys**: `prepper_auth`, `prepper_last_route` and `prepper-theme` became `mission_recipes_auth`, `mission_recipes_last_route` and `mission_recipes_theme`, and all of them are now defined in a new `lib/storage-keys.ts`. `migrateLegacyStorageKeys()` runs once when `providers.tsx` loads. It copies each legacy value to its new key if that key is empty, then removes the legacy key, so existing users stay logged in. The theme key is migrated as well, so users keep their choice when dark mode returns. Covered by `e2e/storage-migration.spec.ts`.
 - **Docs and tooling**: CLAUDE.md, the READMEs, PRODUCT.md, `docs/intro.md` (which also corrects the stale "no authentication" claim), the blueprints, `docs/references/design.md` and `design-system.md`, the Postman collections ("Mission Recipes API") and the PDF report skill default.
 
 Deliberately unchanged: the logo image files and paths (the Mission Recipes SVG set replaces them in the redesign), infrastructure identifiers (Fly apps `reciperepo`/`reciperepo-stage`, Supabase bucket `prepper`, the domains), seeded `@prepper.test` e2e accounts, and historical docs.
 
 ---
+## [0.1.0] - 2026-07-14
 
-## [0.0.50] - 2026-06-26
+A review pass over `0.0.50` (Mission Systems CI). The token architecture itself held up — build, `tsc`, and lint were green, dark-mode removal was complete, and every contrast ratio the plan claimed was verified numerically and found accurate. What the CI pass missed was the *fallout*: a 129-file restyle that renames classes and rewrites copy silently invalidates anything that asserts on classes or copy.
+
+This release fixes what that pass broke or left behind. **No feature work.** 12 files changed.
+
+### Fixed
+
+#### The E2E suite was red — and had been for two releases
+
+`0.0.50` verified `npm run build`, `tsc`, `lint`, and Playwright *visual* checks. It never ran the 15-spec **functional** suite, which is not wired into CI (`.github/workflows/` only carries `fly-deploy.yml`) and so fails silently. Six tests were broken by the restyle:
+
+| Spec | Asserted on | Why it broke |
+|---|---|---|
+| `auth.spec.ts` ×4 (`:61`, `:143`, `:282`, `:294`, via `pages/LoginPage.ts:16`) | `.bg-red-50, [class*="bg-red"]` | The error banner became `bg-[var(--color-feedback-error-tint)]`. The locator matched nothing; these are hard `toBeVisible()` assertions. |
+| `ingredients.spec.ts:71` | `toContainText('Add New Ingredient')` | Sentence case → "Add new ingredient". |
+| `outlets.admin.spec.ts:30` | `toContainText('Add New Outlet')` | Sentence case → "Add outlet". |
+
+A seventh — `navigation.spec.ts:42`, asserting the active nav item's class contains `bg-zinc` — had been failing since **`0.0.49`**, when `bg-zinc-100` became `bg-secondary`. Nobody noticed, because no spec file has been touched in five commits. That is the more important finding: the regression net was already torn, and the CI pass widened the hole.
+
+**The fix is not to re-pin the selectors to the new strings** — that just reloads the same gun. Every repaired assertion now targets *semantics*, which a restyle cannot move:
+
+- Error banners are located by **`role="alert"`**, not by a Tailwind class. This required adding `role="alert"` to the login (`login/page.tsx:113`) and register (`register/page.tsx:167`) error `<div>`s — an accessibility improvement in its own right, since screen readers now announce auth failures.
+- The active nav item is located by **`aria-current="page"`** (already emitted by `TopNav`), not by its background class.
+- Modal titles use **case-insensitive regexes** (`/add (new )?ingredient/i`) instead of exact copy.
+
+> ⚠️ The suite still requires a live backend, a running frontend, and seeded auth state, so it could not be executed during this pass — the repairs are verified statically (the asserted attributes exist in the rendered source; both titles full-match their regexes). **Run `npm run test:e2e` against a live stack before shipping.** Wiring this suite into CI is the obvious follow-up; a test suite nobody runs is not a safety net.
+
+#### Contrast: canvas empty states used the *disabled* token for live text
+
+`CanvasTab.tsx:303`, `:370`, `:810` rendered **"No pricing"**, **"No suppliers"**, and **"No ingredients"** with `--color-text-disabled` — `#8d8a82`, **3.45:1**, below the 4.5:1 WCAG AA floor. These sit in the else-branch of a ternary: they are live informational content, not disabled controls, so no WCAG exemption applies. The token's own definition in `globals.css:122` says *"never essential text"* — and on a costing product, "No pricing" is precisely essential, since it's the signal that an ingredient has no price attached.
+
+All three now use `text-muted-foreground` (`#6b6962`, **5.49:1** — AA pass). The `ImagePlus` placeholder icons still use the disabled token, correctly: they are decorative chrome, and at 3.45:1 they clear the 3:1 non-text bar.
+
+#### `archived` recipes read as an error in one view and a warning in two others
+
+Same domain state, three call sites, two different semantic colours after the palette sweep:
+
+- `RecipeListRow.tsx:23` → `'destructive'` (clay/red)
+- `rnd/page.tsx:22` and `rnd/r/[recipeId]/page.tsx:58` → `'warning'`
+
+Per CLAUDE.md, archived is a **normal soft-delete state** — "archived records remain for historical reference." Painting it with the error palette invents a failure signal that doesn't exist, which is exactly the mistake the CI pass elsewhere took care to avoid (§ "decorative colour went neutral, not recoloured"). `RecipeListRow` is now aligned to `'warning'`, matching the other two.
+
+#### Version tree still rendered in cold zinc
+
+The one place the "0 raw palette colours" grep couldn't see, because it matched utility classes and not hex literals. `VersionsTab.tsx` and `rnd/r/[recipeId]/page.tsx` both hardcoded `#71717a` (edge strokes, arrow markers) and `#e4e4e7` (dot grid) — Tailwind **zinc**, the cold greys `globals.css:63` explicitly forbids — plus a `prose-zinc` typography class.
+
+ReactFlow paints these into SVG **presentation attributes**, which do not resolve CSS custom properties, so they genuinely cannot be tokens. They are now named constants (`TREE_EDGE_COLOR`, `TREE_GRID_COLOR`) carrying the **warm** ink values (`#8d8a82` at 3.45:1 — clears 1.4.11 for a 2px connector — and a `#e6e3dc` beige hairline), with a comment stating why the token layer can't reach here. `prose-zinc` → `prose-stone` (warm).
+
+#### Dead title-cased fallback
+
+`ingredients/page.tsx:81` still returned `{ 'All Ingredients': … }` while `:49` returned `{ 'All ingredients': … }`. Unreachable (all four `GroupByOption` values are handled above it) and display-only, but an inconsistent literal that `general.md` prohibits. Aligned.
+
+### Known gaps / follow-ups
+
+Reviewed and deliberately **not** changed this pass — recorded so they aren't rediscovered cold:
+
+| Gap | Detail |
+|---|---|
+| **`0.0.50` was not "styling only"** | It added a `loading` prop to `Button` (still **zero callers**), added `role="switch"` / `aria-hidden` / `aria-current` / `aria-expanded`, and dropped `disabled:pointer-events-none`. That last one means native tooltips on disabled buttons now fire where they previously could not (`AddItemPanel.tsx:92` has exactly such a tooltip). All are improvements; none need reverting. The *label* was wrong, not the code. |
+| **Outline button border fails WCAG 1.4.11** | `Button.tsx:46` uses `border-border` = `rgba(23,23,23,0.16)` ≈ **1.40:1** — the precise value `globals.css:82` names as failing. The CI pass fixed this for inputs (→ `#807d76`, 4.11:1) but not for buttons. Either the 3:1 control-boundary standard applies to buttons or it doesn't; today the file's own comment indicts its own button. Same for the `Switch` off-track (`--border-strong`, **1.86:1**). |
+| **Disabled + checked `Switch` is invisible** | `disabled:bg-muted` beats `checked:bg-primary` (equal specificity, later in the compiled sheet), yielding a `#f6f5f1` track with a white knob — **1.05:1**. Currently **unreachable**: the only `<Switch>` call site (`RightPanel.tsx:465`) never passes `disabled`. A landmine for whoever adds the second one. |
+| **60 × `font-semibold` render as Bold 700** | Satoshi ships 300/400/500/700 — no 600 cut. CSS weight matching searches upward, so every `font-semibold` resolves to **700**, quietly undoing the "headings are 500" intent. Needs a sweep. |
+| **No font preload** | `font-display: swap` with woff2s discovered only after CSS parse ⇒ guaranteed FOUT on first paint. Preloading Regular + Medium is the cheap win. |
+| **Tasting invitation email still carries the old brand** | `api/send-tasting-invitation/route.ts` hardcodes terracotta `#c0431a` (×11) plus Playfair Display / DM Sans. Email HTML genuinely cannot use CSS variables, but customers currently receive terracotta-branded invitations from a forest-green product. |
+| **Drag ghost no longer distinguishes ingredient from recipe** | `DragPreviewCard` is neutral for both. Its docstring claims they're "told apart by label and image" — untrue for an **image-less recipe**, which now renders pixel-identical to an ingredient card. Deliberate under the accent budget, but they have different drop targets. |
+| **Token-layer slack** | Tier 2 is reachable only via arbitrary-value escapes (`text-[var(--color-text-primary)]`) — `@theme inline` bridges tier 3 only, so "never read tier 1" is convention, not enforcement. The `--space-*` 4px grid is registered nowhere and is dead but for one consumer. Orphans: `--border-subtle`, `--surface-accent`, `--elevation-0`, `--c-chart-2..8`, `--tertiary`. |
+| **File size** | `CanvasTab.tsx` is 3,179 lines (~6× the 500-line limit); 15 files exceed it. Pre-existing, untouched, still the clearest refactor target. |
+
+### Verification
+
+| Check | Result |
+|---|---|
+| `npm run build` | ✅ Compiled successfully, 27/27 static pages |
+| `tsc --noEmit` | ✅ Pass |
+| `npm run lint` | ✅ 0 errors (87 pre-existing warnings, all unused-vars) |
+| `pytest` (backend) | ⚪ Not run — **backend untouched**, 0 files changed under `backend/` |
+| `npm run test:e2e` | ⚠️ **Not executed** — needs live backend + seeded auth. Repairs verified statically. |
+| Compliance greps | ✅ zinc hex 0 · `prose-zinc` 0 · disabled-token-on-live-text 0 · class/copy-coupled e2e selectors 0 |
+| Contrast (recomputed) | ✅ `#807d76`/white 4.11:1 · white/forest 12.42:1 · muted 5.49:1 · all 4 feedback tones AA on tint |
+
+---
+
+## [0.0.50] - 2026-07-14
+
+Applied the **Mission Systems product CI** across the whole frontend, replacing the interim brand pass from 0.0.49. Styling-only: no API, model, hook, or behaviour changes anywhere. 106 files changed (+1,401 / −1,824 — a net reduction of 423 lines).
+
+This entry supersedes two decisions made in 0.0.49: the `game-card` canvas aesthetic (explicitly preserved there) is now **removed**, and the terracotta/Polymath brand is replaced by **forest green / Satoshi**.
 
 ### Changed
+
+#### Identity — Satoshi Self-Hosted, Typekit Removed
+
+- **`layout.tsx`**: removed the Adobe Typekit `<link>` (Polymath) and the Manrope `next/font` import. Fonts are no longer fetched from a third-party CDN at render time.
+- **`public/fonts/satoshi/`** (new): Satoshi self-hosted as 5 `.woff2` cuts — Light 300, Regular 400, Italic 400, Medium 500, Bold 700 — wired via `@font-face` with `font-display: swap`.
+- **Geist Mono** retained as the single sanctioned second face, scoped to product codes, SKUs, and IDs. Never used for prose or labels.
+- **Body weight is now 400** (was inheriting a lighter cut). 300 is reserved for ≥24px display moments only. Headings are **500**, not 600/700 — hierarchy comes from size and weight on one family.
+
+#### Token Architecture — Three Tiers
+
+`globals.css` rewritten (720 → 439 lines) as a strict three-tier system:
+
+1. **Primitives** (`--c-*`) — the only place a raw hex may appear: forest `#1d3a2a`, the warm ink ramp (`#171717` → `#8d8a82`), beige surfaces, the four feedback hues, the `#807d76` control border, and 8 categorical chart series.
+2. **Semantic aliases** (`--color-text-*`, `--surface-*`, `--color-feedback-*`, `--border-*`, `--elevation-*`) — role → primitive.
+3. **Component tokens** — which also rebind the app's *existing* Tailwind utility names (`bg-card`, `text-muted-foreground`, `border-border`, `bg-primary`…) onto tier 2.
+
+That third tier is why 106 files inherited the CI without a class-by-class rewrite. **Consequence: re-skinning the product, or adding dark mode back later, means editing the tier-2 alias map alone — components never reference a hex or a `--c-*` primitive.**
+
+The previous HSL-channel convention (`hsl(var(--token))`) is gone; tokens now hold hex directly. All 48 consumer sites converted.
+
+#### Brand Accent Budget
+
+Forest `#1d3a2a` is now the **only** brand colour, and is spent solely on four named roles: the primary button, the active/selected state, checked controls (checkbox, radio, toggle, focus ring), and brand chrome (avatar, logo tile). Nothing else in the product is green.
+
+Critically, **the accent is not the success colour** — `#1d3a2a` reads as "dark/authoritative", not "healthy". Success has its own legible token (`#2f6b46`).
+
+#### Semantic Feedback Palette
+
+Every stateful colour now maps to one of four AA-verified roles, each with a text tone and a tint background:
+
+| Role | Text/icon | Tint | Used for |
+|---|---|---|---|
+| `error` | `#9a3b2e` clay | `#fbf1ef` | destructive, delete, archived, loss |
+| `warning` | `#8a5a1f` ochre | `#f8f1e3` | wastage, unsaved, low stock, allergens |
+| `success` | `#2f6b46` green | `#ebf2ec` | approved, active, profit |
+| `info` | `#335a7a` slate | `#eaf0f5` | testing, in-progress |
+
+**~250 raw Tailwind palette utilities** (`red-*`, `green-*`, `blue-*`, `purple-*`, `amber-*`, `zinc-*` …) were removed across 46 page and feature files and remapped **by meaning, not by hue**. Decorative colour that carried no state meaning went **neutral** rather than being recoloured — notably the tasting module's purple theme, ingredient/recipe type chips, category and supplier-code badges, and the blue/green drag accent bars.
+
+#### Canvas — `game-card` Aesthetic Removed
+
+The collectible-card-game styling (~330 lines of CSS: neon glows, rarity dots, dark gradient art panels, blue-ingredient / green-recipe colour coding, uppercase bold white titles) is deleted. `CanvasTab.tsx`'s staged ingredient/recipe cards and all four drag-overlay variants are rebuilt on tokens — 12px radius, hairline border, `--elevation-1`, sentence-case titles, and a neutral `Badge` for the unit chip. The four near-identical drag-preview blocks were extracted into one `DragPreviewCard`.
+
+The `.flow-ui-hover-lift` / `.flow-ui-active-scale` and `.mono-gradient` utilities were also removed; their consumers now use the elevation ramp and native `:active` states.
+
+#### Component Primitives (15 files in `ui/`)
+
+- **`Button`**: 8px radius (no pill buttons in product UI), accent-filled primary, real `hover`/`active`/`disabled`/`loading` states. Disabled uses a muted fill + `--color-text-disabled` — **never opacity alone**. Added a `loading` prop that preserves width and sets `aria-busy`.
+- **`Badge`**: 999px pill, 12px/500, feedback tint + matching text. Dropped the hard-coded `violet-100/violet-700` "unit" variant — units now use the neutral beige pill.
+- **`Card`**: 12px radius, `--elevation-1`, hover to `--elevation-2`. Title is 16/500, not `font-semibold`.
+- **`Modal` / `ConfirmModal`**: 16px radius, overlay surface, `--elevation-3`, and a warm `--color-scrim` (`rgba(23,23,23,0.32)`) replacing `bg-black/50`.
+- **`Checkbox` / `Switch`**: checked/on state is now the **brand accent**, not `blue-500`.
+- **`DropdownButton`**, **`EditableCell`**, **`PageHeader`**, **`Skeleton`**, **`SearchInput`**: tokenised; `EditableCell`'s `purple-400` border removed.
+
+#### Sentence Case — Product-Wide
+
+Per the CI, the **only** uppercase text permitted in the product is the nav section eyebrow (`.nav-eyebrow`, 11px/500/+0.06em, grey). Removed every other `uppercase` class (canvas table headers, canvas field labels, RightPanel group headings, TastingTab labels, settings field labels, login divider) and de-title-cased ~120 user-visible strings ("Add New Supplier" → "Add supplier", "Account Information" → "Account information", "Sign Up" → "Sign up"). The only surviving `uppercase` is on single-letter avatar initials.
+
+#### TopNav
+
+Kept the existing top-nav shell (the CI's canonical side-nav was deliberately **not** adopted this pass — see *Known gaps*). Active item now carries `--surface-selected` + weight 500 with `aria-current="page"`; added the forest user avatar; tooltips moved to the spec's dark warm fill; mobile nav items given ≥44px touch targets; "Logout" → "Log out".
+
+### Removed
+
+#### Dark Mode
+
+Light-theme only, per the CI. Deleted `lib/theme.tsx` (`ThemeProvider`, `useTheme`), the `ThemeProvider` wrapper in `providers.tsx`, the theme toggle in the design-system page, the pre-paint FOUC script and `color-scheme: light dark` in `layout.tsx`, the entire `.dark` token map in `globals.css`, and the `darkMode` key in `tailwind.config.ts`. **258 now-dead `dark:` utility classes** were stripped across 50 files.
+
+Dark mode remains *re-addable* without touching components: add a second tier-2 alias map under `[data-theme="dark"]` (see §16 of the styleguide).
+
+### Fixed
+
+#### Unreadable Text on the Accent Fill
+
+The brand accent changed from a **light** terracotta to a **dark** forest green. Six controls rendered `text-black` on that fill — black on dark green, effectively illegible. All now use `text-primary-foreground` (white, 12.4:1). Affected: the OverviewTab image-upload FAB, "Add category" and tasting "Generate" buttons, the version-tree "Current" pill, and the "Owned" badge.
+
+#### Input Border Failed WCAG 1.4.11
+
+Form controls used `border-input` at `rgba(23,23,23,0.16)` ≈ **1.4:1** against white — below the 3:1 required for a non-text UI boundary, so field edges were not reliably perceivable. All text inputs, textareas, selects, search inputs, and checkboxes now use a **1px `#807d76`** border at **4.1:1**. Hairlines are retained for dividers and card edges, where the 3:1 rule does not apply.
+
+#### Design-System Logo Swatch
+
+The "logo on dark" swatches rendered the *dark* logo cut on a dark fill (invisible) after the light/dark image swap was removed. Now correctly reference the existing light logo assets.
+
+### Known gaps
+
+- **The app shell is still a top nav**, not the CI's canonical ~260px left side-nav. Consequently there is no workspace switcher, no uppercase nav section eyebrows in situ, and no accent-filled hero metric card. This was a deliberate scope decision; it is the main remaining delta from the reference design.
+- **`/design-system` is not registered in `AuthGuard`'s `VALID_ROUTE_PATTERNS`**, so navigating to it directly while logged in redirects to `/settings`. The showcase is reachable via **Settings → Design**. Pre-existing; not fixed here.
+- **`CanvasTab.tsx` is 3,179 lines** — roughly 6× the 500-line rule in `.claude/rules/performance.md`. 15 files exceed the limit. Pre-existing and untouched structurally, but it is the clearest refactor target.
+
+### Verification
+
+- `npm run build` — passes, 27/27 static pages generated.
+- `tsc --noEmit` — passes.
+- `npm run lint` — 0 errors (87 pre-existing warnings, all unused-vars in hooks).
+- Playwright screenshots at 1280×800 and 390×844 confirm: Satoshi resolving at computed weight **400** / 14px base, accent budget holding, feedback tints correct on badges, and **zero horizontal overflow** on mobile.
+- Compliance greps all clean across `src/`: no raw Tailwind palette colours, no `hsl(var(…))`, no `dark:`, no `game-card`, no `flow-ui-*`, no `bg-black`, no raw `shadow-sm|md|lg|xl`.
+
+**Files changed:** 106 — `globals.css`, `layout.tsx`, `tailwind.config.ts`, `providers.tsx`, `theme.tsx` (deleted), 5 new Satoshi `.woff2`, 15 `ui/` primitives, 12 `layout/` components, 29 app pages, and 42 feature components.
+
+---
+
+## [0.0.49.1] - 2026-06-26
+
+### Changed
+
+> Interim pass made on `dev/dani` in parallel with master. Superseded by the full Mission Systems CI pass in 0.0.50 (`origin/master`, merged into `dev/dani` on 2026-10-28). Kept for history.
 
 #### Mission Design System Adoption (Phases 0–4)
 
@@ -94,7 +289,6 @@ Deliberately preserved: functional status colours (desaturated but legible), sta
 **Files changed:** `frontend/src/app/globals.css`, `frontend/src/app/layout.tsx`, `frontend/src/components/ui/*` (Button/Badge/Card), `frontend/src/components/layout/tabs/CanvasTab.tsx`, ~140 component & page files; new `docs/references/design.md`; `CLAUDE.md` pointer.
 
 ---
-
 ## [0.0.49] - 2026-06-16
 
 ### Changed

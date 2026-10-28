@@ -56,7 +56,7 @@ export function OutletsTab({ outlets = [] }: OutletsTabProps) {
     return (
       <div className="flex-1 bg-background p-6">
         <div className="max-w-4xl mx-auto">
-          <div className="rounded-lg bg-destructive/10 p-4 text-destructive">
+          <div className="rounded-lg bg-[var(--color-feedback-error-tint)] p-4 text-[var(--color-feedback-error)]">
             Recipe not found or failed to load.
           </div>
         </div>
@@ -172,7 +172,7 @@ export function OutletsTab({ outlets = [] }: OutletsTabProps) {
                             <span
                               className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
                                 recipeOutlet.is_active
-                                  ? 'bg-[hsl(var(--status-approved-bg))] text-[hsl(var(--status-approved))]'
+                                  ? 'bg-[var(--color-feedback-success-tint)] text-[var(--color-feedback-success)]'
                                   : 'bg-muted text-muted-foreground'
                               }`}
                             >
@@ -203,7 +203,7 @@ export function OutletsTab({ outlets = [] }: OutletsTabProps) {
                               <>
                                 <button
                                   onClick={() => handleSavePrice(recipeOutlet.outlet_id)}
-                                  className="text-[hsl(var(--status-approved))] hover:opacity-80"
+                                  className="text-[var(--color-feedback-success)] hover:opacity-80"
                                   title="Save"
                                 >
                                   <Check className="h-4 w-4" />
@@ -228,7 +228,7 @@ export function OutletsTab({ outlets = [] }: OutletsTabProps) {
                                 <button
                                   onClick={() => handleRemoveOutlet(recipeOutlet.outlet_id)}
                                   disabled={removingOutletId === recipeOutlet.outlet_id}
-                                  className="text-destructive hover:bg-destructive/10 disabled:opacity-50"
+                                  className="text-[var(--color-feedback-error)] hover:opacity-80 disabled:opacity-50"
                                   title="Delete"
                                 >
                                   <Trash2 className="h-4 w-4" />

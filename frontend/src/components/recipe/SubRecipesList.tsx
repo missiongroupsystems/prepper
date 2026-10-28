@@ -131,7 +131,7 @@ function SubRecipeRow({
           )}
         </p>
         {subRecipe.unit === 'portion' && portionCost != null && (
-          <p className="mt-0.5 text-xs font-medium text-amber-600 dark:text-amber-400">
+          <p className="mt-0.5 text-xs font-medium text-muted-foreground tabular-nums">
             {formatCurrency(portionCost)}/portion
           </p>
         )}
@@ -145,7 +145,7 @@ function SubRecipeRow({
           onChange={(e) => setLocalQuantity(e.target.value)}
           onBlur={handleQuantityBlur}
           disabled={!canEdit}
-          className="w-20 text-center"
+          className="w-20 text-right tabular-nums"
         />
 
         <Select
@@ -396,7 +396,7 @@ export function SubRecipesList({ recipeId, canEdit }: SubRecipesListProps) {
 
   if (error) {
     return (
-      <div className="rounded-lg bg-destructive/10 p-4 text-center text-sm text-destructive">
+      <div className="rounded-xl bg-[var(--color-feedback-error-tint)] p-4 text-center text-sm text-[var(--color-feedback-error)]">
         Failed to load sub-recipes
       </div>
     );
@@ -458,7 +458,7 @@ export function SubRecipesList({ recipeId, canEdit }: SubRecipesListProps) {
         <div
           className={cn(
             'rounded-lg border-2 border-dashed border-border p-8 text-center',
-            isOver && 'border-primary bg-primary/5'
+            isOver && 'border-primary bg-accent'
           )}
         >
           <p className="text-muted-foreground">No sub-recipes yet</p>

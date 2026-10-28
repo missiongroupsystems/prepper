@@ -20,7 +20,7 @@ function timeAgo(dateStr: string): string {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <p className="text-[11px] font-medium text-muted-foreground mb-1">
+      <p className="text-[13px] font-medium text-[var(--color-text-secondary)] mb-1">
         {label}
       </p>
       <div className="text-base font-medium text-foreground pb-3 border-b border-border">
@@ -38,7 +38,6 @@ export function UserProfileTab() {
   const { data: parentOutlet } = useOutlet(outlet?.parent_outlet_id ?? null);
 
   const roleLabel = userType === 'admin' ? 'Administrator' : 'Normal';
-  const roleColor = userType === 'admin' ? 'bg-supplier' : 'bg-primary';
 
   const outletSubline = [parentOutlet?.name, outlet?.code].filter(Boolean).join(' \u2022 ');
 
@@ -49,7 +48,9 @@ export function UserProfileTab() {
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
             <UserIcon className="h-6 w-6 text-muted-foreground" />
-            <h1 className="text-2xl font-medium text-foreground">Account Information</h1>
+            <h1 className="text-2xl font-medium tracking-[-0.015em] text-foreground">
+              Account information
+            </h1>
           </div>
           {userLoading ? (
             <Skeleton className="h-4 w-32 rounded" />
@@ -66,26 +67,26 @@ export function UserProfileTab() {
             {userLoading ? <Skeleton className="h-5 w-28 rounded" /> : (username ?? '—')}
           </Field>
 
-          <Field label="Email Address">
+          <Field label="Email address">
             {userLoading ? <Skeleton className="h-5 w-40 rounded" /> : (email ?? '—')}
           </Field>
 
           <Field label="Role">
             <span className="flex items-center gap-2">
-              <span className={`inline-block h-2.5 w-2.5 rounded-full ${roleColor}`} />
+              <span className="inline-block h-2.5 w-2.5 rounded-full bg-[var(--border-strong)]" />
               {roleLabel}
             </span>
           </Field>
 
-          <Field label="Managerial Status">
+          <Field label="Managerial status">
             {`Manager: ${isManager ? 'Yes' : 'No'}`}
           </Field>
         </div>
 
         {/* Assigned Outlet */}
         <div>
-          <p className="text-[11px] font-medium text-muted-foreground mb-3">
-            Assigned Outlet
+          <p className="text-[13px] font-medium text-[var(--color-text-secondary)] mb-3">
+            Assigned outlet
           </p>
 
           {outletLoading ? (

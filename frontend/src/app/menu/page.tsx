@@ -52,7 +52,7 @@ export default function MenuPage() {
             {sketches.map((sketch) => (
               <Card
                 key={sketch.id}
-                className="flex cursor-pointer flex-col justify-between p-4 hover:shadow-lg transition-shadow"
+                className="flex cursor-pointer flex-col justify-between p-4 hover:shadow-elevation-2 transition-shadow"
                 onClick={() => router.push(`/menu-sketch/${sketch.id}`)}
               >
                 <div>

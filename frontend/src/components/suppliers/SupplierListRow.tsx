@@ -22,7 +22,7 @@ export function SupplierListRow({ supplier, href }: SupplierListRowProps) {
                   {supplier.name}
                 </h3>
                 {supplier.code && (
-                  <Badge variant="info" className="font-mono text-xs shrink-0">{supplier.code}</Badge>
+                  <Badge variant="secondary" className="font-mono text-xs shrink-0">{supplier.code}</Badge>
                 )}
                 {!supplier.is_active && (
                   <Badge variant="secondary" className="shrink-0">Archived</Badge>

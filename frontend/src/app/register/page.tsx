@@ -127,7 +127,7 @@ export default function RegisterPage() {
             </div>
             <div className="space-y-2">
               <label htmlFor="phone" className="text-sm font-medium text-muted-foreground">
-                Phone Number (optional)
+                Phone number (optional)
               </label>
               <Input
                 id="phone"
@@ -152,7 +152,7 @@ export default function RegisterPage() {
             </div>
             <div className="space-y-2">
               <label htmlFor="confirmPassword" className="text-sm font-medium text-muted-foreground">
-                Confirm Password
+                Confirm password
               </label>
               <Input
                 id="confirmPassword"
@@ -164,7 +164,7 @@ export default function RegisterPage() {
               />
             </div>
             {error && (
-              <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+              <div role="alert" className="rounded-lg bg-[var(--color-feedback-error-tint)] p-3 text-sm text-[var(--color-feedback-error)]">
                 {error}
               </div>
             )}

@@ -46,7 +46,7 @@ export function IngredientListRow({
                 {ingredient.name}
               </h3>
             </Link>
-            <p className="text-sm text-muted-foreground mt-0.5">
+            <p className="text-sm text-muted-foreground mt-0.5 tabular-nums">
               {formatCurrency(ingredient.cost_per_base_unit)} per unit
             </p>
           </div>
@@ -57,13 +57,13 @@ export function IngredientListRow({
               {ingredient.is_halal ? (
                 <Badge variant="success" className="text-xs">Halal</Badge>
               ) : (
-                <Badge variant="secondary" className="text-xs">Non-Halal</Badge>
+                <Badge variant="secondary" className="text-xs">Non-halal</Badge>
               )}
               {!ingredient.is_active && (
                 <Badge variant="warning" className="text-xs">Archived</Badge>
               )}
               {currentCategory && (
-                <Badge variant="info" className="text-xs">{currentCategory.name}</Badge>
+                <Badge variant="default" className="text-xs">{currentCategory.name}</Badge>
               )}
               {ingredientAllergens && ingredientAllergens.length > 0 && (
                 <>

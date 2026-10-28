@@ -139,7 +139,7 @@ export default function RecipeTastingPage() {
   if (!session) {
     return (
       <div className="p-6">
-        <div className="rounded-lg bg-destructive/10 p-4 text-destructive">
+        <div className="rounded-xl bg-[var(--color-feedback-error-tint)] p-4 text-[var(--color-feedback-error)]">
           Tasting session not found.
         </div>
       </div>
@@ -149,7 +149,7 @@ export default function RecipeTastingPage() {
   if (!recipe) {
     return (
       <div className="p-6">
-        <div className="rounded-lg bg-destructive/10 p-4 text-destructive">
+        <div className="rounded-xl bg-[var(--color-feedback-error-tint)] p-4 text-[var(--color-feedback-error)]">
           Recipe not found.
         </div>
       </div>
@@ -165,15 +165,15 @@ export default function RecipeTastingPage() {
             className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to Session
+            Back to session
           </Link>
         </div>
 
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-2 mb-2">
-            <ChefHat className="h-6 w-6 text-supplier" />
-            <h1 className="text-2xl font-medium text-foreground">{recipe.name}</h1>
+            <ChefHat className="h-6 w-6 text-muted-foreground" />
+            <h1 className="text-2xl font-bold text-foreground">{recipe.name}</h1>
           </div>
           <p className="text-sm text-muted-foreground mb-2">{session.name}</p>
           <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
@@ -222,20 +222,20 @@ export default function RecipeTastingPage() {
               onClick={() => setShowAddForm(true)}
             >
               <Plus className="h-4 w-4 mr-1" />
-              Add Feedback
+              Add feedback
             </Button>
           )}
         </div>
 
         {/* Add Feedback Form */}
         {showAddForm && (
-          <Card className="mb-4 border-supplier/40 bg-supplier-bg">
+          <Card className="mb-4 border-border bg-muted/50">
             <CardContent className="pt-4">
               <FeedbackForm
                 initialData={{ taster_name: username || '' }}
                 onSubmit={handleAddNote}
                 onCancel={() => setShowAddForm(false)}
-                submitLabel="Add Feedback"
+                submitLabel="Add feedback"
                 showImages={true}
               />
             </CardContent>
