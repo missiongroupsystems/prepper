@@ -72,7 +72,7 @@ test.describe('App shell', () => {
       if (frame === page.mainFrame()) visited.push(new URL(frame.url()).pathname);
     });
     await page.goto('/settings');
-    await expect(page.getByRole('navigation', { name: 'Settings tabs' })).toBeVisible();
+    await expect(page.getByRole('tablist', { name: 'Settings sections' })).toBeVisible();
     expect(new URL(page.url()).pathname).toBe('/settings');
     expect(visited).not.toContain('/login');
   });

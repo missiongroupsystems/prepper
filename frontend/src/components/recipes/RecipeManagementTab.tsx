@@ -1,131 +1,49 @@
 'use client';
 
+/**
+ * Dishes — the dish library: search, sort, status and grouping in a wrapping toolbar, category
+ * pills, then the grouped cards or rows. Outlets, allergens and sub-dish matches for the page
+ * are fetched in batches, never per card.
+ */
 import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Plus } from 'lucide-react';
+import { BookOpen, Plus } from 'lucide-react';
 import { useRecipes, useRecipeCategories, useAllRecipeRecipeCategories, useOutlets, useRecipeOutletsBatch, useRecipeAllergensBatch, useSubRecipesBatch, useDebouncedValue } from '@/lib/hooks';
+import { SectionHeader } from '@/components/app';
+import { Button, EmptyState, Pagination, SearchInput, Select, ViewToggle } from '@/components/ui';
+import { CardGrid, ListError, ListGroup, ListSkeleton, ListStack, ListToolbar } from '@/components/lists/ListLayout';
+import type { ListView } from '@/components/lists/ReferenceListView';
+import { formatDisplayName } from '@/lib/format/displayName';
+import { useAppState } from '@/lib/store';
+import type { Recipe, Allergen } from '@/types';
 import { RecipeCard } from './RecipeCard';
 import { RecipeListRow } from './RecipeListRow';
 import { RecipeCategoryFilterButtons } from './RecipeCategoryFilterButtons';
-import { PageHeader, SearchInput, Select, GroupSection, ListSection, Button, Skeleton, ViewToggle } from '@/components/ui';
-import { Pagination } from '@/components/ui/Pagination';
-import { useAppState } from '@/lib/store';
-import type { Recipe, RecipeStatus, Allergen } from '@/types';
+import {
+  GROUP_BY_OPTIONS,
+  SORT_BY_OPTIONS,
+  STATUS_FILTER_OPTIONS,
+  groupRecipes,
+  sortRecipes,
+  type GroupByOption,
+  type SortByOption,
+  type StatusFilter,
+} from './recipeListModel';
 
-type GroupByOption = 'none' | 'status' | 'category';
-type StatusFilter = 'all' | RecipeStatus;
-type ViewType = 'grid' | 'list';
-type SortByOption = 'price_asc' | 'price_desc';
-
-const GROUP_BY_OPTIONS = [
-  { value: 'none', label: 'No grouping' },
-  { value: 'status', label: 'By Status' },
-  { value: 'category', label: 'By Category' },
-];
-
-const STATUS_FILTER_OPTIONS = [
-  { value: 'all', label: 'All Statuses' },
-  { value: 'draft', label: 'Draft' },
-  { value: 'active', label: 'Active' },
-  { value: 'archived', label: 'Archived' },
-];
-
-const SORT_BY_OPTIONS = [
-  { value: 'price_asc', label: 'Price: Low to High' },
-  { value: 'price_desc', label: 'Price: High to Low' },
-];
-
-function sortRecipes(recipes: Recipe[], sortBy: SortByOption): Recipe[] {
-  const withCost: Recipe[] = [];
-  const noCost: Recipe[] = [];
-
-  recipes.forEach((recipe) => {
-    if (recipe.cost_price !== null && recipe.cost_price !== undefined) {
-      withCost.push(recipe);
-    } else {
-      noCost.push(recipe);
-    }
-  });
-
-  if (sortBy === 'price_asc') {
-    withCost.sort((a, b) => (a.cost_price ?? 0) - (b.cost_price ?? 0));
-  } else if (sortBy === 'price_desc') {
-    withCost.sort((a, b) => (b.cost_price ?? 0) - (a.cost_price ?? 0));
-  }
-
-  return [...withCost, ...noCost];
-}
-
-function groupRecipes(
-  recipes: Recipe[],
-  groupBy: GroupByOption,
-  recipeCategoryMap: Map<number, number[]>,
-  categoryNameMap: Map<number, string>
-): Record<string, Recipe[]> {
-  if (groupBy === 'none') {
-    return { 'All Dishes': recipes };
-  }
-
-  if (groupBy === 'status') {
-    const grouped: Record<string, Recipe[]> = {
-      'Active': [],
-      'Draft': [],
-      'Archived': [],
-    };
-
-    recipes.forEach((recipe) => {
-      const key = recipe.status.charAt(0).toUpperCase() + recipe.status.slice(1);
-      if (grouped[key]) {
-        grouped[key].push(recipe);
-      }
-    });
-
-    // Remove empty groups
-    return Object.fromEntries(
-      Object.entries(grouped).filter(([, items]) => items.length > 0)
-    );
-  }
-
-  if (groupBy === 'category') {
-    const grouped: Record<string, Recipe[]> = {};
-
-    recipes.forEach((recipe) => {
-      const categoryIds = recipeCategoryMap.get(recipe.id) || [];
-
-      if (categoryIds.length === 0) {
-        // Recipe has no categories
-        if (!grouped['Uncategorized']) {
-          grouped['Uncategorized'] = [];
-        }
-        grouped['Uncategorized'].push(recipe);
-      } else {
-        // Add recipe to each of its category groups
-        categoryIds.forEach((categoryId) => {
-          const categoryName = categoryNameMap.get(categoryId) || 'Unknown';
-          if (!grouped[categoryName]) {
-            grouped[categoryName] = [];
-          }
-          grouped[categoryName].push(recipe);
-        });
-      }
-    });
-
-    return grouped;
-  }
-
-  return { 'All Dishes': recipes };
-}
+const PAGE_SIZE = 30;
+const LOOKUP_PAGE_SIZE = 30;
+const SEARCH_DEBOUNCE_MS = 300;
 
 export function RecipeManagementTab() {
   const router = useRouter();
-  const { userId, userType, selectRecipe } = useAppState();
+  const { userId, selectRecipe } = useAppState();
 
   const [search, setSearch] = useState('');
-  const debouncedSearch = useDebouncedValue(search, 300);
+  const debouncedSearch = useDebouncedValue(search, SEARCH_DEBOUNCE_MS);
   const [pageNumber, setPageNumber] = useState(1);
   const [groupBy, setGroupBy] = useState<GroupByOption>('status');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
-  const [view, setView] = useState<ViewType>('grid');
+  const [view, setView] = useState<ListView>('grid');
   const [sortBy, setSortBy] = useState<SortByOption>('price_asc');
   const [selectedRecipeCategories, setSelectedRecipeCategories] = useState<number[]>([]);
 
@@ -133,18 +51,29 @@ export function RecipeManagementTab() {
   useEffect(() => setPageNumber(1), [debouncedSearch, statusFilter, selectedRecipeCategories]);
 
   const { data: recipesData, isLoading, error } = useRecipes({
-    page_size: 30,
+    page_size: PAGE_SIZE,
     page_number: pageNumber,
     search: debouncedSearch || undefined,
     status: statusFilter !== 'all' ? statusFilter : undefined,
     category_ids: selectedRecipeCategories.length > 0 ? selectedRecipeCategories.join(',') : undefined,
   });
-  const recipes = Array.isArray(recipesData?.items) ? recipesData.items : (Array.isArray(recipesData) ? recipesData : []);
-  const { data: recipeCategoriesData } = useRecipeCategories({ page_size: 30 });
-  const recipeCategories = Array.isArray(recipeCategoriesData?.items) ? recipeCategoriesData.items : (Array.isArray(recipeCategoriesData) ? recipeCategoriesData : []);
+  const recipes = useMemo(
+    () => (Array.isArray(recipesData?.items) ? recipesData.items : Array.isArray(recipesData) ? recipesData : []),
+    [recipesData]
+  );
+  const { data: recipeCategoriesData } = useRecipeCategories({ page_size: LOOKUP_PAGE_SIZE });
+  const recipeCategories = useMemo(
+    () =>
+      Array.isArray(recipeCategoriesData?.items)
+        ? recipeCategoriesData.items
+        : Array.isArray(recipeCategoriesData)
+          ? recipeCategoriesData
+          : [],
+    [recipeCategoriesData]
+  );
   const { data: recipeCategoryLinks } = useAllRecipeRecipeCategories();
-  const { data: outletsData } = useOutlets({ page_size: 30 });
-  const outlets = outletsData?.items ?? [];
+  const { data: outletsData } = useOutlets({ page_size: LOOKUP_PAGE_SIZE });
+  const outlets = useMemo(() => outletsData?.items ?? [], [outletsData]);
 
   // Memoize recipe IDs to prevent unstable references triggering refetches
   const recipeIds = useMemo(
@@ -186,7 +115,7 @@ export function RecipeManagementTab() {
 
   // Map category_id -> name (for grouping)
   const categoryNameMap = useMemo(() => {
-    return new Map(recipeCategories.map((c) => [c.id, c.name]));
+    return new Map(recipeCategories.map((c) => [c.id, formatDisplayName(c.name)]));
   }, [recipeCategories]);
 
   // Map outlet_id -> name
@@ -232,152 +161,136 @@ export function RecipeManagementTab() {
     return groupRecipes(filteredRecipes, groupBy, recipeCategoryMap, categoryNameMap);
   }, [filteredRecipes, groupBy, recipeCategoryMap, categoryNameMap]);
 
-  if (error) {
+  const isFiltered = Boolean(search) || statusFilter !== 'all' || selectedRecipeCategories.length > 0;
+
+  const newDishButton = (
+    <Button onClick={handleCreate}>
+      <Plus className="size-4" strokeWidth={1.5} aria-hidden="true" />
+      New dish
+    </Button>
+  );
+
+  const renderItems = (items: Recipe[]) =>
+    view === 'grid' ? (
+      <CardGrid>
+        {items.map((recipe) => (
+          <RecipeCard
+            key={recipe.id}
+            recipe={recipe}
+            isOwned={userId !== null && recipe.owner_id === userId}
+            outletNames={getOutletNamesForRecipe(recipe.id)}
+            categoryNames={getCategoryNamesForRecipe(recipe.id)}
+            allergenNames={getAllergenNamesForRecipe(recipe.id)}
+            matchedViaSubDish={matchedViaSubDish(recipe)}
+          />
+        ))}
+      </CardGrid>
+    ) : (
+      <ListStack>
+        {items.map((recipe) => (
+          <RecipeListRow
+            key={recipe.id}
+            recipe={recipe}
+            isOwned={userId !== null && recipe.owner_id === userId}
+            categoryNames={getCategoryNamesForRecipe(recipe.id)}
+            allergenNames={getAllergenNamesForRecipe(recipe.id)}
+            matchedViaSubDish={matchedViaSubDish(recipe)}
+          />
+        ))}
+      </ListStack>
+    );
+
+  const body = () => {
+    if (error) return <ListError>Failed to load dishes. Please try again.</ListError>;
+    if (isLoading) return <ListSkeleton view={view} />;
+    if (filteredRecipes.length === 0) {
+      return isFiltered ? (
+        <EmptyState icon={BookOpen} title="No dishes match your filters" description="Try a different search or clear a filter." />
+      ) : (
+        <EmptyState
+          icon={BookOpen}
+          title="No dishes yet"
+          description="Start one on the canvas: drag in ingredients and it costs itself."
+          action={newDishButton}
+        />
+      );
+    }
+    if (groupBy === 'none') return renderItems(filteredRecipes);
     return (
-      <div className="p-6">
-        <div className="rounded-lg bg-destructive/10 p-4 text-destructive">
-          Failed to load recipes. Please try again.
-        </div>
+      <div className="flex flex-col gap-8">
+        {Object.entries(groupedRecipes).map(([group, items]) => (
+          <ListGroup key={group} title={group} count={items.length}>
+            {renderItems(items)}
+          </ListGroup>
+        ))}
       </div>
     );
-  }
+  };
 
   return (
-    <div className="h-full w-full overflow-auto">
-      <div className="p-6 max-w-7xl mx-auto">
-        <PageHeader
-          title="Dishes"
-          description="Browse and manage your dish collection"
+    <>
+      <SectionHeader
+        eyebrow="Kitchen · Dishes"
+        title="Dishes"
+        description="Every dish and prep recipe, with its cost per portion."
+        actions={newDishButton}
+      />
+
+      <div className="flex flex-col gap-3">
+        <ListToolbar
+          search={
+            <SearchInput
+              placeholder="Search dishes"
+              aria-label="Search dishes"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              onClear={() => setSearch('')}
+            />
+          }
         >
-          <Button onClick={handleCreate}>
-            <Plus className="h-4 w-4" />
-            <span className="hidden sm:inline">New Dish</span>
-          </Button>
-        </PageHeader>
-
-        {/* Toolbar */}
-        <div className="flex flex-col gap-4 mb-6">
-          {/* Search and Controls Row */}
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-            <div className="flex-1 max-w-md">
-              <SearchInput
-                placeholder="Search dishes..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                onClear={() => setSearch('')}
-              />
-            </div>
-
-            <div className="flex items-center gap-2">
-              <Select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as SortByOption)}
-                options={SORT_BY_OPTIONS}
-                className="w-44"
-              />
-
-              <Select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
-                options={STATUS_FILTER_OPTIONS}
-                className="w-32"
-              />
-
-              <Select
-                value={groupBy}
-                onChange={(e) => setGroupBy(e.target.value as GroupByOption)}
-                options={GROUP_BY_OPTIONS}
-                className="w-36"
-              />
-
-              <ViewToggle view={view} onViewChange={setView} />
-            </div>
+          <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto">
+            <Select
+              aria-label="Sort"
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as SortByOption)}
+              options={SORT_BY_OPTIONS}
+              className="col-span-2 sm:w-44"
+            />
+            <Select
+              aria-label="Status"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
+              options={STATUS_FILTER_OPTIONS}
+              className="min-w-0 sm:w-36"
+            />
+            <Select
+              aria-label="Group"
+              value={groupBy}
+              onChange={(e) => setGroupBy(e.target.value as GroupByOption)}
+              options={GROUP_BY_OPTIONS}
+              className="min-w-0 sm:w-36"
+            />
           </div>
-
-          {/* Category Filter Pills Row */}
-          <RecipeCategoryFilterButtons
-            categories={recipeCategories}
-            selectedCategories={selectedRecipeCategories}
-            onCategoryChange={setSelectedRecipeCategories}
-          />
-        </div>
-
-        {/* Loading State */}
-        {isLoading && (
-          view === 'grid' ? (
-            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {Array.from({ length: 8 }).map((_, i) => (
-                <Skeleton key={i} className="h-48 rounded-lg" />
-              ))}
-            </div>
-          ) : (
-            <div className="flex flex-col gap-2 w-full">
-              {Array.from({ length: 8 }).map((_, i) => (
-                <Skeleton key={i} className="h-20 rounded-lg" />
-              ))}
-            </div>
-          )
-        )}
-
-        {/* Empty State */}
-        {!isLoading && filteredRecipes.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-muted-foreground">
-              {search ? 'No dishes match your search' : 'No dishes yet'}
-            </p>
-            <p className="text-sm text-muted-foreground mt-2">
-              Create your first dish in the Canvas
-            </p>
-          </div>
-        )}
-
-        {/* Grouped Recipes */}
-        {!isLoading && filteredRecipes.length > 0 && (
-          <div>
-            {Object.entries(groupedRecipes).map(([group, items]) =>
-              view === 'grid' ? (
-                <GroupSection key={group} title={group} count={items.length}>
-                  {items.map((recipe) => (
-                    <RecipeCard
-                      key={recipe.id}
-                      recipe={recipe}
-                      isOwned={userId !== null && recipe.owner_id === userId}
-                      outletNames={getOutletNamesForRecipe(recipe.id)}
-                      categoryNames={getCategoryNamesForRecipe(recipe.id)}
-                      allergenNames={getAllergenNamesForRecipe(recipe.id)}
-                      matchedViaSubDish={matchedViaSubDish(recipe)}
-                    />
-                  ))}
-                </GroupSection>
-              ) : (
-                <ListSection key={group} title={group} count={items.length}>
-                  {items.map((recipe) => (
-                    <RecipeListRow
-                      key={recipe.id}
-                      recipe={recipe}
-                      isOwned={userId !== null && recipe.owner_id === userId}
-                      categoryNames={getCategoryNamesForRecipe(recipe.id)}
-                      allergenNames={getAllergenNamesForRecipe(recipe.id)}
-                      matchedViaSubDish={matchedViaSubDish(recipe)}
-                    />
-                  ))}
-                </ListSection>
-              )
-            )}
-          </div>
-        )}
-
-        {/* Pagination */}
-        {recipesData && (
-          <Pagination
-            pageNumber={recipesData.page_number}
-            totalPages={recipesData.total_pages}
-            totalCount={recipesData.total_count}
-            currentPageSize={recipesData.current_page_size}
-            onPageChange={setPageNumber}
-          />
-        )}
+          <ViewToggle view={view} onViewChange={setView} />
+        </ListToolbar>
+        <RecipeCategoryFilterButtons
+          categories={recipeCategories}
+          selectedCategories={selectedRecipeCategories}
+          onCategoryChange={setSelectedRecipeCategories}
+        />
       </div>
-    </div>
+
+      {body()}
+
+      {recipesData && (
+        <Pagination
+          pageNumber={recipesData.page_number}
+          totalPages={recipesData.total_pages}
+          totalCount={recipesData.total_count}
+          currentPageSize={recipesData.current_page_size}
+          onPageChange={setPageNumber}
+        />
+      )}
+    </>
   );
 }

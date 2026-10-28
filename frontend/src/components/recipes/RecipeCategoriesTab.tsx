@@ -1,285 +1,100 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Plus, X } from 'lucide-react';
+/**
+ * Dish categories: added in a panel, opened on their own page to edit. Archiving asks first,
+ * because a category groups dishes on menus.
+ */
+import { useEffect, useState } from 'react';
+import { FolderOpen } from 'lucide-react';
+import { toast } from 'sonner';
 import { useRecipeCategories, useUpdateRecipeCategory, useDeleteRecipeCategory, useDebouncedValue } from '@/lib/hooks';
+import { ConfirmModal } from '@/components/ui';
+import { ReferenceListView, type ListView } from '@/components/lists/ReferenceListView';
+import { formatDisplayName } from '@/lib/format/displayName';
+import type { RecipeCategory } from '@/types';
 import { RecipeCategoryCard } from './RecipeCategoryCard';
 import { RecipeCategoryListRow } from './RecipeCategoryListRow';
 import { AddRecipeCategoryModal } from './AddRecipeCategoryModal';
-import { PageHeader, SearchInput, Button, Skeleton, Input, Textarea, ViewToggle, ConfirmModal, Checkbox } from '@/components/ui';
-import { Pagination } from '@/components/ui/Pagination';
-import { toast } from 'sonner';
-import type { RecipeCategory, UpdateRecipeCategoryRequest } from '@/types';
 
-type ViewType = 'grid' | 'list';
-
-interface EditCategoryModalProps {
-  category: RecipeCategory;
-  onClose: () => void;
-}
-
-function EditCategoryModal({ category, onClose }: EditCategoryModalProps) {
-  const updateRecipeCategory = useUpdateRecipeCategory();
-  const [name, setName] = useState(category.name);
-  const [description, setDescription] = useState(category.description || '');
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name.trim()) {
-      toast.error('Category name is required');
-      return;
-    }
-
-    const updateData: UpdateRecipeCategoryRequest = {
-      name: name.trim(),
-      description: description.trim() || null,
-    };
-
-    updateRecipeCategory.mutate(
-      { id: category.id, data: updateData },
-      {
-        onSuccess: () => {
-          toast.success('Category updated');
-          onClose();
-        },
-        onError: () => {
-          toast.error('Failed to update category');
-        },
-      }
-    );
-  };
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-[var(--color-scrim)]" onClick={onClose} />
-      <form
-        onSubmit={handleSubmit}
-        className="relative bg-card border border-border rounded-2xl p-6 shadow-elevation-3 w-full max-w-md mx-4"
-      >
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="font-medium text-lg">Edit category</h3>
-          <Button variant="ghost" size="icon" onClick={onClose} type="button">
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
-
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">Name *</label>
-            <Input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="e.g., Appetizers"
-              autoFocus
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-1">Description</label>
-            <Textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Category description"
-              rows={3}
-            />
-          </div>
-
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={onClose} type="button">
-              Cancel
-            </Button>
-            <Button type="submit" disabled={updateRecipeCategory.isPending}>
-              {updateRecipeCategory.isPending ? 'Saving...' : 'Save changes'}
-            </Button>
-          </div>
-        </div>
-      </form>
-    </div>
-  );
-}
+const PAGE_SIZE = 30;
+const SEARCH_DEBOUNCE_MS = 300;
 
 export function RecipeCategoriesTab() {
   const [search, setSearch] = useState('');
-  const debouncedSearch = useDebouncedValue(search, 300);
+  const debouncedSearch = useDebouncedValue(search, SEARCH_DEBOUNCE_MS);
   const [showForm, setShowForm] = useState(false);
   const [showArchived, setShowArchived] = useState(false);
-  const [editingCategory, setEditingCategory] = useState<RecipeCategory | null>(null);
-  const [view, setView] = useState<ViewType>('grid');
-  const [deleteConfirm, setDeleteConfirm] = useState<RecipeCategory | null>(null);
+  const [view, setView] = useState<ListView>('grid');
+  const [archiveConfirm, setArchiveConfirm] = useState<RecipeCategory | null>(null);
   const [pageNumber, setPageNumber] = useState(1);
 
-  useEffect(() => { setPageNumber(1); }, [debouncedSearch, showArchived]);
+  useEffect(() => setPageNumber(1), [debouncedSearch, showArchived]);
 
-  const { data: categoriesData, isLoading, error } = useRecipeCategories({
+  const { data, isLoading, error } = useRecipeCategories({
     active_only: !showArchived,
-    page_size: 30,
+    page_size: PAGE_SIZE,
     page_number: pageNumber,
     search: debouncedSearch || undefined,
   });
-  const categories = categoriesData?.items ?? [];
   const deleteRecipeCategory = useDeleteRecipeCategory();
   const updateRecipeCategory = useUpdateRecipeCategory();
 
-
-  const handleArchive = (category: RecipeCategory) => {
-    setDeleteConfirm(category);
-  };
-
   const handleUnarchive = (category: RecipeCategory) => {
+    const name = formatDisplayName(category.name);
     updateRecipeCategory.mutate(
       { id: category.id, data: { is_active: true } },
       {
-        onSuccess: () => toast.success(`${category.name} unarchived`),
-        onError: () => toast.error(`Failed to unarchive ${category.name}`),
+        onSuccess: () => toast.success(`${name} unarchived`),
+        onError: () => toast.error(`Failed to unarchive ${name}`),
       }
     );
   };
 
   const handleConfirmArchive = () => {
-    if (!deleteConfirm) return;
-
-    deleteRecipeCategory.mutate(deleteConfirm.id, {
-      onSuccess: () => {
-        toast.success(`${deleteConfirm.name} archived`);
-        setDeleteConfirm(null);
-      },
-      onError: () => {
-        toast.error('Failed to archive category');
-        setDeleteConfirm(null);
-      },
+    if (!archiveConfirm) return;
+    const name = formatDisplayName(archiveConfirm.name);
+    deleteRecipeCategory.mutate(archiveConfirm.id, {
+      onSuccess: () => toast.success(`${name} archived`),
+      onError: () => toast.error('Failed to archive category'),
+      onSettled: () => setArchiveConfirm(null),
     });
   };
 
-  if (error) {
-    return (
-      <div className="p-6">
-        <div className="rounded-xl bg-[var(--color-feedback-error-tint)] p-4 text-[var(--color-feedback-error)]">
-          Failed to load recipe categories. Please try again.
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="h-full w-full overflow-auto">
-      <div className="p-6 max-w-7xl mx-auto">
-        <PageHeader
-          title="Categories"
-          description="Organize recipes into categories"
-        >
-          <Button onClick={() => setShowForm(true)}>
-            <Plus className="h-4 w-4" />
-            <span className="hidden sm:inline">Add category</span>
-          </Button>
-        </PageHeader>
-
-        <AddRecipeCategoryModal isOpen={showForm} onClose={() => setShowForm(false)} />
-
-        {/* Toolbar */}
-        <div className="flex flex-col gap-4 mb-6 sm:flex-row sm:items-center">
-          <div className="flex-1 max-w-md">
-            <SearchInput
-              placeholder="Search categories..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              onClear={() => setSearch('')}
-            />
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Checkbox
-              checked={showArchived}
-              onChange={(e) => setShowArchived(e.target.checked)}
-              label="Show archived"
-            />
-            <ViewToggle view={view} onViewChange={setView} />
-          </div>
-        </div>
-
-        {/* Loading State */}
-        {isLoading && (
-          view === 'grid' ? (
-            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {Array.from({ length: 8 }).map((_, i) => (
-                <Skeleton key={i} className="h-32 rounded-xl" />
-              ))}
-            </div>
-          ) : (
-            <div className="flex flex-col gap-2 w-full">
-              {Array.from({ length: 8 }).map((_, i) => (
-                <Skeleton key={i} className="h-20 rounded-xl" />
-              ))}
-            </div>
-          )
-        )}
-
-        {/* Empty State */}
-        {!isLoading && categories.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-muted-foreground">
-              {search ? 'No categories match your search' : 'No categories yet'}
-            </p>
-          </div>
-        )}
-
-        {/* Categories Grid */}
-        {!isLoading && categories.length > 0 && (
-          view === 'grid' ? (
-            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {categories.map((category) => (
-                <RecipeCategoryCard
-                  key={category.id}
-                  category={category}
-                  onArchive={handleArchive}
-                  onUnarchive={handleUnarchive}
-                />
-              ))}
-            </div>
-          ) : (
-            <div className="flex flex-col gap-2 w-full">
-              {categories.map((category) => (
-                <RecipeCategoryListRow
-                  key={category.id}
-                  category={category}
-                  onArchive={handleArchive}
-                  onUnarchive={handleUnarchive}
-                />
-              ))}
-            </div>
-          )
-        )}
-
-        {/* Pagination */}
-        {categoriesData && (
-          <Pagination
-            pageNumber={categoriesData.page_number}
-            totalPages={categoriesData.total_pages}
-            totalCount={categoriesData.total_count}
-            currentPageSize={categoriesData.current_page_size}
-            onPageChange={setPageNumber}
-          />
-        )}
-      </div>
-
-      {/* Edit Modal */}
-      {editingCategory && (
-        <EditCategoryModal
-          category={editingCategory}
-          onClose={() => setEditingCategory(null)}
-        />
-      )}
-
-      {/* Delete Confirmation Modal */}
+    <ReferenceListView
+      title="Categories"
+      description="Group dishes into the sections of a menu."
+      noun="categories"
+      icon={FolderOpen}
+      onAdd={() => setShowForm(true)}
+      addLabel="Add category"
+      search={search}
+      onSearchChange={setSearch}
+      showArchived={showArchived}
+      onShowArchivedChange={setShowArchived}
+      view={view}
+      onViewChange={setView}
+      items={data?.items ?? []}
+      isLoading={isLoading}
+      error={error}
+      renderItem={(category, itemView) => {
+        const Item = itemView === 'grid' ? RecipeCategoryCard : RecipeCategoryListRow;
+        return <Item key={category.id} category={category} onArchive={setArchiveConfirm} onUnarchive={handleUnarchive} />;
+      }}
+      page={data}
+      onPageChange={setPageNumber}
+    >
+      <AddRecipeCategoryModal isOpen={showForm} onClose={() => setShowForm(false)} />
       <ConfirmModal
-        isOpen={!!deleteConfirm}
-        onClose={() => setDeleteConfirm(null)}
+        isOpen={!!archiveConfirm}
+        onClose={() => setArchiveConfirm(null)}
         onConfirm={handleConfirmArchive}
-        title="Archive category"
-        message={`Are you sure you want to archive "${deleteConfirm?.name}"? It can be restored by enabling "Show archived".`}
+        title="Archive category?"
+        message={`${archiveConfirm ? formatDisplayName(archiveConfirm.name) : 'This category'} is hidden from lists. Tick "Show archived" to restore it.`}
         confirmLabel="Archive"
-        cancelLabel="Cancel"
         variant="destructive"
+        pending={deleteRecipeCategory.isPending}
       />
-    </div>
+    </ReferenceListView>
   );
 }

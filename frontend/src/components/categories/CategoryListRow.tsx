@@ -1,10 +1,10 @@
 'use client';
 
-import { useState } from 'react';
-import { Edit2, Archive, ArchiveRestore } from 'lucide-react';
-import { Card, CardContent, Button } from '@/components/ui';
-import type { Category } from '@/types';
+import { Badge } from '@/components/ui';
+import { RecordRow } from '@/components/lists/RecordCard';
+import { RowActions } from '@/components/lists/RowActions';
 import { formatDisplayName } from '@/lib/format/displayName';
+import type { Category } from '@/types';
 
 interface CategoryListRowProps {
   category: Category;
@@ -13,81 +13,23 @@ interface CategoryListRowProps {
   onUnarchive?: (category: Category) => void;
 }
 
-export function CategoryListRow({
-  category,
-  onEdit,
-  onArchive,
-  onUnarchive,
-}: CategoryListRowProps) {
-  const [showActions, setShowActions] = useState(false);
-
+export function CategoryListRow({ category, onEdit, onArchive, onUnarchive }: CategoryListRowProps) {
+  const title = formatDisplayName(category.name);
   return (
-    <Card
-      className="relative py-4"
-      onMouseEnter={() => setShowActions(true)}
-      onMouseLeave={() => setShowActions(false)}
-    >
-      <CardContent className="mt-0">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex-1 min-w-0">
-            <h3 className="text-base font-medium text-ink break-words">
-              {formatDisplayName(category.name)}
-            </h3>
-            {category.description && (
-              <p className="text-sm text-muted-foreground mt-0.5 line-clamp-2">
-                {category.description}
-              </p>
-            )}
-          </div>
-
-          {showActions && (
-            <div className="flex items-center gap-1">
-              {onEdit && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    onEdit(category);
-                  }}
-                  title="Edit"
-                >
-                  <Edit2 className="h-3.5 w-3.5" />
-                </Button>
-              )}
-              {onArchive && category.is_active && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    onArchive(category);
-                  }}
-                  title="Archive"
-                >
-                  <Archive className="h-3.5 w-3.5" />
-                </Button>
-              )}
-              {onUnarchive && !category.is_active && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    onUnarchive(category);
-                  }}
-                  title="Unarchive"
-                >
-                  <ArchiveRestore className="h-3.5 w-3.5" />
-                </Button>
-              )}
-            </div>
-          )}
-        </div>
-      </CardContent>
-    </Card>
+    <RecordRow
+      title={title}
+      description={category.description}
+      badges={!category.is_active ? <Badge variant="warning">Archived</Badge> : undefined}
+      actions={
+        <RowActions
+          item={category}
+          name={title}
+          isActive={category.is_active}
+          onEdit={onEdit}
+          onArchive={onArchive}
+          onUnarchive={onUnarchive}
+        />
+      }
+    />
   );
 }

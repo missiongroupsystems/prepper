@@ -1,175 +1,154 @@
 'use client';
 
-import { useState, useCallback } from 'react';
-import { useCreateUser, useOutlets } from '@/lib/hooks';
-import { Button, Input, Select, Modal } from '@/components/ui';
+/**
+ * Add user — a SidePanel: the sign-in details, then the role and outlet that scope what they
+ * can see. The name is kept from the modal it replaced so callers are unchanged.
+ */
+import { useState } from 'react';
 import { toast } from 'sonner';
+import { useCreateUser, useOutlets } from '@/lib/hooks';
+import { Input, Select } from '@/components/ui';
+import { FormPanel } from '@/components/forms/FormPanel';
+import { FieldRow, FormField, FormSection, fieldA11y } from '@/components/forms/FormField';
 import type { UserType } from '@/types';
 
-interface AddUserModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-}
+const LOOKUP_PAGE_SIZE = 30;
 
 const USER_TYPE_OPTIONS = [
   { value: 'normal', label: 'Normal' },
   { value: 'admin', label: 'Admin' },
 ];
 
+type Field = 'email' | 'username' | 'password';
+
+const REQUIRED: Record<Field, string> = {
+  email: 'Email is required',
+  username: 'Username is required',
+  password: 'Password is required',
+};
+
+interface AddUserModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
 export function AddUserModal({ isOpen, onClose }: AddUserModalProps) {
   const createUser = useCreateUser();
-  const { data: outletsData } = useOutlets({ page_size: 30 });
+  const { data: outletsData } = useOutlets({ page_size: LOOKUP_PAGE_SIZE });
   const outlets = outletsData?.items ?? [];
 
-  const [email, setEmail] = useState('');
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const [values, setValues] = useState<Record<Field, string>>({ email: '', username: '', password: '' });
   const [phoneNumber, setPhoneNumber] = useState('');
   const [userType, setUserType] = useState<UserType>('normal');
-  const [outletId, setOutletId] = useState<string>('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [outletId, setOutletId] = useState('');
+  const [attempted, setAttempted] = useState(false);
 
-  const resetForm = useCallback(() => {
-    setEmail('');
-    setUsername('');
-    setPassword('');
+  const errorFor = (field: Field) => (attempted && !values[field].trim() ? REQUIRED[field] : undefined);
+  const set = (field: Field) => (e: { target: { value: string } }) =>
+    setValues((prev) => ({ ...prev, [field]: e.target.value }));
+
+  const resetForm = () => {
+    setValues({ email: '', username: '', password: '' });
     setPhoneNumber('');
     setUserType('normal');
     setOutletId('');
-    setIsSubmitting(false);
-  }, []);
+    setAttempted(false);
+  };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!email.trim()) {
-      toast.error('Email is required');
-      return;
-    }
-    if (!username.trim()) {
-      toast.error('Username is required');
-      return;
-    }
-    if (!password.trim()) {
-      toast.error('Password is required');
-      return;
-    }
-
-    setIsSubmitting(true);
-
-    try {
-      await createUser.mutateAsync({
-        email: email.trim(),
-        username: username.trim(),
-        password: password.trim(),
+  const handleSubmit = () => {
+    setAttempted(true);
+    if ((Object.keys(REQUIRED) as Field[]).some((field) => !values[field].trim())) return;
+    createUser.mutate(
+      {
+        email: values.email.trim(),
+        username: values.username.trim(),
+        password: values.password.trim(),
         phone_number: phoneNumber || undefined,
         user_type: userType,
-        outlet_id: outletId ? parseInt(outletId) : null,
-      });
-
-      toast.success('User created successfully');
-      resetForm();
-      onClose();
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to create user';
-      toast.error(errorMessage);
-    } finally {
-      setIsSubmitting(false);
-    }
+        outlet_id: outletId ? parseInt(outletId, 10) : null,
+      },
+      {
+        onSuccess: () => {
+          toast.success('User created');
+          resetForm();
+          onClose();
+        },
+        onError: (error) => toast.error(error instanceof Error ? error.message : 'Failed to create user'),
+      }
+    );
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Add new user">
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block text-xs font-medium text-muted-foreground mb-1">
-            Email *
-          </label>
+    <FormPanel
+      open={isOpen}
+      onClose={onClose}
+      title="Add user"
+      onSubmit={handleSubmit}
+      submitLabel="Create user"
+      pending={createUser.isPending}
+    >
+      <FormSection title="Sign-in">
+        <FormField id="user-email" label="Email" error={errorFor('email')}>
           <Input
+            {...fieldA11y('user-email', errorFor('email'))}
             type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="user@example.com"
+            autoComplete="off"
+            value={values.email}
+            onChange={set('email')}
+            placeholder="name@example.com"
+            autoFocus
           />
-        </div>
-
-        <div>
-          <label className="block text-xs font-medium text-muted-foreground mb-1">
-            Username *
-          </label>
+        </FormField>
+        <FieldRow>
+          <FormField id="user-username" label="Username" error={errorFor('username')}>
+            <Input
+              {...fieldA11y('user-username', errorFor('username'))}
+              autoComplete="off"
+              value={values.username}
+              onChange={set('username')}
+            />
+          </FormField>
+          <FormField id="user-password" label="Password" error={errorFor('password')}>
+            <Input
+              {...fieldA11y('user-password', errorFor('password'))}
+              type="password"
+              autoComplete="new-password"
+              value={values.password}
+              onChange={set('password')}
+            />
+          </FormField>
+        </FieldRow>
+        <FormField id="user-phone" label="Phone" optional hint="Used for tasting invitations by SMS.">
           <Input
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            placeholder="johndoe"
-          />
-        </div>
-
-        <div>
-          <label className="block text-xs font-medium text-muted-foreground mb-1">
-            Password *
-          </label>
-          <Input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="••••••••"
-          />
-        </div>
-
-        <div>
-          <label className="block text-xs font-medium text-muted-foreground mb-1">
-            Phone number (optional)
-          </label>
-          <Input
+            {...fieldA11y('user-phone', undefined, true)}
             type="tel"
             value={phoneNumber}
             onChange={(e) => setPhoneNumber(e.target.value)}
-            placeholder="+1 (555) 000-0000"
+            placeholder="e.g. +65 1234 5678"
           />
-        </div>
+        </FormField>
+      </FormSection>
 
-        <div>
-          <label className="block text-xs font-medium text-muted-foreground mb-1">
-            User type
-          </label>
-          <Select
-            value={userType}
-            onChange={(e) => setUserType(e.target.value as UserType)}
-            options={USER_TYPE_OPTIONS}
-          />
-        </div>
-
-        <div>
-          <label className="block text-xs font-medium text-muted-foreground mb-1">
-            Branch (optional)
-          </label>
-          <select
-            value={outletId}
-            onChange={(e) => setOutletId(e.target.value)}
-            className="w-full px-3 py-2 border border-input rounded-lg bg-card text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-          >
-            <option value="">-- None --</option>
-            {outlets.map((outlet) => (
-              <option key={outlet.id} value={outlet.id}>
-                {outlet.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Footer */}
-        <div className="flex justify-end gap-3 pt-4 border-t border-border">
-          <Button type="button" variant="outline" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button
-            type="submit"
-            disabled={isSubmitting || !email.trim() || !username.trim() || !password.trim()}
-          >
-            {isSubmitting ? 'Creating...' : 'Create user'}
-          </Button>
-        </div>
-      </form>
-    </Modal>
+      <FormSection title="Access" description="Normal users see only their outlet and the outlets under it.">
+        <FieldRow>
+          <FormField id="user-type" label="Role">
+            <Select
+              {...fieldA11y('user-type')}
+              value={userType}
+              onChange={(e) => setUserType(e.target.value as UserType)}
+              options={USER_TYPE_OPTIONS}
+            />
+          </FormField>
+          <FormField id="user-outlet" label="Outlet" optional>
+            <Select
+              {...fieldA11y('user-outlet')}
+              value={outletId}
+              onChange={(e) => setOutletId(e.target.value)}
+              options={[{ value: '', label: 'None' }, ...outlets.map((o) => ({ value: o.id.toString(), label: o.name }))]}
+            />
+          </FormField>
+        </FieldRow>
+      </FormSection>
+    </FormPanel>
   );
 }

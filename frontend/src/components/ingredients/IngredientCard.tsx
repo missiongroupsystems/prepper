@@ -1,15 +1,19 @@
 'use client';
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { Edit2, Archive, ArchiveRestore, AlertCircle } from 'lucide-react';
-import { Card, CardTitle, CardContent, Badge, Button, EntityCode } from '@/components/ui';
+/**
+ * One ingredient as a grid card or a list row: code, name, unit price, then unit / halal /
+ * tag / allergen badges and the record's menu. Edit opens the ingredient's page.
+ */
+import { AlertCircle } from 'lucide-react';
+import { Badge, EntityCode } from '@/components/ui';
+import { RecordCard, RecordRow } from '@/components/lists/RecordCard';
+import { RowActions } from '@/components/lists/RowActions';
 import { formatUnitPrice } from '@/lib/utils';
 import { displayNameParts, formatDisplayName } from '@/lib/format/displayName';
 import { useAllergensByIngredient, useAllergens } from '@/lib/hooks';
 import type { Ingredient, Category } from '@/types';
 
-interface IngredientCardProps {
+export interface IngredientItemProps {
   ingredient: Ingredient;
   categories?: Category[];
   onEdit?: (ingredient: Ingredient) => void;
@@ -17,96 +21,55 @@ interface IngredientCardProps {
   onUnarchive?: (ingredient: Ingredient) => void;
 }
 
-export function IngredientCard({ ingredient, categories, onEdit, onArchive, onUnarchive }: IngredientCardProps) {
-  const [showActions, setShowActions] = useState(false);
+function useIngredientParts({ ingredient, categories, onEdit, onArchive, onUnarchive }: IngredientItemProps) {
+  // One allergen-link request per ingredient (an N+1 across the page) until the list endpoint returns them.
   const { data: allergenLinks } = useAllergensByIngredient(ingredient.id);
   const { data: allergens } = useAllergens();
 
   const { code, name } = displayNameParts(ingredient.name);
-  const currentCategory = categories?.find((c) => c.id === ingredient.category_id);
+  const href = `/ingredients/${ingredient.id}`;
+  const category = categories?.find((c) => c.id === ingredient.category_id);
   const ingredientAllergens = allergenLinks?.length
-    ? allergens?.filter((a) => allergenLinks.some((link) => link.allergen_id === a.id))
+    ? (allergens ?? []).filter((a) => allergenLinks.some((link) => link.allergen_id === a.id))
     : [];
 
-  return (
-    <Card
-      className="relative group"
-      onMouseEnter={() => setShowActions(true)}
-      onMouseLeave={() => setShowActions(false)}
-    >
-      <Link href={`/ingredients/${ingredient.id}`} className="block min-w-0">
-        {code && <EntityCode className="mb-1">{code}</EntityCode>}
-        <CardTitle className="break-words hover:text-primary">{name}</CardTitle>
-      </Link>
-      <p className="mt-1 text-sm text-muted-foreground tabular-nums">
-        {formatUnitPrice(ingredient.cost_per_base_unit, ingredient.base_unit)}
-      </p>
+  return {
+    title: name,
+    eyebrow: code ? <EntityCode>{code}</EntityCode> : undefined,
+    subtitle: <span className="tabular-nums">{formatUnitPrice(ingredient.cost_per_base_unit, ingredient.base_unit)}</span>,
+    href,
+    badges: (
+      <>
+        <Badge>{ingredient.base_unit}</Badge>
+        <Badge variant={ingredient.is_halal ? 'success' : 'neutral'}>{ingredient.is_halal ? 'Halal' : 'Non-halal'}</Badge>
+        {!ingredient.is_active && <Badge variant="warning">Archived</Badge>}
+        {category && <Badge className="max-w-full whitespace-normal">{formatDisplayName(category.name)}</Badge>}
+        {ingredientAllergens.map((allergen) => (
+          <Badge key={allergen.id} variant="danger" className="gap-1">
+            <AlertCircle className="size-3" strokeWidth={1.5} aria-hidden="true" />
+            {allergen.name}
+          </Badge>
+        ))}
+      </>
+    ),
+    actions: (
+      <RowActions
+        item={ingredient}
+        name={name}
+        isActive={ingredient.is_active}
+        onEdit={onEdit}
+        editHref={onEdit ? undefined : href}
+        onArchive={onArchive}
+        onUnarchive={onUnarchive}
+      />
+    ),
+  };
+}
 
-      <CardContent>
-        <div className="flex items-center gap-2 flex-wrap">
-          <Badge variant="unit">{ingredient.base_unit}</Badge>
-          {ingredient.is_halal ? (
-            <Badge variant="success">Halal</Badge>
-          ) : (
-            <Badge variant="secondary">Non-halal</Badge>
-          )}
-          {!ingredient.is_active && (
-            <Badge variant="warning">Archived</Badge>
-          )}
-          {currentCategory && (
-            <Badge className="max-w-full whitespace-normal">{formatDisplayName(currentCategory.name)}</Badge>
-          )}
-          {ingredientAllergens && ingredientAllergens.length > 0 && (
-            <>
-              {ingredientAllergens.map((allergen) => (
-                <Badge key={allergen.id} variant="destructive" className="gap-1">
-                  <AlertCircle className="h-3 w-3" />
-                  {allergen.name}
-                </Badge>
-              ))}
-            </>
-          )}
-        </div>
-      </CardContent>
+export function IngredientCard(props: IngredientItemProps) {
+  return <RecordCard {...useIngredientParts(props)} />;
+}
 
-      {/* Quick Actions */}
-      {showActions && (
-        <div className="absolute top-2 right-2 flex items-center gap-1 bg-card rounded-lg shadow-elevation-2 border border-border p-1">
-          {onEdit && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-7 w-7"
-              onClick={() => onEdit(ingredient)}
-              title="Edit"
-            >
-              <Edit2 className="h-3.5 w-3.5" />
-            </Button>
-          )}
-          {onArchive && ingredient.is_active && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-7 w-7"
-              onClick={() => onArchive(ingredient)}
-              title="Archive"
-            >
-              <Archive className="h-3.5 w-3.5" />
-            </Button>
-          )}
-          {onUnarchive && !ingredient.is_active && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-7 w-7"
-              onClick={() => onUnarchive(ingredient)}
-              title="Unarchive"
-            >
-              <ArchiveRestore className="h-3.5 w-3.5" />
-            </Button>
-          )}
-        </div>
-      )}
-    </Card>
-  );
+export function IngredientListRow(props: IngredientItemProps) {
+  return <RecordRow {...useIngredientParts(props)} />;
 }

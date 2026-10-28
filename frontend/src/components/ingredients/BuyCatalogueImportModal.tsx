@@ -58,11 +58,26 @@ export function BuyCatalogueImportModal({ isOpen, onClose }: BuyCatalogueImportM
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title="Import Buy Catalogue" disableClose={isImporting}>
+    <Modal
+      isOpen={isOpen}
+      onClose={handleClose}
+      title="Import Buy Catalogue"
+      disableClose={isImporting}
+      footer={
+        <>
+          <Button type="button" variant="outline" onClick={handleClose} disabled={isImporting}>
+            Cancel
+          </Button>
+          <Button type="button" disabled={!file || isImporting} onClick={handleImport}>
+            {isImporting ? 'Importing...' : 'Import'}
+          </Button>
+        </>
+      }
+    >
       <div className="space-y-5">
         <div>
-          <p className="text-xs font-medium text-muted-foreground mb-2">
-            Buy Catalogue XLSX <span className="text-[var(--color-feedback-error)]">*</span>
+          <p className="text-[13px] font-medium text-muted-foreground mb-1.5">
+            Buy Catalogue XLSX
           </p>
           <input
             ref={fileRef}
@@ -83,14 +98,6 @@ export function BuyCatalogueImportModal({ isOpen, onClose }: BuyCatalogueImportM
           </button>
         </div>
 
-        <div className="flex justify-end gap-3 pt-2 border-t border-border">
-          <Button type="button" variant="outline" onClick={handleClose} disabled={isImporting}>
-            Cancel
-          </Button>
-          <Button type="button" disabled={!file || isImporting} onClick={handleImport}>
-            {isImporting ? 'Importing...' : 'Import'}
-          </Button>
-        </div>
       </div>
     </Modal>
   );

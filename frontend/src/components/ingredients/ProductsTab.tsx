@@ -1,138 +1,135 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+/** Ingredients → Products: every supplier product (an ingredient as one supplier sells it). */
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useSupplierIngredientsPaginated } from '@/lib/hooks';
-import { useDebouncedValue } from '@/lib/hooks';
-import { SearchInput, Skeleton } from '@/components/ui';
-import { Pagination } from '@/components/ui/Pagination';
+import { PackageSearch } from 'lucide-react';
+import { useSupplierIngredientsPaginated, useDebouncedValue } from '@/lib/hooks';
+import {
+  EmptyState,
+  Pagination,
+  SearchInput,
+  Skeleton,
+  Table,
+  TableBody,
+  TableCell,
+  TableEmpty,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui';
+import { ListToolbar, TabHeader } from '@/components/lists/ListLayout';
+import { formatDisplayName } from '@/lib/format/displayName';
 import { TagsCell } from './TagsCell';
 
-function formatCurrency(value: number): string {
-  return new Intl.NumberFormat('en-SG', {
-    style: 'currency',
-    currency: 'SGD',
-    minimumFractionDigits: 2,
-  }).format(value);
-}
+const PAGE_SIZE = 20;
+const SEARCH_DEBOUNCE_MS = 300;
+const SKELETON_ROWS = 5;
+const COLUMNS = 7;
+
+const money = new Intl.NumberFormat('en-SG', { style: 'currency', currency: 'SGD', minimumFractionDigits: 2 });
 
 export function ProductsTab() {
   const [search, setSearch] = useState('');
-  const debouncedSearch = useDebouncedValue(search, 300);
+  const debouncedSearch = useDebouncedValue(search, SEARCH_DEBOUNCE_MS);
   const [page, setPage] = useState(1);
 
-  useEffect(() => {
-    setPage(1);
-  }, [debouncedSearch]);
+  useEffect(() => setPage(1), [debouncedSearch]);
 
   const { data, isLoading } = useSupplierIngredientsPaginated({
     page_number: page,
-    page_size: 20,
+    page_size: PAGE_SIZE,
     search: debouncedSearch,
   });
-
   const items = data?.items ?? [];
 
   return (
-    <div className="h-full w-full overflow-auto">
-      <div className="p-6 max-w-7xl mx-auto">
-        <div className="mb-6 max-w-md">
+    <div className="flex flex-col gap-6">
+      <TabHeader title="Products" description="Every product your suppliers carry, with its pack price and tags." />
+      <ListToolbar
+        search={
           <SearchInput
-            placeholder="Search by product name or SKU..."
+            placeholder="Search by product name or SKU"
+            aria-label="Search products"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             onClear={() => setSearch('')}
           />
-        </div>
+        }
+      />
 
-        <div className="rounded-xl border border-border overflow-hidden">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-secondary border-b border-border">
-                <th className="px-4 py-3 text-left font-medium text-muted-foreground">Product name</th>
-                <th className="px-4 py-3 text-left font-medium text-muted-foreground">Category</th>
-                <th className="px-4 py-3 text-left font-medium text-muted-foreground">SKU</th>
-                <th className="px-4 py-3 text-left font-medium text-muted-foreground">Supplier</th>
-                <th className="px-4 py-3 text-left font-medium text-muted-foreground">Tags</th>
-                <th className="px-4 py-3 text-left font-medium text-muted-foreground">Unit</th>
-                <th className="px-4 py-3 text-right font-medium text-muted-foreground">Price / pack</th>
-              </tr>
-            </thead>
-            <tbody>
-              {isLoading && (
-                Array.from({ length: 5 }).map((_, i) => (
-                  <tr key={i} className="border-b border-border">
-                    {Array.from({ length: 7 }).map((_, j) => (
-                      <td key={j} className="px-4 py-3">
-                        <Skeleton className="h-4 rounded" />
-                      </td>
+      {!isLoading && items.length === 0 && !debouncedSearch ? (
+        <EmptyState
+          icon={PackageSearch}
+          title="No products yet"
+          description="Link a supplier to an ingredient, or import a Buy Catalogue from the Ingredients tab."
+        />
+      ) : (
+        <div className="overflow-x-auto">
+          <Table framed>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Product</TableHead>
+                <TableHead>Category</TableHead>
+                <TableHead>SKU</TableHead>
+                <TableHead>Supplier</TableHead>
+                <TableHead>Tags</TableHead>
+                <TableHead>Unit</TableHead>
+                <TableHead numeric>Price per pack</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {isLoading &&
+                Array.from({ length: SKELETON_ROWS }, (_, i) => (
+                  <TableRow key={i}>
+                    {Array.from({ length: COLUMNS }, (_, j) => (
+                      <TableCell key={j}>
+                        <Skeleton className="h-4" />
+                      </TableCell>
                     ))}
-                  </tr>
-                ))
-              )}
-
-              {!isLoading && items.length === 0 && (
-                <tr>
-                  <td colSpan={7} className="px-4 py-12 text-center text-muted-foreground">
-                    {debouncedSearch ? 'No products match your search' : 'No products yet'}
-                  </td>
-                </tr>
-              )}
-
-              {!isLoading && items.map((item) => (
-                <tr
-                  key={item.id}
-                  className="border-b border-border hover:bg-secondary transition-colors"
-                >
-                  <td className="px-4 py-3">
-                    <Link
-                      href={`/ingredients/${item.ingredient_id}`}
-                      className="font-medium text-foreground hover:underline"
-                    >
-                      {item.ingredient_name ?? '—'}
-                    </Link>
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground">
-                    {item.category_name ?? '—'}
-                  </td>
-                  <td className="px-4 py-3 font-mono text-xs text-muted-foreground">
-                    {item.sku ?? '—'}
-                  </td>
-                  <td className="px-4 py-3">
-                    <Link
-                      href={`/suppliers/${item.supplier_id}`}
-                      className="text-muted-foreground hover:underline"
-                    >
-                      {item.supplier_name ?? '—'}
-                    </Link>
-                  </td>
-                  <td className="px-4 py-3">
-                    <TagsCell siId={item.id} />
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground">
-                    {item.unit}
-                  </td>
-                  <td className="px-4 py-3 text-right font-medium text-foreground tabular-nums">
-                    {formatCurrency(item.price_per_pack)}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  </TableRow>
+                ))}
+              {!isLoading && items.length === 0 && <TableEmpty colSpan={COLUMNS}>No products match your search.</TableEmpty>}
+              {!isLoading &&
+                items.map((item) => (
+                  <TableRow key={item.id}>
+                    <TableCell className="min-w-48">
+                      <Link href={`/ingredients/${item.ingredient_id}`} className="font-medium hover:underline">
+                        {item.ingredient_name ? formatDisplayName(item.ingredient_name) : '—'}
+                      </Link>
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {item.category_name ? formatDisplayName(item.category_name) : '—'}
+                    </TableCell>
+                    <TableCell className="font-mono text-xs text-muted-foreground tabular-nums">{item.sku ?? '—'}</TableCell>
+                    <TableCell className="min-w-40">
+                      <Link href={`/suppliers/${item.supplier_id}`} className="text-muted-foreground hover:underline">
+                        {item.supplier_name ? formatDisplayName(item.supplier_name) : '—'}
+                      </Link>
+                    </TableCell>
+                    <TableCell>
+                      <TagsCell siId={item.id} />
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">{item.unit}</TableCell>
+                    <TableCell numeric className="font-medium">
+                      {money.format(item.price_per_pack)}
+                    </TableCell>
+                  </TableRow>
+                ))}
+            </TableBody>
+          </Table>
         </div>
+      )}
 
-        {data && (
-          <div className="mt-4">
-            <Pagination
-              pageNumber={data.page_number}
-              totalPages={data.total_pages}
-              totalCount={data.total_count}
-              currentPageSize={data.current_page_size}
-              onPageChange={setPage}
-            />
-          </div>
-        )}
-      </div>
+      {data && (
+        <Pagination
+          pageNumber={data.page_number}
+          totalPages={data.total_pages}
+          totalCount={data.total_count}
+          currentPageSize={data.current_page_size}
+          onPageChange={setPage}
+        />
+      )}
     </div>
   );
 }

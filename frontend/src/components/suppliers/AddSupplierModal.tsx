@@ -1,10 +1,15 @@
 'use client';
 
-import { useState, useCallback } from 'react';
-import { ChevronDown, ChevronUp, MapPin, Phone, Mail } from 'lucide-react';
-import { useCreateSupplier } from '@/lib/hooks';
-import { Button, Input, Modal } from '@/components/ui';
+/**
+ * Add supplier — a SidePanel with the name, then how to reach them. The name is kept from the
+ * modal it replaced so callers are unchanged.
+ */
+import { useState } from 'react';
 import { toast } from 'sonner';
+import { useCreateSupplier } from '@/lib/hooks';
+import { Input } from '@/components/ui';
+import { FormPanel } from '@/components/forms/FormPanel';
+import { FieldRow, FormField, FormSection, fieldA11y } from '@/components/forms/FormField';
 
 interface AddSupplierModalProps {
   isOpen: boolean;
@@ -18,139 +23,92 @@ export function AddSupplierModal({ isOpen, onClose }: AddSupplierModalProps) {
   const [address, setAddress] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
-  const [showMoreInfo, setShowMoreInfo] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [attempted, setAttempted] = useState(false);
+  const nameError = attempted && !name.trim() ? 'Supplier name is required' : undefined;
 
-  const resetForm = useCallback(() => {
+  const resetForm = () => {
     setName('');
     setAddress('');
     setPhone('');
     setEmail('');
-    setShowMoreInfo(false);
-    setIsSubmitting(false);
-  }, []);
+    setAttempted(false);
+  };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name.trim()) {
-      toast.error('Supplier name is required');
-      return;
-    }
-
-    setIsSubmitting(true);
-
-    try {
-      await createSupplier.mutateAsync({
+  const handleSubmit = () => {
+    setAttempted(true);
+    if (!name.trim()) return;
+    createSupplier.mutate(
+      {
         name: name.trim(),
         address: address.trim() || undefined,
         phone_number: phone.trim() || undefined,
         email: email.trim() || undefined,
-      });
-
-      toast.success('Supplier created');
-      resetForm();
-      onClose();
-    } catch {
-      toast.error('Failed to create supplier');
-    } finally {
-      setIsSubmitting(false);
-    }
+      },
+      {
+        onSuccess: () => {
+          toast.success('Supplier created');
+          resetForm();
+          onClose();
+        },
+        onError: () => toast.error('Failed to create supplier'),
+      }
+    );
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Add supplier">
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Supplier Name */}
-        <div>
-          <label className="block text-xs font-medium text-muted-foreground mb-1">
-            Supplier Name *
-          </label>
+    <FormPanel
+      open={isOpen}
+      onClose={onClose}
+      title="Add supplier"
+      onSubmit={handleSubmit}
+      submitLabel="Create supplier"
+      pending={createSupplier.isPending}
+    >
+      <FormSection title="Supplier">
+        <FormField id="supplier-name" label="Name" error={nameError}>
           <Input
+            {...fieldA11y('supplier-name', nameError)}
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="e.g., Fresh Farms Inc."
+            placeholder="e.g. Fresh Farms"
+            autoFocus
           />
-        </div>
+        </FormField>
+      </FormSection>
 
-        {/* More Information Dropdown */}
-        <div className="border-t border-border pt-4">
-          <button
-            type="button"
-            onClick={() => setShowMoreInfo(!showMoreInfo)}
-            className="flex items-center justify-between w-full text-sm font-medium text-muted-foreground hover:text-foreground"
-          >
-            <span>More Information</span>
-            {showMoreInfo ? (
-              <ChevronUp className="h-4 w-4" />
-            ) : (
-              <ChevronDown className="h-4 w-4" />
-            )}
-          </button>
-
-          {showMoreInfo && (
-            <div className="mt-4 space-y-3">
-              {/* Phone Number */}
-              <div>
-                <label className="block text-xs font-medium text-muted-foreground mb-1">
-                  Phone Number
-                </label>
-                <div className="flex items-center gap-2">
-                  <Phone className="h-4 w-4 text-muted-foreground shrink-0" />
-                  <Input
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="e.g., +65 1234 5678"
-                    className="flex-1"
-                  />
-                </div>
-              </div>
-
-              {/* Email */}
-              <div>
-                <label className="block text-xs font-medium text-muted-foreground mb-1">
-                  Email
-                </label>
-                <div className="flex items-center gap-2">
-                  <Mail className="h-4 w-4 text-muted-foreground shrink-0" />
-                  <Input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="e.g., contact@supplier.com"
-                    className="flex-1"
-                  />
-                </div>
-              </div>
-
-              {/* Address */}
-              <div>
-                <label className="block text-xs font-medium text-muted-foreground mb-1">
-                  Address
-                </label>
-                <div className="flex items-center gap-2">
-                  <MapPin className="h-4 w-4 text-muted-foreground shrink-0" />
-                  <Input
-                    value={address}
-                    onChange={(e) => setAddress(e.target.value)}
-                    placeholder="e.g., 123 Main Street, Singapore"
-                    className="flex-1"
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Footer */}
-        <div className="flex justify-end gap-3 pt-4 border-t border-border">
-          <Button type="button" variant="outline" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button type="submit" disabled={isSubmitting || !name.trim()}>
-            {isSubmitting ? 'Creating...' : 'Create Supplier'}
-          </Button>
-        </div>
-      </form>
-    </Modal>
+      <FormSection title="Contact" description="Optional. Shown on the supplier's page and on orders.">
+        <FieldRow>
+          <FormField id="supplier-phone" label="Phone" optional>
+            <Input
+              {...fieldA11y('supplier-phone')}
+              type="tel"
+              autoComplete="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="e.g. +65 1234 5678"
+            />
+          </FormField>
+          <FormField id="supplier-email" label="Email" optional>
+            <Input
+              {...fieldA11y('supplier-email')}
+              type="email"
+              autoComplete="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="e.g. orders@supplier.com"
+            />
+          </FormField>
+        </FieldRow>
+        <FormField id="supplier-address" label="Address" optional>
+          <Input
+            {...fieldA11y('supplier-address')}
+            autoComplete="street-address"
+            value={address}
+            onChange={(e) => setAddress(e.target.value)}
+            placeholder="e.g. 123 Main Street, Singapore"
+          />
+        </FormField>
+      </FormSection>
+    </FormPanel>
   );
 }

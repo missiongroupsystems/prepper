@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { X, Plus, Loader2 } from 'lucide-react';
-import { Modal } from '@/components/ui/Modal';
+import { X, Plus } from 'lucide-react';
+import { Button, Input, Label, Modal, PendingButton } from '@/components/ui';
 import {
   useSupplierIngredientTags,
   useCreateSupplierIngredientTag,
@@ -82,7 +82,7 @@ export function TagManagementModal({ siId, isOpen, onClose }: TagManagementModal
                   type="checkbox"
                   checked={linked}
                   onChange={() => handleToggle(tag.id)}
-                  className="h-4 w-4 rounded border-input accent-[var(--color-brand-accent)] cursor-pointer"
+                  className="size-4 cursor-pointer rounded border-input accent-accent"
                 />
                 <span className="text-sm text-foreground truncate">{tag.name}</span>
               </label>
@@ -90,25 +90,27 @@ export function TagManagementModal({ siId, isOpen, onClose }: TagManagementModal
                 <div className="flex items-center gap-1 shrink-0">
                   <button
                     onClick={confirmDelete}
-                    className="text-xs text-[var(--color-feedback-error)] font-medium hover:underline"
+                    className="text-[13px] font-medium text-danger hover:underline max-sm:min-h-10"
                   >
                     Delete
                   </button>
                   <button
                     onClick={() => setConfirmDeleteId(null)}
-                    className="text-xs text-muted-foreground hover:underline"
+                    className="text-[13px] text-muted-foreground hover:underline max-sm:min-h-10"
                   >
                     Cancel
                   </button>
                 </div>
               ) : (
-                <button
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
                   onClick={() => handleDeleteGlobal(tag.id)}
-                  className="opacity-0 group-hover:opacity-100 p-0.5 rounded-lg text-muted-foreground hover:text-[var(--color-feedback-error)] transition-opacity"
+                  className="text-muted-foreground hover:text-danger"
                   aria-label={`Delete tag ${tag.name}`}
                 >
-                  <X className="h-3.5 w-3.5" />
-                </button>
+                  <X className="size-4" strokeWidth={1.5} aria-hidden="true" />
+                </Button>
               )}
             </div>
           );
@@ -117,30 +119,22 @@ export function TagManagementModal({ siId, isOpen, onClose }: TagManagementModal
 
       {/* Create new tag */}
       <div className="border-t border-border pt-4">
-        <p className="text-xs font-medium text-muted-foreground mb-2">
+        <Label htmlFor="new-tag-name" className="mb-1.5 block">
           New tag
-        </p>
+        </Label>
         <div className="flex gap-2">
-          <input
-            type="text"
+          <Input
+            id="new-tag-name"
             value={newTagName}
             onChange={(e) => setNewTagName(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
-            placeholder="Tag name..."
-            className="flex-1 rounded-lg border border-input bg-card px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            placeholder="Tag name"
+            className="flex-1"
           />
-          <button
-            onClick={handleCreate}
-            disabled={!newTagName.trim() || createTag.isPending}
-            className="inline-flex items-center gap-1 rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-          >
-            {createTag.isPending ? (
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-            ) : (
-              <Plus className="h-3.5 w-3.5" />
-            )}
+          <PendingButton onClick={handleCreate} disabled={!newTagName.trim()} pending={createTag.isPending}>
+            <Plus className="size-4" strokeWidth={1.5} aria-hidden="true" />
             Add
-          </button>
+          </PendingButton>
         </div>
       </div>
     </Modal>

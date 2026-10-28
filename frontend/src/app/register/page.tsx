@@ -4,9 +4,9 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { toast } from 'sonner';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
+import { FieldHint, Input, PendingButton } from '@/components/ui';
+import { FormField } from '@/components/forms/FormField';
+import { AuthError, AuthLayout } from '@/components/forms/AuthLayout';
 import { useAppState } from '@/lib/store';
 import { registerUser } from '@/lib/api';
 import type { AuthApiError } from '@/types';
@@ -92,94 +92,76 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="flex min-h-full items-center justify-center p-4">
-      <Card className="w-full max-w-sm">
-        <CardHeader>
-          <CardTitle className="text-center text-xl">Join Mission Recipes</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleRegister} className="space-y-4">
-            <div className="space-y-2">
-              <label htmlFor="name" className="text-sm font-medium text-muted-foreground">
-                Name
-              </label>
-              <Input
-                id="name"
-                type="text"
-                placeholder="Your name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <label htmlFor="email" className="text-sm font-medium text-muted-foreground">
-                Email
-              </label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <label htmlFor="phone" className="text-sm font-medium text-muted-foreground">
-                Phone number (optional)
-              </label>
-              <Input
-                id="phone"
-                type="tel"
-                placeholder="+1 (555) 000-0000"
-                value={phoneNumber}
-                onChange={(e) => setPhoneNumber(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <label htmlFor="password" className="text-sm font-medium text-muted-foreground">
-                Password
-              </label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="Create a password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <label htmlFor="confirmPassword" className="text-sm font-medium text-muted-foreground">
-                Confirm password
-              </label>
-              <Input
-                id="confirmPassword"
-                type="password"
-                placeholder="Confirm your password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-              />
-            </div>
-            {error && (
-              <div role="alert" className="rounded-lg bg-[var(--color-feedback-error-tint)] p-3 text-sm text-[var(--color-feedback-error)]">
-                {error}
-              </div>
-            )}
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? 'Creating account...' : 'Create account'}
-            </Button>
-          </form>
-          <p className="mt-4 text-center text-sm text-muted-foreground">
-            Already have an account?{' '}
-            <Link href="/login" className="font-medium text-foreground hover:underline">
-              Login
-            </Link>
-          </p>
-        </CardContent>
-      </Card>
-    </div>
+    <AuthLayout
+      title="Join Mission Recipes"
+      description="Create an account to cost, test and share your dishes."
+      footer={
+        <>
+          Already have an account?{' '}
+          <Link href="/login" className="font-medium text-ink underline underline-offset-2 hover:no-underline">
+            Log in
+          </Link>
+        </>
+      }
+    >
+      <form onSubmit={handleRegister} className="flex flex-col gap-4">
+        <FormField id="name" label="Name">
+          <Input
+            id="name"
+            type="text"
+            autoComplete="name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+          />
+        </FormField>
+        <FormField id="email" label="Email">
+          <Input
+            id="email"
+            type="email"
+            autoComplete="email"
+            placeholder="you@example.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+        </FormField>
+        <FormField id="phone" label="Phone" optional>
+          <Input
+            id="phone"
+            type="tel"
+            autoComplete="tel"
+            placeholder="e.g. +65 1234 5678"
+            value={phoneNumber}
+            onChange={(e) => setPhoneNumber(e.target.value)}
+          />
+        </FormField>
+        <FormField id="password" label="Password">
+          <Input
+            id="password"
+            type="password"
+            autoComplete="new-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+        </FormField>
+        <FormField id="confirmPassword" label="Confirm password">
+          <Input
+            id="confirmPassword"
+            type="password"
+            autoComplete="new-password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            required
+          />
+        </FormField>
+        <FieldHint className="-mt-2">At least 6 characters.</FieldHint>
+        {error && <AuthError>{error}</AuthError>}
+        <PendingButton type="submit" className="w-full" pending={isLoading}>
+          Create account
+        </PendingButton>
+      </form>
+    </AuthLayout>
   );
 }

@@ -1,149 +1,22 @@
 'use client';
 
-import { useState, useMemo } from 'react';
-import { Plus, X, ChevronDown, ChevronRight } from 'lucide-react';
+/**
+ * Settings → Outlets: brands and the locations under them. Admins add outlets in a panel and
+ * archive them; everyone else sees their own outlet and its children, read-only. An outlet is
+ * edited on its own page.
+ */
+import { useMemo, useState } from 'react';
+import { ChevronDown, ChevronRight, Store } from 'lucide-react';
+import { toast } from 'sonner';
 import { useOutlets, useUpdateOutlet, useDeactivateOutlet, useUser } from '@/lib/hooks';
 import { useAppState } from '@/lib/store';
 import { OutletCard, OutletListRow, AddOutletModal } from '@/components/outlets';
-import { PageHeader, SearchInput, Button, Skeleton, Input, Select, ViewToggle, Checkbox } from '@/components/ui';
-import { toast } from 'sonner';
-import type { Outlet, UpdateOutletRequest, OutletType } from '@/types';
+import { Button, Checkbox } from '@/components/ui';
+import { CardGrid, ListGroup, ListStack } from '@/components/lists/ListLayout';
+import { ReferenceListView, type ListView } from '@/components/lists/ReferenceListView';
+import type { Outlet } from '@/types';
 
-type ViewType = 'grid' | 'list';
-
-interface OutletFormData {
-  name: string;
-  code: string;
-  outlet_type: OutletType;
-  parent_outlet_id: number | null;
-}
-
-interface EditOutletModalProps {
-  outlet: Outlet;
-  allOutlets: Outlet[];
-  onClose: () => void;
-}
-
-const OUTLET_TYPE_OPTIONS = [
-  { value: 'brand', label: 'Brand' },
-  { value: 'location', label: 'Location' },
-];
-
-function EditOutletModal({ outlet, allOutlets, onClose }: EditOutletModalProps) {
-  const updateOutlet = useUpdateOutlet();
-  const [formData, setFormData] = useState<OutletFormData>({
-    name: outlet.name,
-    code: outlet.code,
-    outlet_type: outlet.outlet_type,
-    parent_outlet_id: outlet.parent_outlet_id,
-  });
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.name.trim()) {
-      toast.error('Outlet name is required');
-      return;
-    }
-    if (!formData.code.trim()) {
-      toast.error('Outlet code is required');
-      return;
-    }
-
-    const updateData: UpdateOutletRequest = {
-      name: formData.name.trim(),
-      code: formData.code.trim(),
-      outlet_type: formData.outlet_type,
-      parent_outlet_id: formData.parent_outlet_id,
-    };
-
-    updateOutlet.mutate(
-      { id: outlet.id, data: updateData },
-      {
-        onSuccess: () => {
-          toast.success('Outlet updated');
-          onClose();
-        },
-        onError: () => {
-          toast.error('Failed to update outlet');
-        },
-      }
-    );
-  };
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-[var(--color-scrim)]" onClick={onClose} />
-      <form
-        onSubmit={handleSubmit}
-        className="relative bg-card border border-border rounded-2xl p-6 shadow-elevation-3 w-full max-w-md mx-4"
-      >
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="font-medium text-lg">Edit outlet</h3>
-          <Button variant="ghost" size="icon" onClick={onClose} type="button">
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
-
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">Name *</label>
-            <Input
-              value={formData.name}
-              onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
-              placeholder="e.g., Main Branch"
-              autoFocus
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-1">Code *</label>
-            <Input
-              value={formData.code}
-              onChange={(e) => setFormData((prev) => ({ ...prev, code: e.target.value }))}
-              placeholder="e.g., CS, TBH"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-1">Outlet type</label>
-            <Select
-              value={formData.outlet_type}
-              onChange={(e) => setFormData((prev) => ({ ...prev, outlet_type: e.target.value as OutletType }))}
-              options={OUTLET_TYPE_OPTIONS}
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-1">Parent outlet</label>
-            <select
-              value={formData.parent_outlet_id || ''}
-              onChange={(e) => setFormData((prev) => ({ ...prev, parent_outlet_id: e.target.value ? parseInt(e.target.value) : null }))}
-              className="w-full px-3 py-2 border border-input rounded-lg bg-card text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-            >
-              <option value="">-- None --</option>
-              {allOutlets
-                .filter((o) => o.id !== outlet.id)
-                .map((o) => (
-                  <option key={o.id} value={o.id}>
-                    {o.name} ({o.code})
-                  </option>
-                ))}
-            </select>
-          </div>
-
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={onClose} type="button">
-              Cancel
-            </Button>
-            <Button type="submit" disabled={updateOutlet.isPending}>
-              {updateOutlet.isPending ? 'Saving...' : 'Save changes'}
-            </Button>
-          </div>
-        </div>
-      </form>
-    </div>
-  );
-}
+const PAGE_SIZE = 30;
 
 interface OutletManagementTabProps {
   userType?: 'normal' | 'admin' | null;
@@ -154,83 +27,38 @@ export function OutletManagementTab({ userType }: OutletManagementTabProps) {
   const updateOutlet = useUpdateOutlet();
   const { userId } = useAppState();
   const { data: currentUser } = useUser(userId);
+  const isAdmin = userType === 'admin';
 
   const [search, setSearch] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [showArchived, setShowArchived] = useState(false);
-  const [editingOutlet, setEditingOutlet] = useState<Outlet | null>(null);
-  const [view, setView] = useState<ViewType>('grid');
+  const [view, setView] = useState<ListView>('grid');
   const [expandedParents, setExpandedParents] = useState<Set<number>>(new Set());
   const [groupByBrands, setGroupByBrands] = useState(false);
-  const { data: outletsData, isLoading, error } = useOutlets({ is_active: showArchived ? undefined : true, page_size: 30 });
-  const outlets = outletsData?.items;
-
-  const toggleParentExpanded = (parentId: number) => {
-    const newExpanded = new Set(expandedParents);
-    if (newExpanded.has(parentId)) {
-      newExpanded.delete(parentId);
-    } else {
-      newExpanded.add(parentId);
-    }
-    setExpandedParents(newExpanded);
-  };
-
-  // Group outlets by parent-child relationship
-  const groupedOutlets = useMemo(() => {
-    if (!outlets) return { parents: [], childrenByParent: new Map() };
-
-    const parents = outlets.filter((o) => o.parent_outlet_id === null);
-    const childrenByParent = new Map<number, Outlet[]>();
-
-    outlets.forEach((outlet) => {
-      if (outlet.parent_outlet_id !== null) {
-        if (!childrenByParent.has(outlet.parent_outlet_id)) {
-          childrenByParent.set(outlet.parent_outlet_id, []);
-        }
-        childrenByParent.get(outlet.parent_outlet_id)!.push(outlet);
-      }
-    });
-
-    return { parents, childrenByParent };
-  }, [outlets]);
+  const { data: outletsData, isLoading, error } = useOutlets({ is_active: showArchived ? undefined : true, page_size: PAGE_SIZE });
+  const outlets = useMemo(() => outletsData?.items ?? [], [outletsData]);
+  const outletsById = useMemo(() => new Map(outlets.map((o) => [o.id, o])), [outlets]);
+  const parentName = (outlet: Outlet) =>
+    outlet.parent_outlet_id !== null ? outletsById.get(outlet.parent_outlet_id)?.name : undefined;
 
   const filteredOutlets = useMemo(() => {
-    if (!outlets) return [];
-
+    const needle = search.toLowerCase();
+    const scopeId = !isAdmin ? currentUser?.outlet_id : undefined;
     return outlets.filter((outlet) => {
-      // If non-admin user, only show their assigned outlet and child outlets
-      if (userType !== 'admin' && currentUser?.outlet_id) {
-        // Show the user's own outlet or any child outlets under their assigned outlet
-        const isUserOutlet = outlet.id === currentUser.outlet_id;
-        const isChildOfUserOutlet = outlet.parent_outlet_id === currentUser.outlet_id;
-
-        if (!isUserOutlet && !isChildOfUserOutlet) {
-          return false;
-        }
-      }
-
-      if (search && !outlet.name.toLowerCase().includes(search.toLowerCase())) {
-        return false;
-      }
-      return true;
+      // A non-admin sees their own outlet and the outlets directly under it.
+      if (scopeId && outlet.id !== scopeId && outlet.parent_outlet_id !== scopeId) return false;
+      return !needle || outlet.name.toLowerCase().includes(needle);
     });
-  }, [outlets, search, userType, currentUser?.outlet_id]);
+  }, [outlets, search, isAdmin, currentUser?.outlet_id]);
 
-  const outletsByBrand = useMemo(() => {
-    if (!filteredOutlets) return new Map<number | null, Outlet[]>();
-
-    const grouped = new Map<number | null, Outlet[]>();
-
-    filteredOutlets.forEach((outlet) => {
-      const brandId = outlet.outlet_type === 'brand' ? outlet.id : outlet.parent_outlet_id;
-      if (!grouped.has(brandId)) {
-        grouped.set(brandId, []);
-      }
-      grouped.get(brandId)!.push(outlet);
+  const toggleParentExpanded = (parentId: number) => {
+    setExpandedParents((prev) => {
+      const next = new Set(prev);
+      if (next.has(parentId)) next.delete(parentId);
+      else next.add(parentId);
+      return next;
     });
-
-    return grouped;
-  }, [filteredOutlets]);
+  };
 
   const handleArchive = (outlet: Outlet) => {
     deactivateOutlet.mutate(outlet.id, {
@@ -249,210 +77,108 @@ export function OutletManagementTab({ userType }: OutletManagementTabProps) {
     );
   };
 
-  if (error) {
+  const card = (outlet: Outlet) => (
+    <OutletCard
+      key={outlet.id}
+      outlet={outlet}
+      parentOutletName={parentName(outlet)}
+      onArchive={isAdmin ? handleArchive : undefined}
+      onUnarchive={isAdmin ? handleUnarchive : undefined}
+    />
+  );
+
+  const brandGroups = (items: Outlet[]) => {
+    const groups = new Map<number | null, Outlet[]>();
+    for (const outlet of items) {
+      const brandId = outlet.outlet_type === 'brand' ? outlet.id : outlet.parent_outlet_id;
+      groups.set(brandId, [...(groups.get(brandId) ?? []), outlet]);
+    }
+    return Array.from(groups.entries()).map(([brandId, group]) => {
+      const brand = brandId !== null ? outletsById.get(brandId) : undefined;
+      // The brand card first, then its locations.
+      const ordered = [...group].sort((a, b) => Number(b.id === brandId) - Number(a.id === brandId));
+      return (
+        <ListGroup key={brandId ?? 'ungrouped'} title={brand?.name ?? 'No brand'} count={ordered.length}>
+          <CardGrid>{ordered.map(card)}</CardGrid>
+        </ListGroup>
+      );
+    });
+  };
+
+  const hierarchy = (items: Outlet[]) => {
+    const visible = new Set(items.map((o) => o.id));
+    const roots = items.filter((o) => o.parent_outlet_id === null || !visible.has(o.parent_outlet_id));
     return (
-      <div className="p-6">
-        <div className="rounded-lg bg-destructive/10 p-4 text-destructive">
-          Failed to load outlets. Please try again.
-        </div>
-      </div>
+      <ListStack>
+        {roots.map((parent) => {
+          const children = items.filter((o) => o.parent_outlet_id === parent.id);
+          const isExpanded = expandedParents.has(parent.id);
+          return (
+            <div key={parent.id} className="flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                {children.length > 0 ? (
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    onClick={() => toggleParentExpanded(parent.id)}
+                    aria-expanded={isExpanded}
+                    aria-label={`${isExpanded ? 'Hide' : 'Show'} ${children.length} outlets under ${parent.name}`}
+                  >
+                    {isExpanded ? (
+                      <ChevronDown className="size-4" strokeWidth={1.5} aria-hidden="true" />
+                    ) : (
+                      <ChevronRight className="size-4" strokeWidth={1.5} aria-hidden="true" />
+                    )}
+                  </Button>
+                ) : (
+                  <span className="size-8 shrink-0 max-sm:size-10" aria-hidden="true" />
+                )}
+                <div className="min-w-0 flex-1">
+                  <OutletListRow outlet={parent} parentOutletName={parentName(parent)} />
+                </div>
+              </div>
+              {isExpanded && (
+                <div className="ml-4 flex flex-col gap-2 border-l border-line pl-6">
+                  {children.map((child) => (
+                    <OutletListRow key={child.id} outlet={child} parentOutletName={parent.name} />
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </ListStack>
     );
-  }
+  };
 
   return (
-    <div className="h-full w-full overflow-auto">
-      <div className="p-6 max-w-7xl mx-auto">
-        <PageHeader
-          title="Outlets"
-          description={userType === 'admin' ? 'Manage brands and locations' : 'View your assigned outlets'}
-        >
-          {userType === 'admin' && (
-            <Button onClick={() => setShowForm(true)}>
-              <Plus className="h-4 w-4" />
-              <span className="hidden sm:inline">Add outlet</span>
-            </Button>
-          )}
-        </PageHeader>
-
-        <AddOutletModal isOpen={showForm} onClose={() => setShowForm(false)} />
-
-        {/* Toolbar */}
-        <div className="flex flex-col gap-4 mb-6 sm:flex-row sm:items-center">
-          <div className="flex-1 max-w-md">
-            <SearchInput
-              placeholder="Search outlets..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              onClear={() => setSearch('')}
-            />
-          </div>
-
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-2">
-            <Checkbox
-              checked={showArchived}
-              onChange={(e) => setShowArchived(e.target.checked)}
-              label="Show archived"
-            />
-
-            {view === 'grid' && (
-              <Checkbox
-                checked={groupByBrands}
-                onChange={(e) => setGroupByBrands(e.target.checked)}
-                label="Group by brands"
-              />
-            )}
-
-            <ViewToggle view={view} onViewChange={setView} />
-          </div>
-        </div>
-
-        {/* Loading State */}
-        {isLoading && (
-          view === 'grid' ? (
-            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {Array.from({ length: 8 }).map((_, i) => (
-                <Skeleton key={i} className="h-32 rounded-xl" />
-              ))}
-            </div>
-          ) : (
-            <div className="flex flex-col gap-2 w-full">
-              {Array.from({ length: 8 }).map((_, i) => (
-                <Skeleton key={i} className="h-20 rounded-xl" />
-              ))}
-            </div>
-          )
-        )}
-
-        {/* Empty State */}
-        {!isLoading && filteredOutlets.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-muted-foreground">
-              {search ? 'No outlets match your search' : 'No outlets yet'}
-            </p>
-          </div>
-        )}
-
-        {/* Outlets Grid */}
-        {!isLoading && filteredOutlets.length > 0 && (
-          view === 'grid' ? (
-            groupByBrands ? (
-              <div className="flex flex-col gap-8">
-                {Array.from(outletsByBrand.entries()).map(([brandId, outletGroup]) => {
-                  const brand = outletGroup.find((o) => o.outlet_type === 'brand' || o.id === brandId);
-                  const locations = outletGroup.filter((o) => o.outlet_type === 'location');
-                  const allOutletsInGroup = [brand, ...locations].filter(Boolean) as Outlet[];
-
-                  return (
-                    <div key={brandId || 'ungrouped'}>
-                      <h3 className="text-lg font-medium mb-4 text-foreground">
-                        {brand?.name || 'Etc'}
-                      </h3>
-                      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                        {allOutletsInGroup.map((outlet) => {
-                          const parentOutlet = outlet.parent_outlet_id ? outlets?.find((o) => o.id === outlet.parent_outlet_id) : undefined;
-                          return (
-                            <OutletCard
-                              key={outlet.id}
-                              outlet={outlet}
-                              parentOutletName={parentOutlet?.name}
-                              onArchive={handleArchive}
-                              onUnarchive={handleUnarchive}
-                            />
-                          );
-                        })}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {filteredOutlets.map((outlet) => {
-                  const parentOutlet = outlet.parent_outlet_id ? outlets?.find((o) => o.id === outlet.parent_outlet_id) : undefined;
-                  return (
-                    <OutletCard
-                      key={outlet.id}
-                      outlet={outlet}
-                      parentOutletName={parentOutlet?.name}
-                      onArchive={handleArchive}
-                      onUnarchive={handleUnarchive}
-                    />
-                  );
-                })}
-              </div>
-            )
-          ) : (
-            <div className="flex flex-col gap-2 w-full">
-              {groupedOutlets.parents
-                .filter((parent) => {
-                  if (search && !parent.name.toLowerCase().includes(search.toLowerCase())) {
-                    return false;
-                  }
-                  return true;
-                })
-                .flatMap((parent: Outlet) => {
-                  const children = groupedOutlets.childrenByParent.get(parent.id) || [];
-                  const isExpanded = expandedParents.has(parent.id);
-
-                  const rows: React.ReactElement[] = [
-                    <div key={`parent-${parent.id}`} className="flex flex-col gap-2">
-                      <div className="flex items-center gap-2">
-                        {children.length > 0 ? (
-                          <button
-                            onClick={() => toggleParentExpanded(parent.id)}
-                            className="p-1 rounded hover:bg-secondary cursor-pointer"
-                            title={isExpanded ? 'Collapse' : 'Expand'}
-                          >
-                            {isExpanded ? (
-                              <ChevronDown className="h-4 w-4" />
-                            ) : (
-                              <ChevronRight className="h-4 w-4" />
-                            )}
-                          </button>
-                        ) : (
-                          <div className="w-6 h-6" />
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <OutletListRow key={`parent-row-${parent.id}`} outlet={parent} />
-                        </div>
-                      </div>
-                      {isExpanded && (
-                        <div className="flex flex-col gap-2 pl-6 border-l-2 border-border">
-                          {children
-                            .filter((child: Outlet) => {
-                              if (search && !child.name.toLowerCase().includes(search.toLowerCase())) {
-                                return false;
-                              }
-                              return true;
-                            })
-                            .map((child: Outlet) => {
-                              const parentOutlet = child.parent_outlet_id ? outlets?.find((o) => o.id === child.parent_outlet_id) : undefined;
-                              return (
-                                <div key={`child-${child.id}`} className="pl-4">
-                                  <OutletListRow outlet={child} parentOutletName={parentOutlet?.name} />
-                                </div>
-                              );
-                            })}
-                        </div>
-                      )}
-                    </div>,
-                  ];
-
-                  return rows;
-                })}
-            </div>
-          )
-        )}
-      </div>
-
-      {/* Edit Modal */}
-      {editingOutlet && outlets && (
-        <EditOutletModal
-          outlet={editingOutlet}
-          allOutlets={outlets}
-          onClose={() => setEditingOutlet(null)}
-        />
-      )}
-    </div>
+    <ReferenceListView
+      title="Outlets"
+      description={isAdmin ? 'Brands and the locations under them.' : 'Your outlet and the outlets under it.'}
+      noun="outlets"
+      icon={Store}
+      onAdd={isAdmin ? () => setShowForm(true) : undefined}
+      addLabel="Add outlet"
+      search={search}
+      onSearchChange={setSearch}
+      showArchived={showArchived}
+      onShowArchivedChange={setShowArchived}
+      view={view}
+      onViewChange={setView}
+      toolbarExtras={
+        view === 'grid' && (
+          <Checkbox checked={groupByBrands} onChange={(e) => setGroupByBrands(e.target.checked)} label="Group by brand" />
+        )
+      }
+      items={filteredOutlets}
+      isLoading={isLoading}
+      error={error}
+      renderItem={card}
+      renderBody={(items, bodyView) =>
+        bodyView === 'list' ? hierarchy(items) : groupByBrands ? <div className="flex flex-col gap-8">{brandGroups(items)}</div> : <CardGrid>{items.map(card)}</CardGrid>
+      }
+    >
+      <AddOutletModal isOpen={showForm} onClose={() => setShowForm(false)} />
+    </ReferenceListView>
   );
 }

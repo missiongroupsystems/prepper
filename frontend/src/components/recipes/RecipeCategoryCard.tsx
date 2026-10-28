@@ -1,11 +1,10 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Edit2, Archive, ArchiveRestore } from 'lucide-react';
-import { Card, CardHeader, CardTitle, CardContent, Badge, Button } from '@/components/ui';
-import type { RecipeCategory } from '@/types';
+import { Badge } from '@/components/ui';
+import { RecordCard } from '@/components/lists/RecordCard';
+import { RowActions } from '@/components/lists/RowActions';
 import { formatDisplayName } from '@/lib/format/displayName';
+import type { RecipeCategory } from '@/types';
 
 interface RecipeCategoryCardProps {
   category: RecipeCategory;
@@ -14,74 +13,24 @@ interface RecipeCategoryCardProps {
 }
 
 export function RecipeCategoryCard({ category, onArchive, onUnarchive }: RecipeCategoryCardProps) {
-  const [showActions, setShowActions] = useState(false);
-  const router = useRouter();
-
+  const title = formatDisplayName(category.name);
+  const href = `/recipe-categories/${category.id}`;
   return (
-    <Card
-      className="relative group"
-      onMouseEnter={() => setShowActions(true)}
-      onMouseLeave={() => setShowActions(false)}
-    >
-      <CardHeader>
-        <div className="flex-1 min-w-0">
-          <CardTitle className="break-words">
-            {formatDisplayName(category.name)}
-          </CardTitle>
-        </div>
-      </CardHeader>
-
-      <CardContent>
-        <div className="flex flex-col gap-2">
-          {category.description && (
-            <p className="text-sm text-muted-foreground line-clamp-2">
-              {category.description}
-            </p>
-          )}
-          <div className="flex items-center gap-2">
-            {!category.is_active && (
-              <Badge variant="warning">Archived</Badge>
-            )}
-          </div>
-        </div>
-      </CardContent>
-
-      {/* Quick Actions */}
-      {showActions && (
-        <div className="absolute top-2 right-2 flex items-center gap-1 bg-card rounded-lg shadow-elevation-1 border border-border p-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-7 w-7"
-            onClick={() => router.push(`/recipe-categories/${category.id}`)}
-            title="View Details"
-          >
-            <Edit2 className="h-3.5 w-3.5" />
-          </Button>
-          {onArchive && category.is_active && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-7 w-7"
-              onClick={() => onArchive(category)}
-              title="Archive"
-            >
-              <Archive className="h-3.5 w-3.5" />
-            </Button>
-          )}
-          {onUnarchive && !category.is_active && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-7 w-7"
-              onClick={() => onUnarchive(category)}
-              title="Unarchive"
-            >
-              <ArchiveRestore className="h-3.5 w-3.5" />
-            </Button>
-          )}
-        </div>
-      )}
-    </Card>
+    <RecordCard
+      title={title}
+      description={category.description}
+      href={href}
+      badges={!category.is_active ? <Badge variant="warning">Archived</Badge> : undefined}
+      actions={
+        <RowActions
+          item={category}
+          name={title}
+          isActive={category.is_active}
+          editHref={href}
+          onArchive={onArchive}
+          onUnarchive={onUnarchive}
+        />
+      }
+    />
   );
 }

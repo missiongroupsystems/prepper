@@ -1,11 +1,9 @@
 'use client';
 
-import { useState } from 'react';
-import { Card, CardContent } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
-import { Edit2, Archive, ArchiveRestore } from 'lucide-react';
-import { Allergen } from '@/types';
+import { Badge } from '@/components/ui';
+import { RecordRow } from '@/components/lists/RecordCard';
+import { RowActions } from '@/components/lists/RowActions';
+import type { Allergen } from '@/types';
 
 interface AllergenListRowProps {
   allergen: Allergen;
@@ -14,82 +12,23 @@ interface AllergenListRowProps {
   onUnarchive?: (allergen: Allergen) => void;
 }
 
-export function AllergenListRow({
-  allergen,
-  onEdit,
-  onArchive,
-  onUnarchive,
-}: AllergenListRowProps) {
-  const [showActions, setShowActions] = useState(false);
-
+export function AllergenListRow({ allergen, onEdit, onArchive, onUnarchive }: AllergenListRowProps) {
+  const title = allergen.name;
   return (
-    <Card
-      className="relative"
-      onMouseEnter={() => setShowActions(true)}
-      onMouseLeave={() => setShowActions(false)}
-    >
-      <CardContent className="py-2">
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex-1 min-w-0">
-            <p className="font-medium text-sm">{allergen.name}</p>
-            {allergen.description && (
-              <p className="text-xs text-muted-foreground truncate">
-                {allergen.description}
-              </p>
-            )}
-            {!allergen.is_active && (
-              <Badge variant="secondary" className="mt-1">Archived</Badge>
-            )}
-          </div>
-
-          {showActions && (
-            <div className="flex items-center gap-1">
-              {onEdit && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    onEdit(allergen);
-                  }}
-                  title="Edit"
-                >
-                  <Edit2 className="h-3.5 w-3.5" />
-                </Button>
-              )}
-              {onArchive && allergen.is_active && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    onArchive(allergen);
-                  }}
-                  title="Archive"
-                >
-                  <Archive className="h-3.5 w-3.5" />
-                </Button>
-              )}
-              {onUnarchive && !allergen.is_active && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    onUnarchive(allergen);
-                  }}
-                  title="Unarchive"
-                >
-                  <ArchiveRestore className="h-3.5 w-3.5" />
-                </Button>
-              )}
-            </div>
-          )}
-        </div>
-      </CardContent>
-    </Card>
+    <RecordRow
+      title={title}
+      description={allergen.description}
+      badges={!allergen.is_active ? <Badge variant="warning">Archived</Badge> : undefined}
+      actions={
+        <RowActions
+          item={allergen}
+          name={title}
+          isActive={allergen.is_active}
+          onEdit={onEdit}
+          onArchive={onArchive}
+          onUnarchive={onUnarchive}
+        />
+      }
+    />
   );
 }

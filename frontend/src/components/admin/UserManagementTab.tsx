@@ -1,258 +1,164 @@
 'use client';
 
-import { useState, useMemo } from 'react';
-import { SearchInput, Skeleton, PageHeader, Button, Badge } from '@/components/ui';
-import { useUsers, useUpdateUser, useOutlets } from '@/lib/hooks';
-import { AddUserModal } from './AddUserModal';
+/**
+ * Settings → Admin: every user, with their phone, manager flag and outlet edited in place
+ * (autosave). Admins see every outlet, so their manager and outlet cells are not editable.
+ */
+import { useMemo, useState } from 'react';
+import { Plus, Users } from 'lucide-react';
 import { toast } from 'sonner';
+import {
+  Badge,
+  Button,
+  EditableCell,
+  EmptyState,
+  SearchInput,
+  Select,
+  SkeletonRows,
+  Switch,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui';
+import { ListError, ListToolbar, TabHeader } from '@/components/lists/ListLayout';
+import { useUsers, useUpdateUser, useOutlets } from '@/lib/hooks';
+import type { User } from '@/types';
+import { AddUserModal } from './AddUserModal';
+
+const LOOKUP_PAGE_SIZE = 30;
 
 export function UserManagementTab() {
   const [search, setSearch] = useState('');
   const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
-  const [editingPhoneId, setEditingPhoneId] = useState<string | null>(null);
-  const [editingPhoneValue, setEditingPhoneValue] = useState('');
   const updateUser = useUpdateUser();
   const { data: users, isLoading, error } = useUsers();
-  const { data: outletsData } = useOutlets({ page_size: 30 });
-  const outlets = outletsData?.items;
+  const { data: outletsData } = useOutlets({ page_size: LOOKUP_PAGE_SIZE });
+  const outletOptions = useMemo(
+    () => [{ value: '', label: 'None' }, ...(outletsData?.items ?? []).map((o) => ({ value: o.id.toString(), label: o.name }))],
+    [outletsData]
+  );
 
   const filteredUsers = useMemo(() => {
     if (!users) return [];
-    return users.filter((user) => {
-      if (search) {
-        const searchLower = search.toLowerCase();
-        return (
-          user.username.toLowerCase().includes(searchLower) ||
-          user.email.toLowerCase().includes(searchLower)
-        );
-      }
-      return true;
-    });
+    const needle = search.toLowerCase();
+    if (!needle) return users;
+    return users.filter((user) => user.username.toLowerCase().includes(needle) || user.email.toLowerCase().includes(needle));
   }, [users, search]);
 
-  const handleOutletChange = (userId: string, outletId: number | null) => {
+  const save = (user: User, data: Partial<User>, success: string) => {
     updateUser.mutate(
-      { userId, data: { outlet_id: outletId } },
+      { userId: user.id, data },
       {
-        onSuccess: () => {
-          toast.success('User outlet updated');
-        },
-        onError: () => {
-          toast.error('Failed to update user');
-        },
+        onSuccess: () => toast.success(success),
+        onError: () => toast.error('Failed to update user'),
       }
     );
   };
 
-  const handlePhoneChange = (userId: string, phoneNumber: string) => {
-    updateUser.mutate(
-      { userId, data: { phone_number: phoneNumber || null } },
-      {
-        onSuccess: () => {
-          toast.success('User phone number updated');
-        },
-        onError: () => {
-          toast.error('Failed to update user');
-        },
-      }
-    );
-  };
-
-  const handleManagerToggle = (userId: string, isManager: boolean) => {
-    updateUser.mutate(
-      { userId, data: { is_manager: !isManager } },
-      {
-        onSuccess: () => {
-          toast.success(!isManager ? 'Manager status granted' : 'Manager status revoked');
-        },
-        onError: () => {
-          toast.error('Failed to update user');
-        },
-      }
-    );
-  };
-
-  if (error) {
-    return (
-      <div className="p-6">
-        <div className="rounded-xl bg-[var(--color-feedback-error-tint)] p-4 text-[var(--color-feedback-error)]">
-          Failed to load users. Please try again.
-        </div>
-      </div>
-    );
-  }
+  const addUser = (
+    <Button onClick={() => setIsAddUserModalOpen(true)}>
+      <Plus className="size-4" strokeWidth={1.5} aria-hidden="true" />
+      Add user
+    </Button>
+  );
 
   return (
-    <div className="h-full w-full overflow-auto">
-      <div className="p-6 max-w-7xl mx-auto">
-        <PageHeader
-          title="Users"
-          description="Manage user roles and outlet assignments"
-        />
+    <div className="flex flex-col gap-6">
+      <TabHeader title="Users" description="Roles, managers and the outlet each person works in." actions={addUser} />
+      <AddUserModal isOpen={isAddUserModalOpen} onClose={() => setIsAddUserModalOpen(false)} />
 
-        {/* Toolbar */}
-        <div className="mb-6 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-          <div className="max-w-md flex-1">
-            <SearchInput
-              placeholder="Search by username or email..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              onClear={() => setSearch('')}
-            />
-          </div>
-          <Button onClick={() => setIsAddUserModalOpen(true)}>
-            Add user
-          </Button>
-        </div>
-
-        {/* Loading State */}
-        {isLoading && (
-          <div className="space-y-2">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <Skeleton key={i} className="h-12 rounded-lg" />
-            ))}
-          </div>
-        )}
-
-        {/* Empty State */}
-        {!isLoading && filteredUsers.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-muted-foreground">
-              {search ? 'No users match your search' : 'No users found'}
-            </p>
-          </div>
-        )}
-
-        {/* Users Table */}
-        {!isLoading && filteredUsers.length > 0 && (
-          <div className="overflow-x-auto border border-border rounded-xl">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-border bg-secondary">
-                  <th className="px-6 py-3 text-left text-sm font-medium text-foreground">
-                    Username
-                  </th>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-foreground">
-                    Email
-                  </th>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-foreground">
-                    Phone
-                  </th>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-foreground">
-                    Role
-                  </th>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-foreground">
-                    Manager
-                  </th>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-foreground">
-                    Branch
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredUsers.map((user) => (
-                  <tr
-                    key={user.id}
-                    className="border-b border-border hover:bg-secondary"
-                  >
-                    <td className="px-6 py-3 text-sm text-foreground">
-                      {user.username}
-                    </td>
-                    <td className="px-6 py-3 text-sm text-muted-foreground">
-                      {user.email}
-                    </td>
-                    <td className="px-6 py-3 text-sm">
-                      {editingPhoneId === user.id ? (
-                        <input
-                          type="tel"
-                          value={editingPhoneValue}
-                          onChange={(e) => setEditingPhoneValue(e.target.value)}
-                          onBlur={() => {
-                            handlePhoneChange(user.id, editingPhoneValue);
-                            setEditingPhoneId(null);
-                          }}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                              handlePhoneChange(user.id, editingPhoneValue);
-                              setEditingPhoneId(null);
-                            } else if (e.key === 'Escape') {
-                              setEditingPhoneId(null);
-                            }
-                          }}
-                          autoFocus
-                          disabled={updateUser.isPending}
-                          placeholder="Add phone..."
-                          className="px-2 py-1 text-sm w-full border border-input rounded-lg bg-card text-foreground placeholder:text-muted-foreground disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-ring"
-                        />
-                      ) : (
-                        <div
-                          onClick={() => {
-                            setEditingPhoneId(user.id);
-                            setEditingPhoneValue(user.phone_number || '');
-                          }}
-                          className="cursor-pointer text-muted-foreground hover:text-foreground hover:bg-secondary px-2 py-1 rounded"
-                        >
-                          {user.phone_number || '—'}
-                        </div>
-                      )}
-                    </td>
-                    <td className="px-6 py-3 text-sm">
-                      <Badge>{user.user_type === 'admin' ? 'Admin' : 'Normal'}</Badge>
-                    </td>
-                    <td className="px-6 py-3 text-sm">
-                      {user.user_type === 'admin' ? (
-                        <span className="text-muted-foreground">—</span>
-                      ) : (
-                        <button
-                          onClick={() => handleManagerToggle(user.id, user.is_manager)}
-                          disabled={updateUser.isPending}
-                          className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
-                            user.is_manager
-                              ? 'border-[var(--border-strong)] bg-[var(--surface-selected)] text-foreground hover:bg-muted'
-                              : 'border-transparent bg-secondary text-muted-foreground hover:bg-muted'
-                          }`}
-                        >
-                          {user.is_manager ? 'Manager' : 'Not manager'}
-                        </button>
-                      )}
-                    </td>
-                    <td className="px-6 py-3 text-sm">
-                      {user.user_type === 'admin' ? (
-                        <span className="text-muted-foreground">—</span>
-                      ) : (
-                        <select
-                          value={user.outlet_id || ''}
-                          onChange={(e) =>
-                            handleOutletChange(
-                              user.id,
-                              e.target.value ? parseInt(e.target.value) : null
-                            )
-                          }
-                          disabled={updateUser.isPending}
-                          className="px-2 py-1 text-sm border border-input rounded-lg bg-card text-foreground disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          <option value="">None</option>
-                          {outlets?.map((outlet) => (
-                            <option key={outlet.id} value={outlet.id}>
-                              {outlet.name}
-                            </option>
-                          ))}
-                        </select>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-
-      {/* Add User Modal */}
-      <AddUserModal
-        isOpen={isAddUserModalOpen}
-        onClose={() => setIsAddUserModalOpen(false)}
+      <ListToolbar
+        search={
+          <SearchInput
+            placeholder="Search by username or email"
+            aria-label="Search users"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            onClear={() => setSearch('')}
+          />
+        }
       />
+
+      {error ? (
+        <ListError>Failed to load users. Please try again.</ListError>
+      ) : isLoading ? (
+        <SkeletonRows rows={5} />
+      ) : filteredUsers.length === 0 ? (
+        <EmptyState
+          icon={Users}
+          title={search ? 'No users match your search' : 'No users yet'}
+          description={search ? 'Try a different name or email.' : 'Add the people who cook and manage here.'}
+          action={search ? undefined : addUser}
+        />
+      ) : (
+        <div className="overflow-x-auto">
+          <Table framed>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Username</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Phone</TableHead>
+                <TableHead>Role</TableHead>
+                <TableHead>Manager</TableHead>
+                <TableHead>Outlet</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredUsers.map((user) => {
+                const isAdmin = user.user_type === 'admin';
+                return (
+                  <TableRow key={user.id}>
+                    <TableCell className="font-medium">{user.username}</TableCell>
+                    <TableCell className="text-muted-foreground">{user.email}</TableCell>
+                    <TableCell className="min-w-40">
+                      <EditableCell
+                        value={user.phone_number ?? ''}
+                        placeholder="Add phone"
+                        onSave={(phone) => save(user, { phone_number: phone || null }, 'Phone number updated')}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={isAdmin ? 'info' : 'neutral'}>{isAdmin ? 'Admin' : 'Normal'}</Badge>
+                    </TableCell>
+                    <TableCell>
+                      {isAdmin ? (
+                        <span className="text-tertiary">—</span>
+                      ) : (
+                        <Switch
+                          checked={user.is_manager}
+                          aria-label={`${user.username} is a manager`}
+                          disabled={updateUser.isPending}
+                          onCheckedChange={(isManager) =>
+                            save(user, { is_manager: isManager }, isManager ? 'Manager status granted' : 'Manager status revoked')
+                          }
+                        />
+                      )}
+                    </TableCell>
+                    <TableCell className="min-w-48">
+                      {isAdmin ? (
+                        <span className="text-tertiary">All outlets</span>
+                      ) : (
+                        <Select
+                          aria-label={`${user.username}'s outlet`}
+                          value={user.outlet_id?.toString() ?? ''}
+                          options={outletOptions}
+                          disabled={updateUser.isPending}
+                          onChange={(e) =>
+                            save(user, { outlet_id: e.target.value ? parseInt(e.target.value, 10) : null }, 'User outlet updated')
+                          }
+                        />
+                      )}
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </div>
+      )}
     </div>
   );
 }

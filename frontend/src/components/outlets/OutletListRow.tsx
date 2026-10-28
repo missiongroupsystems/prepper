@@ -1,7 +1,7 @@
 'use client';
 
-import Link from 'next/link';
-import { Card, CardContent, Badge } from '@/components/ui';
+import { Badge, EntityCode } from '@/components/ui';
+import { RecordRow } from '@/components/lists/RecordCard';
 import type { Outlet } from '@/types';
 
 interface OutletListRowProps {
@@ -11,47 +11,18 @@ interface OutletListRowProps {
 }
 
 export function OutletListRow({ outlet, parentOutletName, href }: OutletListRowProps) {
-  // Outlet type is decorative, not a state — every type gets the neutral pill.
-  const outletTypeVariants: Record<string, 'default' | 'secondary'> = {
-    franchise: 'default',
-    corporate: 'secondary',
-    delivery: 'secondary',
-  };
-
   return (
-    <Link href={href ?? `/outlets/${outlet.id}`} className="block">
-      <Card interactive className="mb-2">
-        <CardContent className="py-2">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex-1 min-w-0">
-              <h3 className="text-base font-medium text-foreground truncate hover:text-primary">
-                {outlet.name}
-              </h3>
-              {outlet.code && (
-                <p className="text-sm text-muted-foreground mt-0.5">
-                  {outlet.code}
-                </p>
-              )}
-            </div>
-
-            <div className="flex items-center gap-2 flex-wrap justify-end">
-              {outlet.outlet_type && (
-                <Badge
-                  variant={outletTypeVariants[outlet.outlet_type] || 'default'}
-                  className="text-xs"
-                >
-                  {outlet.outlet_type.charAt(0).toUpperCase() + outlet.outlet_type.slice(1)}
-                </Badge>
-              )}
-              {parentOutletName && (
-                <Badge variant="secondary" className="text-xs">
-                  Brand: {parentOutletName}
-                </Badge>
-              )}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </Link>
+    <RecordRow
+      title={outlet.name}
+      eyebrow={outlet.code ? <EntityCode>{outlet.code}</EntityCode> : undefined}
+      subtitle={parentOutletName ? `Under ${parentOutletName}` : undefined}
+      href={href ?? `/outlets/${outlet.id}`}
+      badges={
+        <>
+          <Badge>{outlet.outlet_type === 'brand' ? 'Brand' : 'Location'}</Badge>
+          {!outlet.is_active && <Badge variant="warning">Archived</Badge>}
+        </>
+      }
+    />
   );
 }

@@ -1,72 +1,65 @@
 'use client';
 
+/**
+ * Settings — one page shell (Page + SectionHeader) over a TabRail of sections. Each tab renders
+ * bare content under the rail. The Admin tab is shown to admins only; the API enforces it too.
+ */
 import { useState } from 'react';
 import { useAppState } from '@/lib/store';
+import { Page, SectionHeader } from '@/components/app';
+import { TabRail } from '@/components/ui';
 import { OutletManagementTab } from '@/components/recipes';
 import { UserManagementTab } from '@/components/admin';
 import { UserProfileTab } from '@/components/settings/UserProfileTab';
-import DesignSystemPage from '@/app/design-system/page';
-import { cn } from '@/lib/utils';
+import { DesignSystemTab } from './DesignSystemTab';
 
 type SettingsTab = 'users' | 'outlets' | 'admin' | 'design';
 
 const SETTINGS_TABS: { id: SettingsTab; label: string; adminOnly?: boolean }[] = [
-  { id: 'users',   label: 'Users'   },
+  { id: 'users', label: 'Account' },
   { id: 'outlets', label: 'Outlets' },
-  { id: 'admin',   label: 'Admin',  adminOnly: true },
-  { id: 'design',  label: 'Design'  },
+  { id: 'admin', label: 'Users', adminOnly: true },
+  { id: 'design', label: 'Design' },
 ];
+
+const panelId = (id: SettingsTab) => `settings-panel-${id}`;
+
+function TabContent({ tab, isAdmin, userType }: { tab: SettingsTab; isAdmin: boolean; userType: 'normal' | 'admin' | null }) {
+  switch (tab) {
+    case 'outlets':
+      return <OutletManagementTab userType={userType} />;
+    case 'admin':
+      return isAdmin ? <UserManagementTab /> : <UserProfileTab />;
+    case 'design':
+      return <DesignSystemTab />;
+    case 'users':
+    default:
+      return <UserProfileTab />;
+  }
+}
 
 export default function SettingsPage() {
   const { userType } = useAppState();
+  const isAdmin = userType === 'admin';
   const [tab, setTab] = useState<SettingsTab>('users');
-
-  const visibleTabs = SETTINGS_TABS.filter((t) => !t.adminOnly || userType === 'admin');
-
-  function renderTabContent() {
-    switch (tab) {
-      case 'outlets':
-        return <OutletManagementTab userType={userType} />;
-      case 'admin':
-        if (userType !== 'admin') {
-          return (
-            <div className="p-6 text-sm text-muted-foreground">
-              You do not have permission to view this page.
-            </div>
-          );
-        }
-        return <UserManagementTab />;
-      case 'design':
-        return <DesignSystemPage />;
-      case 'users':
-      default:
-        return <UserProfileTab />;
-    }
-  }
+  const visibleTabs = SETTINGS_TABS.filter((t) => !t.adminOnly || isAdmin);
 
   return (
-    <div className="flex h-full flex-col">
-      <header className="shrink-0 border-b border-border bg-card">
-        <nav className="flex gap-1 px-4" aria-label="Settings tabs">
-          {visibleTabs.map((t) => (
-            <button
-              key={t.id}
-              onClick={() => setTab(t.id)}
-              className={cn(
-                'px-4 py-2 text-sm font-medium transition-colors',
-                tab === t.id
-                  ? 'border-b-2 border-foreground text-foreground'
-                  : 'text-muted-foreground hover:text-foreground'
-              )}
-            >
-              {t.label}
-            </button>
-          ))}
-        </nav>
-      </header>
-      <div className="flex flex-1 overflow-hidden">
-        {renderTabContent()}
+    <Page>
+      <SectionHeader
+        eyebrow="Workspace · Settings"
+        title="Settings"
+        description="Your account, the outlets you work across, and who has access."
+      />
+      <TabRail
+        label="Settings sections"
+        items={visibleTabs.map((t) => ({ id: t.id, label: t.label, panelId: panelId(t.id) }))}
+        activeId={tab}
+        onSelect={(id) => setTab(id as SettingsTab)}
+      />
+      <div id={panelId(tab)} role="tabpanel" aria-label={visibleTabs.find((t) => t.id === tab)?.label}>
+        <TabContent tab={tab} isAdmin={isAdmin} userType={userType} />
       </div>
-    </div>
+    </Page>
   );
 }
