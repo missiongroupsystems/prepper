@@ -57,12 +57,23 @@ export function RecipeManagementTab() {
     status: statusFilter !== 'all' ? statusFilter : undefined,
     category_ids: selectedRecipeCategories.length > 0 ? selectedRecipeCategories.join(',') : undefined,
   });
-  const recipes = Array.isArray(recipesData?.items) ? recipesData.items : (Array.isArray(recipesData) ? recipesData : []);
+  const recipes = useMemo(
+    () => (Array.isArray(recipesData?.items) ? recipesData.items : Array.isArray(recipesData) ? recipesData : []),
+    [recipesData]
+  );
   const { data: recipeCategoriesData } = useRecipeCategories({ page_size: LOOKUP_PAGE_SIZE });
-  const recipeCategories = Array.isArray(recipeCategoriesData?.items) ? recipeCategoriesData.items : (Array.isArray(recipeCategoriesData) ? recipeCategoriesData : []);
+  const recipeCategories = useMemo(
+    () =>
+      Array.isArray(recipeCategoriesData?.items)
+        ? recipeCategoriesData.items
+        : Array.isArray(recipeCategoriesData)
+          ? recipeCategoriesData
+          : [],
+    [recipeCategoriesData]
+  );
   const { data: recipeCategoryLinks } = useAllRecipeRecipeCategories();
   const { data: outletsData } = useOutlets({ page_size: LOOKUP_PAGE_SIZE });
-  const outlets = outletsData?.items ?? [];
+  const outlets = useMemo(() => outletsData?.items ?? [], [outletsData]);
 
   // Memoize recipe IDs to prevent unstable references triggering refetches
   const recipeIds = useMemo(
