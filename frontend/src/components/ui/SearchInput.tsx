@@ -1,8 +1,10 @@
 'use client';
 
+/** SearchInput — the Input field with a leading search glyph and an optional clear button. */
+import { forwardRef, type InputHTMLAttributes } from 'react';
 import { Search, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { forwardRef, InputHTMLAttributes } from 'react';
+import { controlClasses, controlHeight } from './Input';
 
 interface SearchInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'type'> {
   onClear?: () => void;
@@ -10,20 +12,23 @@ interface SearchInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, '
 
 export const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
   ({ className, value, onClear, ...props }, ref) => {
-    const hasValue = value && String(value).length > 0;
+    const hasValue = value !== undefined && String(value).length > 0;
 
     return (
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--color-text-tertiary)]" />
+        <Search
+          className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-tertiary"
+          strokeWidth={1.5}
+          aria-hidden="true"
+        />
         <input
           ref={ref}
           type="text"
           value={value}
           className={cn(
-            'h-10 w-full rounded-lg border border-input bg-card pl-10 pr-10 text-sm text-foreground',
-            'placeholder:text-[var(--color-text-tertiary)]',
-            'transition-colors duration-[120ms] ease-out hover:border-[var(--border-strong)]',
-            'focus-visible:outline-none focus-visible:border-[var(--border-focus)] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+            controlClasses,
+            controlHeight,
+            'pr-9 pl-9',
             className
           )}
           {...props}
@@ -33,14 +38,13 @@ export const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
             type="button"
             aria-label="Clear search"
             onClick={onClear}
-            className="absolute right-3 top-1/2 -translate-y-1/2 rounded text-[var(--color-text-tertiary)] transition-colors duration-[120ms] hover:text-foreground"
+            className="absolute top-1/2 right-2 grid size-6 -translate-y-1/2 place-items-center rounded-sm text-tertiary transition-colors duration-(--dur-quick) hover:bg-surface-hover hover:text-ink"
           >
-            <X className="h-4 w-4" />
+            <X className="size-3.5" strokeWidth={1.5} aria-hidden="true" />
           </button>
         )}
       </div>
     );
   }
 );
-
 SearchInput.displayName = 'SearchInput';

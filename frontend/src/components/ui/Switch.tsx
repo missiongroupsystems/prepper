@@ -1,49 +1,56 @@
 'use client';
 
-import { forwardRef, InputHTMLAttributes } from 'react';
+/**
+ * Switch (§11). 36×20 pill, `role="switch"`, 120ms slide. On = accent; off = the warm track.
+ *
+ * Built on a native checkbox so both APIs work: `onCheckedChange(checked)` (Workforce's) and the
+ * plain `onChange(event)` existing Recipes call sites use. Each switch is independent — never
+ * gang several settings into one control. `label` renders a bound `<label>` beside it.
+ */
+import { forwardRef, useId, type InputHTMLAttributes } from 'react';
 import { cn } from '@/lib/utils';
 
-interface SwitchProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'type'> {
+export interface SwitchProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'type' | 'role'> {
   label?: string;
+  onCheckedChange?: (checked: boolean) => void;
 }
 
-/**
- * Toggle / switch (§11). 999px track ~36x20, white knob, 150ms slide.
- * Off = --border-strong track; on = accent track (a named accent role, §4).
- */
 export const Switch = forwardRef<HTMLInputElement, SwitchProps>(
-  ({ className, checked, disabled, label, ...props }, ref) => {
-    return (
-      <div className="flex items-center gap-2">
-        <input
-          ref={ref}
-          type="checkbox"
-          role="switch"
-          checked={checked}
-          disabled={disabled}
-          className={cn(
-            'relative h-5 w-9 shrink-0 cursor-pointer appearance-none rounded-full',
-            'bg-[var(--border-strong)] transition-colors duration-150 ease-out',
-            'checked:bg-primary',
-            'disabled:cursor-not-allowed disabled:bg-muted',
-            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
-            // Knob
-            'before:pointer-events-none before:absolute before:left-0.5 before:top-0.5 before:content-[""]',
-            'before:h-4 before:w-4 before:rounded-full before:bg-[var(--surface-base)]',
-            'before:transition-transform before:duration-150 before:ease-out',
-            'checked:before:translate-x-4',
-            className
-          )}
-          {...props}
-        />
-        {label && (
-          <label className="cursor-pointer select-none text-sm text-muted-foreground">
-            {label}
-          </label>
+  ({ className, label, id, onChange, onCheckedChange, ...props }, ref) => {
+    const generatedId = useId();
+    const inputId = id ?? generatedId;
+    const control = (
+      <input
+        ref={ref}
+        id={inputId}
+        type="checkbox"
+        role="switch"
+        onChange={(e) => {
+          onChange?.(e);
+          onCheckedChange?.(e.currentTarget.checked);
+        }}
+        className={cn(
+          'relative inline-flex h-5 w-9 shrink-0 cursor-pointer appearance-none items-center rounded-full bg-track',
+          'transition-colors duration-(--dur-quick) ease-(--ease-out-soft) checked:bg-accent',
+          'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
+          'disabled:cursor-not-allowed disabled:opacity-50',
+          // Knob
+          'before:pointer-events-none before:absolute before:top-0.5 before:left-0.5 before:size-4 before:rounded-full before:bg-card before:shadow-card before:content-[""]',
+          'before:transition-transform before:duration-(--dur-quick) before:ease-(--ease-out-soft) checked:before:translate-x-4',
+          className
         )}
-      </div>
+        {...props}
+      />
+    );
+    if (!label) return control;
+    return (
+      <span className="inline-flex items-center gap-2">
+        {control}
+        <label htmlFor={inputId} className="cursor-pointer text-sm text-ink select-none">
+          {label}
+        </label>
+      </span>
     );
   }
 );
-
 Switch.displayName = 'Switch';

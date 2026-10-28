@@ -1,9 +1,14 @@
 'use client';
 
-import { useEffect, useCallback, useRef } from 'react';
-import { X } from 'lucide-react';
-import { cn } from '@/lib/utils';
+/**
+ * ConfirmModal — THE confirm path every destructive action must use. A small (`sm`) Dialog: the
+ * title names the action, the message says what happens, Cancel on the left of the confirm.
+ * `variant="destructive"` turns the confirm into the danger button — never the accent. Pass
+ * `pending` while the action runs to keep the dialog open with a busy, fixed-width confirm.
+ */
+import { Dialog } from './Dialog';
 import { Button } from './Button';
+import { PendingButton } from './PendingButton';
 
 interface ConfirmModalProps {
   isOpen: boolean;
@@ -14,6 +19,7 @@ interface ConfirmModalProps {
   confirmLabel?: string;
   cancelLabel?: string;
   variant?: 'default' | 'destructive';
+  pending?: boolean;
 }
 
 export function ConfirmModal({
@@ -25,95 +31,30 @@ export function ConfirmModal({
   confirmLabel = 'Confirm',
   cancelLabel = 'Cancel',
   variant = 'default',
+  pending = false,
 }: ConfirmModalProps) {
-  const modalRef = useRef<HTMLDivElement>(null);
-
-  // Handle escape key to close modal
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose();
-      }
-    },
-    [onClose]
-  );
-
-  useEffect(() => {
-    if (isOpen) {
-      document.addEventListener('keydown', handleKeyDown);
-      // Prevent body scroll when modal is open
-      document.body.style.overflow = 'hidden';
-    }
-
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = '';
-    };
-  }, [isOpen, handleKeyDown]);
-
-  // Focus trap - focus the modal when it opens
-  useEffect(() => {
-    if (isOpen && modalRef.current) {
-      modalRef.current.focus();
-    }
-  }, [isOpen]);
-
-  if (!isOpen) return null;
-
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="modal-title"
-    >
-      {/* Backdrop - does NOT close on click */}
-      <div className="absolute inset-0 bg-[var(--color-scrim)]" aria-hidden="true" />
-
-      {/* Modal content — 16px radius, overlay surface, elevation-3 (§9, §12.6) */}
-      <div
-        ref={modalRef}
-        tabIndex={-1}
-        className={cn(
-          'relative z-10 w-full max-w-md rounded-2xl bg-popover p-6',
-          'shadow-elevation-3 focus:outline-none'
-        )}
-      >
-        {/* Header */}
-        <div className="flex items-start justify-between mb-4">
-          <h2
-            id="modal-title"
-            className="text-xl font-medium tracking-[-0.01em] text-foreground"
-          >
-            {title}
-          </h2>
-          <button
-            onClick={onClose}
-            className="rounded-lg p-1 text-[var(--color-text-tertiary)] transition-colors duration-[120ms] hover:bg-surface-hover hover:text-foreground"
-            aria-label="Close modal"
-          >
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-
-        {/* Body */}
-        <p className="text-sm text-muted-foreground mb-6">
-          {message}
-        </p>
-
-        {/* Footer */}
-        <div className="flex justify-end gap-3">
-          <Button variant="outline" onClick={onClose}>
+    <Dialog
+      open={isOpen}
+      onClose={onClose}
+      title={title}
+      description={message}
+      size="sm"
+      dismissible={!pending}
+      footer={
+        <>
+          <Button variant="secondary" onClick={onClose} disabled={pending}>
             {cancelLabel}
           </Button>
-          <Button
-            variant={variant === 'destructive' ? 'destructive' : 'default'}
+          <PendingButton
+            variant={variant === 'destructive' ? 'danger' : 'primary'}
             onClick={onConfirm}
+            pending={pending}
           >
             {confirmLabel}
-          </Button>
-        </div>
-      </div>
-    </div>
+          </PendingButton>
+        </>
+      }
+    />
   );
 }
