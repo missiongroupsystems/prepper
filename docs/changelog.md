@@ -6,6 +6,7 @@ All notable changes to Mission Recipes are documented here.
 
 ## Index
 
+- **[0.1.7](#017---2026-10-28)** — Redesign Phase 3: Every Page on Page/SectionHeader, Recipe Canvas Split (3,181 → 244 Lines), SidePanel Forms, Autosave Menu Builder, Shared Supplier Links Table, Theme-Aware Version Trees
 - **[0.1.6](#016---2026-10-28)** — Menu Sketch Editor Layout: 1080px Measure, Section Hierarchy, Restyled Dish Cards on 2A Primitives, 1,860-Line Page Split into Components
 - **[0.1.5](#015---2026-10-28)** — Full, Readable Entity Names: Display-Time Formatter for ALL-CAPS FMH Names, Split SKU Codes, No Truncation on Cards
 - **[0.1.4](#014---2026-10-28)** — Redesign Phase 2B: Collapsible Left Rail + Top Bar Replace TopNav, Page & SectionHeader, Environment Badge, AuthGuard Hydration Fix
@@ -64,6 +65,53 @@ All notable changes to Mission Recipes are documented here.
 - **[0.0.3](#003---2024-11-27)** — Database Migration: Alembic Initial Tables to Supabase + PostgreSQL JSON Compatibility Fix
 - **[0.0.2](#002---2024-11-27)** — Frontend Implementation: Next.js 15 Recipe Canvas with Drag-and-Drop, Autosave & TanStack Query
 - **[0.0.1](#001---2024-11-27)** — Backend Foundation: FastAPI + SQLModel with 17 API Endpoints, Domain Services & Unit Conversion
+---
+
+## [0.1.7] - 2026-10-28
+
+### Changed
+
+#### Redesign Phase 3: page-by-page adoption
+
+Every screen now uses the Phase 1 tokens, the Phase 2A primitives and the Phase 2B shell. This follows the layout audit in `docs/references/layout-audit-2026-10.md`, done as six parallel tracks with no shared files. Behaviour and access rules are unchanged.
+
+- **B. Recipe canvas** (`/recipes/[id]`, `/recipes/new`):
+  - `CanvasTab.tsx` is split from 3,181 lines to 244. The pure canvas model is extracted and has unit tests, and `RightPanel.tsx` went from 731 lines to 108.
+  - The central work area has a max width, and the ingredient panel becomes a drawer below `lg`.
+  - The metadata is a labelled grid. Text is no smaller than `text-sm`.
+  - Row menus are always visible. Secondary footer actions are in an overflow menu.
+  - Staged ingredient names use the display-name formatter.
+- **C. Recipe tabs and finance**:
+  - All tabs except the canvas share the 1080px measure and use `Table` / `TableEmpty` / `EmptyState`.
+  - Money uses tabular figures.
+  - `OverviewTab` is split up.
+  - The version tree reads token colours, so it works in dark mode.
+  - `/finance` uses `Page wide`.
+- **D. Catalogue detail pages** (`/ingredients/[id]`, `/suppliers/[id]`, `/outlets/[id]`, `/recipe-categories/[id]`):
+  - The two near-duplicate supplier tables are replaced by one shared `SupplierLinksTable` (`components/catalogue/`). It stacks on phones, has a visible row menu and uses `EditableCell` autosave instead of Save/Cancel.
+  - Linking happens in a `SidePanel` with labelled fields.
+  - The pages are split to ≤500 lines.
+- **E. Menus**:
+  - `MenuBuilder` is split into 15 files and autosaves; the "Save changes" button is gone. Items are edited in a `SidePanel`, and cancel returns to the menu list.
+  - The menu list, preview and menu-sketch list use `Page` + `SectionHeader` with empty states.
+  - The menu-sketch editor's local `PageMeasure` is replaced by `Page`.
+- **F. Create forms, settings and lists**:
+  - The ingredient, supplier, outlet and user create forms move from modals to `SidePanel`.
+  - `/settings` is one `Page` with a `TabRail`.
+  - The `/ingredients` filters wrap on phones.
+  - The dishes list uses `Page` + `SectionHeader`.
+  - The login and register cards are rebuilt on the form primitives ("Or continue with" is now sentence case).
+- **G. R&D and tasting**:
+  - The `/rnd` kanban is single-column below `lg`, with an empty state in each column and `TabRail` tabs.
+  - The version tree is sized to the viewport, so there's one scroll area, and uses token colours.
+  - `/tastings/[id]` is split; its dish picker is in a `SidePanel` and confirmations use `ConfirmModal`.
+  - The feedback form and note card are shared.
+  - Who-sees-what was checked against the previous build for creator, participant, non-participant and admin.
+- **Tests**:
+  - 80 unit tests.
+  - The offline e2e set (`storage-migration`, `theme`, `overlays`, `app-shell`) passes 19/19. The overlay and theme specs now seed the mock session before the page loads.
+- **File size**: every component and page is now ≤500 lines. `lib/api.ts` (1,769 lines) and `types/index.ts` (1,002) are still over the limit.
+
 ---
 
 ## [0.1.6] - 2026-10-28
