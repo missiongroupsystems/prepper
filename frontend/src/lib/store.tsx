@@ -74,6 +74,8 @@ interface AppState {
 }
 
 interface AppContextValue extends AppState {
+  /** False until auth has been read from localStorage after mount; redirect on auth only once true. */
+  isAuthHydrated: boolean;
   selectRecipe: (id: number | null) => void;
   setInstructionsTab: (tab: 'freeform' | 'steps') => void;
   setCanvasTab: (tab: CanvasTab) => void;
@@ -249,6 +251,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     <AppContext.Provider
       value={{
         ...state,
+        isAuthHydrated: isHydrated,
         selectRecipe,
         setInstructionsTab,
         setCanvasTab,

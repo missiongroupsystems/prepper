@@ -1,0 +1,110 @@
+/*
+ * App shell styles (components/app/), imported by app/globals.css.
+ *
+ * ── Environment badge tokens (components/env-badge/) ─────────────────────────────────────
+ * Aliases onto existing tokens, so dark mode re-points them with no restatement. Preview
+ * borrows the Tier-2 status purple, as in Workforce.
+ */
+:root {
+  --env-staging: var(--warning);
+  --env-staging-bg: var(--warning-subtle);
+  --env-preview: var(--status-alt);
+  --env-preview-bg: var(--status-alt-bg);
+  --env-local: var(--text-secondary);
+  --env-local-bg: var(--surface-sunken);
+  --env-unset: var(--danger);
+  --env-unset-bg: var(--danger-subtle);
+}
+
+@theme inline {
+  --color-env-staging: var(--env-staging);
+  --color-env-staging-bg: var(--env-staging-bg);
+  --color-env-preview: var(--env-preview);
+  --color-env-preview-bg: var(--env-preview-bg);
+  --color-env-local: var(--env-local);
+  --color-env-local-bg: var(--env-local-bg);
+  --color-env-unset: var(--env-unset);
+  --color-env-unset-bg: var(--env-unset-bg);
+}
+
+/*
+ * ── Rail modes ────────────────────────────────────────────────────────────────────────────
+ * <html data-sidebar> is stamped before paint by the boot script (components/app/sidebar-mode.ts)
+ * and flipped by the rail's collapse control. The rail only marks its parts (AppSidebar.tsx);
+ * everything about what shows is decided here, so a reload never flashes the wide rail.
+ * Unlayered on purpose: these must beat the Tailwind utilities on the same elements.
+ */
+.app-rail {
+  width: var(--shell-rail);
+  transition: width var(--dur-base) var(--ease-out-soft);
+}
+
+.rail-logo-mark,
+.rail-collapsed-only {
+  display: none;
+}
+
+html[data-sidebar='collapsed'] .app-rail {
+  width: var(--shell-rail-narrow);
+
+  & :is(.rail-label, .rail-logo-short, .rail-eyebrow-text, .rail-eyebrow-first) {
+    display: none;
+  }
+  & .rail-collapsed-only {
+    display: inline;
+  }
+  /* The 24px mark, centred in the 64px rail. */
+  & .rail-logo {
+    justify-content: center;
+    padding-inline: 0;
+  }
+  & .rail-logo-mark {
+    display: block;
+  }
+  /* A section eyebrow becomes a hairline divider between its groups. */
+  & .rail-eyebrow {
+    margin: 0.625rem 0.5rem;
+    padding: 0;
+    border-top: 1px solid var(--line);
+  }
+  /* The account chip shrinks to its avatar; its accessible name still says whose it is. */
+  & .rail-chip {
+    justify-content: center;
+    padding: 3px;
+    border-color: transparent;
+  }
+  /* A scrollbar would eat most of a 64px column: the nav still scrolls, it just draws no bar. */
+  & nav {
+    scrollbar-width: none;
+  }
+  & nav::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Collapsed labels: a rail-local label from `data-tip`, on hover AND keyboard focus (a native
+   `title` never shows on focus). `position: fixed` with only `left` set keeps the item's own
+   vertical centre yet escapes the nav's scroll clipping. */
+html[data-sidebar='collapsed'] .app-rail [data-tip]:is(:hover, :focus-visible)::after {
+  content: attr(data-tip);
+  position: fixed;
+  left: calc(var(--shell-rail-narrow) + 0.5rem);
+  z-index: 40;
+  padding: 0.3125rem 0.625rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--popover);
+  color: var(--popover-foreground);
+  box-shadow: var(--shadow-pop);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.25;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-rail {
+    transition: none;
+  }
+}

@@ -610,7 +610,7 @@ test.describe('Authorization & Access Control', () => {
     await page.goto('/recipes');
     await page.waitForLoadState('load');
 
-    // Only /admin/users is adminOnly: true in TopNav
+    // No nav item is admin-only today (components/app/nav.ts); /admin/users must never show
     const adminUsersLink = page.locator('nav a[href*="/admin/users"]');
     const isVisible = await adminUsersLink.isVisible().catch(() => false);
     expect(isVisible).toBe(false);
@@ -766,8 +766,8 @@ test.describe('Responsiveness', () => {
     await page.goto('/recipes');
     await page.waitForLoadState('load');
 
-    const nav = page.locator('nav').first();
-    await expect(nav).toBeVisible();
+    // Below lg the rail is hidden and the nav opens from the top bar's menu button.
+    await expect(page.getByRole('button', { name: 'Open menu' })).toBeVisible();
   });
 
   test.describe('Edge Cases', () => {

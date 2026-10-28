@@ -89,7 +89,7 @@ function RouteTracker({ pathname, isPublicRoute, isAdminRoute, isPassthroughRout
 }
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
-  const { userId, userType } = useAppState();
+  const { userId, userType, isAuthHydrated } = useAppState();
   const pathname = usePathname();
   const router = useRouter();
 
@@ -100,6 +100,9 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   const isPassthroughRoute = PASSTHROUGH_ROUTE_PATTERNS.some((pattern) => pattern.test(pathname));
 
   useEffect(() => {
+    // Child effects run before AppProvider's hydration effect, so on a cold load `userId` is
+    // still null here. Redirecting then would bounce a signed-in user through /login.
+    if (!isAuthHydrated) return;
     if (isAuthenticated && isPublicRoute) {
       // Logged in user on login/register page -> redirect to last route
       const lastRoute = getLastRoute();
@@ -120,7 +123,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
       // Non-admin user on admin route -> redirect to outlets
       router.replace('/recipes');
     }
-  }, [isAuthenticated, isPublicRoute, isAdminRoute, isPassthroughRoute, userType, router]);
+  }, [isAuthHydrated, isAuthenticated, isPublicRoute, isAdminRoute, isPassthroughRoute, userType, router]);
 
   // Show nothing while redirecting
   if (isNotFound) {

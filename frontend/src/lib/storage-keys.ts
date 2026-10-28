@@ -2,6 +2,8 @@
 export const AUTH_STORAGE_KEY = 'mission_recipes_auth';
 export const LAST_ROUTE_STORAGE_KEY = 'mission_recipes_last_route';
 export const THEME_STORAGE_KEY = 'mission_recipes_theme';
+/** The app rail's mode: `expanded` | `collapsed` (components/app/sidebar-mode.ts). */
+export const SIDEBAR_STORAGE_KEY = 'mission_recipes_sidebar';
 /** Pre-rename theme key; migrated so the dark-mode rebuild can read the user's choice. */
 export const LEGACY_THEME_STORAGE_KEY = 'prepper-theme';
 
