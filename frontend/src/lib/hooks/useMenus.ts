@@ -44,10 +44,13 @@ export function useUpdateMenu() {
   return useMutation({
     mutationFn: ({ menuId, data }: { menuId: number; data: UpdateMenuRequest }) =>
       api.updateMenu(menuId, data),
-    onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({ queryKey: [MENUS_QUERY_KEY] });
-      queryClient.invalidateQueries({ queryKey: [MENUS_QUERY_KEY, variables.menuId], exact: false });
-      toast.success('Menu updated successfully');
+    // Autosaved, so no success toast. The response is the fresh detail; only lists refetch.
+    onSuccess: (data, variables) => {
+      queryClient.setQueryData([MENUS_QUERY_KEY, variables.menuId], data);
+      queryClient.invalidateQueries({
+        queryKey: [MENUS_QUERY_KEY],
+        predicate: (query) => query.queryKey[1] !== variables.menuId,
+      });
     },
     onError: (error: Error) => {
       toast.error(error.message || 'Failed to update menu');

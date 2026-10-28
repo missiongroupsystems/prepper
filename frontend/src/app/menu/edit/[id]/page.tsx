@@ -1,11 +1,14 @@
 'use client';
 
 import { use, useEffect } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { FileQuestion } from 'lucide-react';
+import { Page, SectionHeader } from '@/components/app';
 import { useAppState } from '@/lib/store';
 import { useMenu } from '@/lib/hooks';
 import { MenuBuilder } from '@/components/menu/MenuBuilder';
-import { Skeleton } from '@/components/ui';
+import { EmptyState, Skeleton, buttonClasses } from '@/components/ui';
 
 interface EditMenuPageProps {
   params: Promise<{ id: string }>;
@@ -18,58 +21,40 @@ export default function EditMenuPage({ params }: EditMenuPageProps) {
   const { userType, isManager } = useAppState();
   const { data: menu, isLoading, error } = useMenu(menuId);
 
-  // Check authorization
   useEffect(() => {
-    if (!isLoading && (error || !menu)) {
-      router.push('/menu');
-      return;
-    }
     if (userType !== 'admin' && !isManager) {
       router.push('/menu');
     }
-  }, [userType, isManager, router, isLoading, error, menu]);
+  }, [userType, isManager, router]);
 
   if (isLoading) {
     return (
-      <div className="flex h-full flex-col">
-        <div className="border-b border-border">
-          <div className="max-w-4xl mx-auto px-6 py-4">
-            <h1 className="text-2xl font-medium tracking-[-0.015em] text-foreground">Edit menu</h1>
-          </div>
-        </div>
-        <div className="flex-1 p-4">
-          <Skeleton className="h-96 rounded-lg" />
-        </div>
-      </div>
+      <Page>
+        <SectionHeader eyebrow="Kitchen · Menus" title="Edit menu" />
+        <Skeleton className="h-64 rounded-lg" />
+        <Skeleton className="h-40 rounded-lg" />
+      </Page>
     );
   }
 
   if (error || !menu) {
     return (
-      <div className="flex h-full flex-col">
-        <div className="border-b border-border">
-          <div className="max-w-4xl mx-auto px-6 py-4">
-            <h1 className="text-2xl font-medium tracking-[-0.015em] text-foreground">Edit menu</h1>
-          </div>
-        </div>
-        <div className="flex-1 flex items-center justify-center">
-          <p className="text-muted-foreground">Menu not found</p>
-        </div>
-      </div>
+      <Page>
+        <SectionHeader eyebrow="Kitchen · Menus" title="Edit menu" />
+        <EmptyState
+          icon={FileQuestion}
+          title="Menu not found"
+          description="It may have been archived, or you may not have access to it."
+          action={
+            <Link href="/menu" className={buttonClasses('secondary')}>
+              Back to menus
+            </Link>
+          }
+        />
+      </Page>
     );
   }
 
-  return (
-    <div className="flex h-full flex-col">
-      <div className="border-b border-border">
-        <div className="max-w-4xl mx-auto px-6 py-4">
-          <h1 className="text-2xl font-medium tracking-[-0.015em] text-foreground">Edit menu</h1>
-          <p className="text-sm text-muted-foreground mt-1">{menu.name} • Version {menu.version_no}</p>
-        </div>
-      </div>
-      <div className="flex-1 overflow-auto">
-        <MenuBuilder mode="edit" menu={menu} />
-      </div>
-    </div>
-  );
+  // Keyed by id so a fork (a new menu id) starts a fresh draft.
+  return <MenuBuilder key={menu.id} menu={menu} />;
 }
