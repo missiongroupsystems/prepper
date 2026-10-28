@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
+import { formatDisplayName } from '@/lib/format/displayName';
 import type { RecipeCategory } from '@/types';
 
 const CATEGORY_VISIBLE_LIMIT = 8;
@@ -50,7 +51,7 @@ export function RecipeCategoryFilterButtons({
               : 'bg-secondary text-muted-foreground hover:bg-muted'
           )}
         >
-          {category.name}
+          {formatDisplayName(category.name)}
         </button>
       ))}
       {hasMore && (

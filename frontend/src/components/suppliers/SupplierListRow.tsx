@@ -2,8 +2,9 @@
 
 import Link from 'next/link';
 import { MapPin, Phone, Mail } from 'lucide-react';
-import { Card, CardContent, Badge } from '@/components/ui';
+import { Card, CardContent, Badge, EntityCode } from '@/components/ui';
 import type { Supplier } from '@/types';
+import { formatDisplayName, supplierDisplayName } from '@/lib/format/displayName';
 
 interface SupplierListRowProps {
   supplier: Supplier;
@@ -11,26 +12,25 @@ interface SupplierListRowProps {
 }
 
 export function SupplierListRow({ supplier, href }: SupplierListRowProps) {
+  const { code, name } = supplierDisplayName(supplier);
   return (
     <Link href={href ?? `/suppliers/${supplier.id}`} className="block">
-      <Card interactive className="mb-2">
-        <CardContent className="py-2">
+      <Card interactive className="py-4">
+        <CardContent className="mt-0">
           <div className="flex items-center justify-between gap-4">
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 flex-wrap">
-                <h3 className="text-base font-medium text-foreground truncate hover:text-primary">
-                  {supplier.name}
+              {code && <EntityCode>{code}</EntityCode>}
+              <div className="flex items-start gap-2">
+                <h3 className="min-w-0 text-base font-medium text-ink break-words hover:text-primary">
+                  {name}
                 </h3>
-                {supplier.code && (
-                  <Badge variant="secondary" className="font-mono text-xs shrink-0">{supplier.code}</Badge>
-                )}
                 {!supplier.is_active && (
                   <Badge variant="secondary" className="shrink-0">Archived</Badge>
                 )}
               </div>
               <div className="flex flex-col gap-1 mt-2 text-sm text-muted-foreground">
                 {supplier.shipping_company_name && (
-                  <span className="text-xs text-muted-foreground">Ships via {supplier.shipping_company_name}</span>
+                  <span className="text-xs text-muted-foreground">Ships via {formatDisplayName(supplier.shipping_company_name)}</span>
                 )}
                 {supplier.address && (
                   <div className="flex items-center gap-2 truncate">

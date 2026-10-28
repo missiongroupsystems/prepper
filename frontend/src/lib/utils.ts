@@ -22,6 +22,15 @@ export function formatCurrency(value: number | null | undefined): string {
   }).format(value);
 }
 
+/** How a base unit reads after "per" where its short form reads badly ("per pcs", "per l"). */
+const PER_UNIT_LABEL: Readonly<Record<string, string>> = { pcs: 'piece', l: 'L' };
+
+/** "$0.80 per kg" — the price of one base unit, naming the unit when there is one. */
+export function formatUnitPrice(value: number | null | undefined, unit?: string | null): string {
+  const label = unit ? PER_UNIT_LABEL[unit] ?? unit : 'unit';
+  return `${formatCurrency(value)} per ${label}`;
+}
+
 export function formatTimer(seconds: number | null | undefined): string {
   if (!seconds) return '';
   const mins = Math.floor(seconds / 60);

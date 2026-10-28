@@ -3,7 +3,9 @@
 import { useState } from 'react';
 import { Tag } from 'lucide-react';
 import { useTagsForSupplierIngredient } from '@/lib/hooks';
+import { Badge } from '@/components/ui';
 import { TagManagementModal } from './TagManagementModal';
+import { formatDisplayName } from '@/lib/format/displayName';
 
 interface TagsCellProps {
   siId: number;
@@ -17,12 +19,7 @@ export function TagsCell({ siId }: TagsCellProps) {
     <>
       <div className="flex items-center gap-1 flex-wrap">
         {tags.map((tag) => (
-          <span
-            key={tag.id}
-            className="inline-flex items-center rounded-full bg-secondary px-2 py-0.5 text-xs font-medium text-muted-foreground"
-          >
-            {tag.name}
-          </span>
+          <Badge key={tag.id}>{formatDisplayName(tag.name)}</Badge>
         ))}
         <button
           onClick={() => setOpen(true)}

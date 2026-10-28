@@ -1,17 +1,18 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { Plus, Upload, Download } from 'lucide-react'; // Upload/Download used in DropdownButton items
+import { Plus, Upload, Download, Carrot } from 'lucide-react'; // Upload/Download used in DropdownButton items
 import { useIngredients, useDeactivateIngredient, useUpdateIngredient, useCategories, useCategoriesPaginated, useAllergens, useDebouncedValue } from '@/lib/hooks';
 import { IngredientCard, IngredientListRow, CategoriesTab, FilterButtons, AddIngredientModal, AllergensTab, FMHIngredientImportModal, BuyCatalogueImportModal, ProductsTab } from '@/components/ingredients';
 import SuppliersPage from '@/app/suppliers/page';
-import { PageHeader, SearchInput, Select, GroupSection, ListSection, Button, Skeleton, ViewToggle, Checkbox, DropdownButton } from '@/components/ui';
+import { PageHeader, SearchInput, Select, GroupSection, ListSection, Button, Skeleton, ViewToggle, Checkbox, DropdownButton, EmptyState } from '@/components/ui';
 import { Pagination } from '@/components/ui/Pagination';
 import { toast } from 'sonner';
 import type { Ingredient, Category } from '@/types';
 import { useAppState, type IngredientTab } from '@/lib/store';
 import { cn, triggerBlobDownload } from '@/lib/utils';
 import { downloadFMHSampleItems, downloadBuyCatalogueTemplate } from '@/lib/api';
+import { displayNameParts, formatDisplayName } from '@/lib/format/displayName';
 
 type GroupByOption = 'none' | 'unit' | 'status' | 'category';
 type ViewType = 'grid' | 'list';
@@ -172,7 +173,7 @@ function IngredientsListTab() {
 
   const categoryMap = useMemo(() => {
     if (!categories) return new Map<number, string>();
-    return new Map(categories.map((c) => [c.id, c.name]));
+    return new Map(categories.map((c) => [c.id, formatDisplayName(c.name)]));
   }, [categories]);
 
   const groupedIngredients = useMemo(() => {
@@ -180,18 +181,20 @@ function IngredientsListTab() {
   }, [filteredIngredients, groupBy, categoryMap]);
 
   const handleArchive = (ingredient: Ingredient) => {
+    const { name } = displayNameParts(ingredient.name);
     deactivateIngredient.mutate(ingredient.id, {
-      onSuccess: () => toast.success(`${ingredient.name} archived`),
-      onError: () => toast.error(`Failed to archive ${ingredient.name}`),
+      onSuccess: () => toast.success(`${name} archived`),
+      onError: () => toast.error(`Failed to archive ${name}`),
     });
   };
 
   const handleUnarchive = (ingredient: Ingredient) => {
+    const { name } = displayNameParts(ingredient.name);
     updateIngredient.mutate(
       { id: ingredient.id, data: { is_active: true } },
       {
-        onSuccess: () => toast.success(`${ingredient.name} unarchived`),
-        onError: () => toast.error(`Failed to unarchive ${ingredient.name}`),
+        onSuccess: () => toast.success(`${name} unarchived`),
+        onError: () => toast.error(`Failed to unarchive ${name}`),
       }
     );
   };
@@ -329,13 +332,25 @@ function IngredientsListTab() {
 
         {/* Empty State */}
         {!isLoading && filteredIngredients.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-muted-foreground">
-              {search || selectedCategories.length > 0 || selectedUnits.length > 0 || selectedHalal.length > 0 || selectedAllergens.length > 0
-                ? 'No ingredients match your filters'
-                : 'No ingredients yet'}
-            </p>
-          </div>
+          search || selectedCategories.length > 0 || selectedUnits.length > 0 || selectedHalal.length > 0 || selectedAllergens.length > 0 ? (
+            <EmptyState
+              icon={Carrot}
+              title="No ingredients match your filters"
+              description="Try a different search or clear a filter."
+            />
+          ) : (
+            <EmptyState
+              icon={Carrot}
+              title="No ingredients yet"
+              description="Add one, or import your FMH product list."
+              action={
+                <Button type="button" onClick={() => setShowForm(true)}>
+                  <Plus className="h-4 w-4" />
+                  Add ingredient
+                </Button>
+              }
+            />
+          )
         )}
 
         {/* Grouped Ingredients */}

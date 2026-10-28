@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Edit2, Archive, ArchiveRestore } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent, Badge, Button } from '@/components/ui';
 import type { RecipeCategory } from '@/types';
+import { formatDisplayName } from '@/lib/format/displayName';
 
 interface RecipeCategoryCardProps {
   category: RecipeCategory;
@@ -18,14 +19,14 @@ export function RecipeCategoryCard({ category, onArchive, onUnarchive }: RecipeC
 
   return (
     <Card
-      className="relative group mb-4"
+      className="relative group"
       onMouseEnter={() => setShowActions(true)}
       onMouseLeave={() => setShowActions(false)}
     >
       <CardHeader>
         <div className="flex-1 min-w-0">
-          <CardTitle className="truncate">
-            {category.name}
+          <CardTitle className="break-words">
+            {formatDisplayName(category.name)}
           </CardTitle>
         </div>
       </CardHeader>

@@ -3,8 +3,9 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Edit2, Archive, ArchiveRestore, AlertCircle } from 'lucide-react';
-import { Card, CardHeader, CardTitle, CardContent, Badge, Button } from '@/components/ui';
-import { formatCurrency } from '@/lib/utils';
+import { Card, CardTitle, CardContent, Badge, Button, EntityCode } from '@/components/ui';
+import { formatUnitPrice } from '@/lib/utils';
+import { displayNameParts, formatDisplayName } from '@/lib/format/displayName';
 import { useAllergensByIngredient, useAllergens } from '@/lib/hooks';
 import type { Ingredient, Category } from '@/types';
 
@@ -21,6 +22,7 @@ export function IngredientCard({ ingredient, categories, onEdit, onArchive, onUn
   const { data: allergenLinks } = useAllergensByIngredient(ingredient.id);
   const { data: allergens } = useAllergens();
 
+  const { code, name } = displayNameParts(ingredient.name);
   const currentCategory = categories?.find((c) => c.id === ingredient.category_id);
   const ingredientAllergens = allergenLinks?.length
     ? allergens?.filter((a) => allergenLinks.some((link) => link.allergen_id === a.id))
@@ -28,42 +30,36 @@ export function IngredientCard({ ingredient, categories, onEdit, onArchive, onUn
 
   return (
     <Card
-      className="relative group mb-4"
+      className="relative group"
       onMouseEnter={() => setShowActions(true)}
       onMouseLeave={() => setShowActions(false)}
     >
-      <CardHeader>
-        <div className="flex-1 min-w-0">
-          <Link href={`/ingredients/${ingredient.id}`}>
-            <CardTitle className="truncate text-xl hover:text-primary cursor-pointer">
-              {ingredient.name}
-            </CardTitle>
-          </Link>
-          <p className="text-base text-muted-foreground mt-0.5 tabular-nums">
-            {formatCurrency(ingredient.cost_per_base_unit)} per unit
-          </p>
-        </div>
-
-      </CardHeader>
+      <Link href={`/ingredients/${ingredient.id}`} className="block min-w-0">
+        {code && <EntityCode className="mb-1">{code}</EntityCode>}
+        <CardTitle className="break-words hover:text-primary">{name}</CardTitle>
+      </Link>
+      <p className="mt-1 text-sm text-muted-foreground tabular-nums">
+        {formatUnitPrice(ingredient.cost_per_base_unit, ingredient.base_unit)}
+      </p>
 
       <CardContent>
         <div className="flex items-center gap-2 flex-wrap">
-          <Badge variant="unit" className="text-sm">{ingredient.base_unit}</Badge>
+          <Badge variant="unit">{ingredient.base_unit}</Badge>
           {ingredient.is_halal ? (
-            <Badge variant="success" className="text-sm">Halal</Badge>
+            <Badge variant="success">Halal</Badge>
           ) : (
-            <Badge variant="secondary" className="text-sm">Non-halal</Badge>
+            <Badge variant="secondary">Non-halal</Badge>
           )}
           {!ingredient.is_active && (
-            <Badge variant="warning" className="text-sm">Archived</Badge>
+            <Badge variant="warning">Archived</Badge>
           )}
           {currentCategory && (
-            <Badge variant="default" className="text-sm">{currentCategory.name}</Badge>
+            <Badge className="max-w-full whitespace-normal">{formatDisplayName(currentCategory.name)}</Badge>
           )}
           {ingredientAllergens && ingredientAllergens.length > 0 && (
             <>
               {ingredientAllergens.map((allergen) => (
-                <Badge key={allergen.id} variant="destructive" className="text-sm gap-1 flex items-center">
+                <Badge key={allergen.id} variant="destructive" className="gap-1">
                   <AlertCircle className="h-3 w-3" />
                   {allergen.name}
                 </Badge>

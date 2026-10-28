@@ -3,8 +3,9 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Edit2, Archive, ArchiveRestore, AlertCircle } from 'lucide-react';
-import { Card, CardContent, Badge, Button } from '@/components/ui';
-import { formatCurrency } from '@/lib/utils';
+import { Card, CardContent, Badge, Button, EntityCode } from '@/components/ui';
+import { formatUnitPrice } from '@/lib/utils';
+import { displayNameParts, formatDisplayName } from '@/lib/format/displayName';
 import { useAllergensByIngredient, useAllergens } from '@/lib/hooks';
 import type { Ingredient, Category } from '@/types';
 
@@ -27,6 +28,7 @@ export function IngredientListRow({
   const { data: allergenLinks } = useAllergensByIngredient(ingredient.id);
   const { data: allergens } = useAllergens();
 
+  const { code, name } = displayNameParts(ingredient.name);
   const currentCategory = categories?.find((c) => c.id === ingredient.category_id);
   const ingredientAllergens = allergenLinks?.length
     ? allergens?.filter((a) => allergenLinks.some((link) => link.allergen_id === a.id))
@@ -34,41 +36,42 @@ export function IngredientListRow({
 
   return (
     <Card
-      className="relative mb-2"
+      className="relative py-4"
       onMouseEnter={() => setShowActions(true)}
       onMouseLeave={() => setShowActions(false)}
     >
-      <CardContent className="py-2">
-        <div className="flex items-center justify-between gap-4">
+      <CardContent className="mt-0">
+        <div className="flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">
-            <Link href={`/ingredients/${ingredient.id}`}>
-              <h3 className="text-base font-medium text-foreground truncate hover:text-primary">
-                {ingredient.name}
+            <Link href={`/ingredients/${ingredient.id}`} className="block">
+              {code && <EntityCode>{code}</EntityCode>}
+              <h3 className="text-base font-medium text-ink break-words hover:text-primary">
+                {name}
               </h3>
             </Link>
             <p className="text-sm text-muted-foreground mt-0.5 tabular-nums">
-              {formatCurrency(ingredient.cost_per_base_unit)} per unit
+              {formatUnitPrice(ingredient.cost_per_base_unit, ingredient.base_unit)}
             </p>
           </div>
 
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2 flex-wrap justify-end">
-              <Badge variant="unit" className="text-xs">{ingredient.base_unit}</Badge>
+              <Badge variant="unit">{ingredient.base_unit}</Badge>
               {ingredient.is_halal ? (
-                <Badge variant="success" className="text-xs">Halal</Badge>
+                <Badge variant="success">Halal</Badge>
               ) : (
-                <Badge variant="secondary" className="text-xs">Non-halal</Badge>
+                <Badge variant="secondary">Non-halal</Badge>
               )}
               {!ingredient.is_active && (
-                <Badge variant="warning" className="text-xs">Archived</Badge>
+                <Badge variant="warning">Archived</Badge>
               )}
               {currentCategory && (
-                <Badge variant="default" className="text-xs">{currentCategory.name}</Badge>
+                <Badge>{formatDisplayName(currentCategory.name)}</Badge>
               )}
               {ingredientAllergens && ingredientAllergens.length > 0 && (
                 <>
                   {ingredientAllergens.map((allergen) => (
-                    <Badge key={allergen.id} variant="destructive" className="text-xs gap-1 flex items-center">
+                    <Badge key={allergen.id} variant="destructive" className="gap-1">
                       <AlertCircle className="h-3 w-3" />
                       {allergen.name}
                     </Badge>

@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { Edit2, Archive, ArchiveRestore } from 'lucide-react';
 import { Badge, Button } from '@/components/ui';
 import type { RecipeCategory } from '@/types';
+import { formatDisplayName } from '@/lib/format/displayName';
 
 interface RecipeCategoryListRowProps {
   category: RecipeCategory;
@@ -14,11 +15,11 @@ interface RecipeCategoryListRowProps {
 export function RecipeCategoryListRow({ category, onArchive, onUnarchive }: RecipeCategoryListRowProps) {
   const router = useRouter();
   return (
-    <div className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-secondary transition-colors">
+    <div className="flex items-start justify-between p-4 border border-border rounded-lg hover:bg-secondary transition-colors">
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <h3 className="font-medium text-foreground truncate">
-            {category.name}
+        <div className="flex items-start gap-2">
+          <h3 className="min-w-0 font-medium text-foreground break-words">
+            {formatDisplayName(category.name)}
           </h3>
           {!category.is_active && (
             <Badge variant="warning">Archived</Badge>

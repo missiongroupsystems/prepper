@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Edit2, Archive, ArchiveRestore } from 'lucide-react';
 import { Card, CardContent, Button } from '@/components/ui';
 import type { Category } from '@/types';
+import { formatDisplayName } from '@/lib/format/displayName';
 
 interface CategoryListRowProps {
   category: Category;
@@ -22,15 +23,15 @@ export function CategoryListRow({
 
   return (
     <Card
-      className="relative mb-2"
+      className="relative py-4"
       onMouseEnter={() => setShowActions(true)}
       onMouseLeave={() => setShowActions(false)}
     >
-      <CardContent className="py-2">
-        <div className="flex items-center justify-between gap-4">
+      <CardContent className="mt-0">
+        <div className="flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">
-            <h3 className="text-base font-medium text-foreground truncate">
-              {category.name}
+            <h3 className="text-base font-medium text-ink break-words">
+              {formatDisplayName(category.name)}
             </h3>
             {category.description && (
               <p className="text-sm text-muted-foreground mt-0.5 line-clamp-2">

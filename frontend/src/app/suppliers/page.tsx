@@ -3,15 +3,16 @@
 import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { useDebouncedValue } from '@/lib/hooks/useDebouncedValue';
 import Link from 'next/link';
-import { Plus, Trash2, Check, X, MapPin, Phone, Mail, ArchiveRestore, Upload, Download } from 'lucide-react';
+import { Plus, Trash2, Check, X, MapPin, Phone, Mail, ArchiveRestore, Upload, Download, Truck } from 'lucide-react';
 import { useSuppliers, useUpdateSupplier, useDeactivateSupplier } from '@/lib/hooks';
-import { PageHeader, SearchInput, Button, Skeleton, Input, Card, CardHeader, CardTitle, CardContent, ViewToggle, Checkbox, Badge, DropdownButton } from '@/components/ui';
+import { PageHeader, SearchInput, Button, Skeleton, Input, Card, CardHeader, CardTitle, CardContent, ViewToggle, Checkbox, Badge, DropdownButton, EmptyState, EntityCode } from '@/components/ui';
 import { Pagination } from '@/components/ui/Pagination';
 import { AddSupplierModal, FMHSupplierImportModal, SupplierListRow } from '@/components/suppliers';
 import { toast } from 'sonner';
 import type { Supplier } from '@/types';
 import { downloadFMHSampleSupplier, downloadFMHSampleSupplierPricings } from '@/lib/api';
 import { triggerBlobDownload } from '@/lib/utils';
+import { supplierDisplayName } from '@/lib/format/displayName';
 
 type ViewType = 'grid' | 'list';
 
@@ -48,6 +49,7 @@ function SupplierCard({ supplier }: { supplier: Supplier }) {
   const [editEmail, setEditEmail] = useState(supplier.email || '');
   const updateSupplier = useUpdateSupplier();
   const deactivateSupplier = useDeactivateSupplier();
+  const { code, name } = supplierDisplayName(supplier);
 
   const handleSave = () => {
     if (!editName.trim()) {
@@ -117,7 +119,7 @@ function SupplierCard({ supplier }: { supplier: Supplier }) {
   };
 
   return (
-    <Card className="mb-4">
+    <Card>
       <CardHeader>
         {isEditing ? (
           <div className="flex items-center gap-2 w-full">
@@ -141,20 +143,14 @@ function SupplierCard({ supplier }: { supplier: Supplier }) {
             </Button>
           </div>
         ) : (
-          <div className="flex items-center justify-between w-full gap-2">
+          <div className="flex items-start justify-between w-full gap-2">
             <Link href={`/suppliers/${supplier.id}`} className="min-w-0 flex-1">
               <div>
-                <CardTitle className="text-xl cursor-pointer hover:text-muted-foreground">
-                  <OverflowTooltip text={supplier.name}>{supplier.name}</OverflowTooltip>
-                </CardTitle>
-                <div className="flex items-center gap-2 mt-1 flex-wrap">
-                  {supplier.code && (
-                    <Badge variant="secondary" className="font-mono text-xs">{supplier.code}</Badge>
-                  )}
-                  {!supplier.is_active && (
-                    <Badge variant="secondary">Archived</Badge>
-                  )}
-                </div>
+                {code && <EntityCode className="mb-1">{code}</EntityCode>}
+                <CardTitle className="break-words hover:text-muted-foreground">{name}</CardTitle>
+                {!supplier.is_active && (
+                  <Badge variant="secondary" className="mt-2">Archived</Badge>
+                )}
               </div>
             </Link>
             {supplier.is_active ? (
@@ -378,11 +374,21 @@ export default function SuppliersPage() {
 
         {/* Empty State */}
         {!isLoading && filteredSuppliers.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-muted-foreground">
-              {search ? 'No suppliers match your search' : 'No suppliers yet'}
-            </p>
-          </div>
+          search ? (
+            <EmptyState icon={Truck} title="No suppliers match your search" description="Try a different name or code." />
+          ) : (
+            <EmptyState
+              icon={Truck}
+              title="No suppliers yet"
+              description="Add one, or import your FMH supplier list."
+              action={
+                <Button onClick={() => setShowForm(true)}>
+                  <Plus className="h-4 w-4" />
+                  Add supplier
+                </Button>
+              }
+            />
+          )
         )}
 
         {/* Suppliers List */}

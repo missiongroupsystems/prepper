@@ -12,6 +12,7 @@ import {
   useRemoveRecipeFromCategory,
 } from '@/lib/hooks';
 import { toast } from 'sonner';
+import { formatDisplayName } from '@/lib/format/displayName';
 import { Badge, Button, Card, CardContent, EditableCell, Input, Modal, Select, Skeleton } from '@/components/ui';
 import type { UpdateRecipeCategoryRequest, RecipeRecipeCategory } from '@/types';
 
@@ -140,9 +141,10 @@ export default function RecipeCategoryPage({ params }: RecipeCategoryPageProps) 
                 <div className="space-y-6">
                   {/* Category Name */}
                   <div>
-                    <h1 className="text-2xl font-medium text-foreground">
+                    <h1 className="text-2xl font-medium text-foreground break-words">
                       <EditableCell
                         value={category.name}
+                        displayValue={formatDisplayName(category.name)}
                         onSave={(value) => handleUpdateCategory({ name: value })}
                         className="text-2xl font-medium"
                       />
