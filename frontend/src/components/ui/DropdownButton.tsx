@@ -1,98 +1,58 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+/**
+ * DropdownButton — a secondary Button that opens a Menu of actions. Kept for existing callers;
+ * new code can compose `Menu` + `MenuItem` directly.
+ */
+import type { ReactNode } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { buttonClasses } from './Button';
+import { Menu, MenuItem } from './Menu';
 
 export interface DropdownItem {
   label: string;
-  icon?: React.ReactNode;
+  icon?: ReactNode;
   onClick: () => void;
   disabled?: boolean;
 }
 
 interface DropdownButtonProps {
   label: string;
-  icon?: React.ReactNode;
+  icon?: ReactNode;
   items: DropdownItem[];
   className?: string;
 }
 
 export function DropdownButton({ label, icon, items, className }: DropdownButtonProps) {
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!open) return;
-    const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    };
-    const keyHandler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setOpen(false);
-    };
-    document.addEventListener('mousedown', handler);
-    document.addEventListener('keydown', keyHandler);
-    return () => {
-      document.removeEventListener('mousedown', handler);
-      document.removeEventListener('keydown', keyHandler);
-    };
-  }, [open]);
-
   return (
-    <div ref={ref} className={cn('relative', className)}>
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        className={cn(
-          'inline-flex items-center gap-2 h-10 px-4 rounded-lg font-medium text-sm transition-colors',
-          'border border-border bg-card hover:bg-surface-hover hover:text-foreground',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
-          'disabled:pointer-events-none disabled:opacity-50',
-          open && 'bg-surface-hover text-foreground'
-        )}
-      >
-        {icon}
-        <span className="hidden sm:inline">{label}</span>
-        <ChevronDown
-          className={cn('h-3.5 w-3.5 transition-transform duration-150', open && 'rotate-180')}
-        />
-      </button>
-
-      {open && (
-        <div
-          className={cn(
-            // Menu: overlay surface, 12px radius, elevation-2 (§12.7)
-            'absolute right-0 z-50 mt-1 min-w-[220px] rounded-xl border border-border bg-popover shadow-elevation-2',
-            'animate-in fade-in-0 zoom-in-95 duration-100'
-          )}
+    <Menu
+      label={label}
+      className={className}
+      trigger={({ ref, ...triggerProps }) => (
+        <button
+          ref={ref}
+          type="button"
+          aria-label={label}
+          className={cn(buttonClasses('secondary', 'md'), 'group')}
+          {...triggerProps}
         >
-          <div className="p-1">
-            {items.map((item, i) => (
-              <button
-                key={i}
-                type="button"
-                disabled={item.disabled}
-                onClick={() => {
-                  item.onClick();
-                  setOpen(false);
-                }}
-                className={cn(
-                  'flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-sm text-left',
-                  'transition-colors hover:bg-surface-hover hover:text-foreground',
-                  'disabled:pointer-events-none disabled:opacity-50'
-                )}
-              >
-                {item.icon && (
-                  <span className="text-muted-foreground">{item.icon}</span>
-                )}
-                {item.label}
-              </button>
-            ))}
-          </div>
-        </div>
+          {icon}
+          <span className="hidden sm:inline">{label}</span>
+          <ChevronDown
+            className="size-3.5 transition-transform duration-(--dur-quick) group-aria-expanded:rotate-180"
+            strokeWidth={1.5}
+            aria-hidden="true"
+          />
+        </button>
       )}
-    </div>
+    >
+      {items.map((item) => (
+        <MenuItem key={item.label} onSelect={item.onClick} disabled={item.disabled}>
+          {item.icon && <span className="text-muted-foreground">{item.icon}</span>}
+          {item.label}
+        </MenuItem>
+      ))}
+    </Menu>
   );
 }
