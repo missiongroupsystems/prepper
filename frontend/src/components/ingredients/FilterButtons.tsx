@@ -1,5 +1,6 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 import { formatDisplayName } from '@/lib/format/displayName';
 import type { Category, Allergen } from '@/types';
@@ -99,110 +100,83 @@ export function FilterButtons({
 
   return (
     <div className="flex flex-col gap-3">
-      {/* Category Filters */}
       {categoryPills.length > 0 && (
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-xs font-medium text-muted-foreground mr-1">
-            {hasSearch ? 'Matching tags:' : 'Category:'}
-          </span>
+        <FilterGroup label={hasSearch ? 'Matching tags' : 'Tag'}>
           {categoryPills.map((pill) => (
-            <button
-              key={pill.ids[0]}
-              onClick={() => toggleCategoryPill(pill)}
-              className={cn(
-                'px-3 py-1 text-xs font-medium rounded-full transition-colors',
-                isPillSelected(pill)
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-secondary text-secondary-foreground hover:bg-muted'
-              )}
-            >
+            <FilterPill key={pill.ids[0]} pressed={isPillSelected(pill)} onClick={() => toggleCategoryPill(pill)}>
               {pill.label}
-            </button>
+            </FilterPill>
           ))}
           {hasMoreCategories && (
             <button
+              type="button"
               onClick={onLoadMoreCategories}
               disabled={isLoadingMoreCategories}
-              className="px-3 py-1 text-xs font-medium rounded-full text-muted-foreground hover:text-foreground underline transition-colors disabled:opacity-50"
+              className="rounded-full px-2 py-1 text-[13px] text-muted-foreground underline underline-offset-2 hover:text-ink disabled:opacity-50 max-sm:min-h-10"
             >
-              {isLoadingMoreCategories ? 'Loading...' : 'See more'}
+              {isLoadingMoreCategories ? 'Loading…' : 'See more'}
             </button>
           )}
-        </div>
+        </FilterGroup>
       )}
 
-      {/* Unit Filters */}
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="text-xs font-medium text-muted-foreground mr-1">
-          Unit:
-        </span>
+      <FilterGroup label="Unit">
         {UNIT_OPTIONS.map((unit) => (
-          <button
-            key={unit.value}
-            onClick={() => toggleUnit(unit.value)}
-            className={cn(
-              'px-3 py-1 text-xs font-medium rounded-full transition-colors',
-              selectedUnits.includes(unit.value)
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-secondary text-secondary-foreground hover:bg-muted'
-            )}
-          >
+          <FilterPill key={unit.value} pressed={selectedUnits.includes(unit.value)} onClick={() => toggleUnit(unit.value)}>
             {unit.label}
-          </button>
+          </FilterPill>
         ))}
-      </div>
+      </FilterGroup>
 
-      {/* Halal Filters */}
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="text-xs font-medium text-muted-foreground mr-1">
-          Halal:
-        </span>
-        <button
-          onClick={() => toggleHalal(true)}
-          className={cn(
-            'px-3 py-1 text-xs font-medium rounded-full transition-colors',
-            selectedHalal.includes(true)
-              ? 'bg-primary text-primary-foreground'
-              : 'bg-secondary text-secondary-foreground hover:bg-muted'
-          )}
-        >
+      <FilterGroup label="Halal">
+        <FilterPill pressed={selectedHalal.includes(true)} onClick={() => toggleHalal(true)}>
           Halal
-        </button>
-        <button
-          onClick={() => toggleHalal(false)}
-          className={cn(
-            'px-3 py-1 text-xs font-medium rounded-full transition-colors',
-            selectedHalal.includes(false)
-              ? 'bg-primary text-primary-foreground'
-              : 'bg-secondary text-secondary-foreground hover:bg-muted'
-          )}
-        >
+        </FilterPill>
+        <FilterPill pressed={selectedHalal.includes(false)} onClick={() => toggleHalal(false)}>
           Non-halal
-        </button>
-      </div>
+        </FilterPill>
+      </FilterGroup>
 
-      {/* Allergen Filters */}
       {activeAllergens.length > 0 && (
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-xs font-medium text-muted-foreground mr-1">
-            Allergens:
-          </span>
+        <FilterGroup label="Allergens">
           {activeAllergens.map((allergen) => (
-            <button
+            <FilterPill
               key={allergen.id}
+              pressed={selectedAllergens.includes(allergen.id)}
               onClick={() => toggleAllergen(allergen.id)}
-              className={cn(
-                'px-3 py-1 text-xs font-medium rounded-full transition-colors',
-                selectedAllergens.includes(allergen.id)
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-secondary text-secondary-foreground hover:bg-muted'
-              )}
             >
               {allergen.name}
-            </button>
+            </FilterPill>
           ))}
-        </div>
+        </FilterGroup>
       )}
     </div>
+  );
+}
+
+/** A labelled row of pills: the label sits in its own column from `sm`, above the pills on a phone. */
+function FilterGroup({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div role="group" aria-label={label} className="flex flex-col gap-1.5 sm:flex-row sm:items-start sm:gap-3">
+      <span className="shrink-0 text-[13px] font-medium text-muted-foreground sm:w-28 sm:pt-1.5">{label}</span>
+      <div className="flex min-w-0 flex-wrap items-center gap-1.5">{children}</div>
+    </div>
+  );
+}
+
+function FilterPill({ pressed, onClick, children }: { pressed: boolean; onClick: () => void; children: ReactNode }) {
+  return (
+    <button
+      type="button"
+      aria-pressed={pressed}
+      onClick={onClick}
+      className={cn(
+        'rounded-full px-3 py-1 text-[13px] font-medium transition-colors duration-(--dur-quick) max-sm:min-h-10',
+        'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
+        pressed ? 'bg-accent text-accent-foreground' : 'bg-surface-sunken text-ink hairline hover:bg-surface-hover'
+      )}
+    >
+      {children}
+    </button>
   );
 }

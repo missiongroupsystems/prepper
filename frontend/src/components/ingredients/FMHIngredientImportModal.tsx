@@ -64,12 +64,27 @@ export function FMHIngredientImportModal({ isOpen, onClose }: FMHIngredientImpor
   const canImport = !!productsFile && !isImporting;
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title="Import FMH ingredients" disableClose={isImporting}>
+    <Modal
+      isOpen={isOpen}
+      onClose={handleClose}
+      title="Import FMH ingredients"
+      disableClose={isImporting}
+      footer={
+        <>
+          <Button type="button" variant="outline" onClick={handleClose} disabled={isImporting}>
+            Cancel
+          </Button>
+          <Button type="button" disabled={!canImport} onClick={handleImport}>
+            {isImporting ? 'Importing...' : 'Import'}
+          </Button>
+        </>
+      }
+    >
       <div className="space-y-5">
         {/* Products file */}
         <div>
-          <p className="text-xs font-medium text-muted-foreground mb-2">
-            Product list file <span className="text-[var(--color-feedback-error)]">*</span>
+          <p className="text-[13px] font-medium text-muted-foreground mb-1.5">
+            Product list file
           </p>
           <input
             ref={fileRef}
@@ -91,14 +106,6 @@ export function FMHIngredientImportModal({ isOpen, onClose }: FMHIngredientImpor
         </div>
 
         {/* Footer */}
-        <div className="flex justify-end gap-3 pt-2 border-t border-border">
-          <Button type="button" variant="outline" onClick={handleClose} disabled={isImporting}>
-            Cancel
-          </Button>
-          <Button type="button" disabled={!canImport} onClick={handleImport}>
-            {isImporting ? 'Importing...' : 'Import'}
-          </Button>
-        </div>
       </div>
     </Modal>
   );

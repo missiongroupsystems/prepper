@@ -1,3 +1,4 @@
 export { AddSupplierModal } from './AddSupplierModal';
-export { SupplierListRow } from './SupplierListRow';
+export { SupplierCard, SupplierListRow } from './SupplierCard';
 export { FMHSupplierImportModal } from './FMHSupplierImportModal';
+export { SuppliersTab } from './SuppliersTab';

@@ -31,6 +31,8 @@ export interface ReferenceListViewProps<T> {
   /** Omit to hide the add action (read-only users). */
   onAdd?: () => void;
   addLabel: string;
+  /** Secondary header actions, placed before the add button (an import menu). */
+  headerExtras?: ReactNode;
   search: string;
   onSearchChange: (value: string) => void;
   showArchived: boolean;
@@ -78,7 +80,18 @@ export function ReferenceListView<T>(props: ReferenceListViewProps<T>) {
 
   return (
     <div className="flex flex-col gap-6">
-      <TabHeader title={title} description={description} actions={addButton} />
+      <TabHeader
+        title={title}
+        description={description}
+        actions={
+          props.headerExtras || addButton ? (
+            <>
+              {props.headerExtras}
+              {addButton}
+            </>
+          ) : undefined
+        }
+      />
       <ListToolbar
         search={
           <SearchInput

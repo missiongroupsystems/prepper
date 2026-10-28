@@ -59,12 +59,27 @@ export function FMHSupplierImportModal({ isOpen, onClose }: FMHSupplierImportMod
   const canImport = !!suppliersFile && !!pricingsFile && !isImporting;
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title="Import FMH suppliers" disableClose={isImporting}>
+    <Modal
+      isOpen={isOpen}
+      onClose={handleClose}
+      title="Import FMH suppliers"
+      disableClose={isImporting}
+      footer={
+        <>
+          <Button type="button" variant="outline" onClick={handleClose} disabled={isImporting}>
+            Cancel
+          </Button>
+          <Button type="button" disabled={!canImport} onClick={handleImport}>
+            {isImporting ? 'Importing...' : 'Import'}
+          </Button>
+        </>
+      }
+    >
       <div className="space-y-5">
         {/* Suppliers file */}
         <div>
-          <p className="text-xs font-medium text-muted-foreground mb-2">
-            Suppliers file <span className="text-[var(--color-feedback-error)]">*</span>
+          <p className="text-[13px] font-medium text-muted-foreground mb-1.5">
+            Suppliers file
           </p>
           <input
             ref={suppliersRef}
@@ -87,8 +102,8 @@ export function FMHSupplierImportModal({ isOpen, onClose }: FMHSupplierImportMod
 
         {/* Pricings file */}
         <div>
-          <p className="text-xs font-medium text-muted-foreground mb-2">
-            Supplier pricings file <span className="text-[var(--color-feedback-error)]">*</span>
+          <p className="text-[13px] font-medium text-muted-foreground mb-1.5">
+            Supplier pricings file
           </p>
           <input
             ref={pricingsRef}
@@ -110,14 +125,6 @@ export function FMHSupplierImportModal({ isOpen, onClose }: FMHSupplierImportMod
         </div>
 
         {/* Footer */}
-        <div className="flex justify-end gap-3 pt-2 border-t border-border">
-          <Button type="button" variant="outline" onClick={handleClose} disabled={isImporting}>
-            Cancel
-          </Button>
-          <Button type="button" disabled={!canImport} onClick={handleImport}>
-            {isImporting ? 'Importing...' : 'Import'}
-          </Button>
-        </div>
       </div>
     </Modal>
   );
