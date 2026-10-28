@@ -1,136 +1,96 @@
 'use client';
 
+import { Carrot } from 'lucide-react';
 import { useAppState } from '@/lib/store';
 import { useRecipe, useRecipeIngredients, useSubRecipes, useRecipes } from '@/lib/hooks';
-import { Card, CardContent, Skeleton } from '@/components/ui';
+import { SectionHeader } from '@/components/app';
+import {
+  EmptyState,
+  Table,
+  TableBody,
+  TableCell,
+  TableEmpty,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui';
+import { RecipeTabPage, RecipeTabState } from '@/components/recipe-tabs/RecipeTabPage';
+import { IngredientName } from '@/components/recipe-tabs/IngredientName';
 
 export function IngredientsTab() {
   const { selectedRecipeId } = useAppState();
 
   const { data: recipe, isLoading: recipeLoading } = useRecipe(selectedRecipeId);
-  const { data: ingredients, isLoading: ingredientsLoading } = useRecipeIngredients(selectedRecipeId);
-  const { data: subRecipes, isLoading: subRecipesLoading } = useSubRecipes(selectedRecipeId);
+  const { data: ingredients = [], isLoading: ingredientsLoading } = useRecipeIngredients(selectedRecipeId);
+  const { data: subRecipes = [], isLoading: subRecipesLoading } = useSubRecipes(selectedRecipeId);
   const { data: allRecipesData } = useRecipes({ page_size: 30 });
-  const allRecipes = allRecipesData?.items;
 
-  const isLoading = recipeLoading || ingredientsLoading || subRecipesLoading;
-
-  // Create a map of recipe IDs to names for sub-recipe display
-  const recipeMap = new Map<number, string>();
-  allRecipes?.forEach((r) => recipeMap.set(r.id, r.name));
-
-  if (!selectedRecipeId) {
-    return (
-      <div className="flex-1 flex items-center justify-center bg-background">
-        <div className="text-center">
-          <p className="text-muted-foreground">
-            Select a recipe from the left panel to view its ingredients
-          </p>
-        </div>
-      </div>
-    );
+  const subject = 'its ingredients';
+  if (!selectedRecipeId) return <RecipeTabState state="unselected" subject={subject} icon={Carrot} />;
+  if (recipeLoading || ingredientsLoading || subRecipesLoading) {
+    return <RecipeTabState state="loading" subject={subject} />;
   }
+  if (!recipe) return <RecipeTabState state="error" subject={subject} icon={Carrot} />;
 
-  if (isLoading) {
-    return (
-      <div className="flex-1 bg-background p-6">
-        <div className="max-w-4xl mx-auto space-y-6">
-          <Skeleton className="h-48 rounded-lg" />
-          <Skeleton className="h-48 rounded-lg" />
-        </div>
-      </div>
-    );
-  }
-
-  if (!recipe) {
-    return (
-      <div className="flex-1 bg-background p-6">
-        <div className="max-w-4xl mx-auto">
-          <div className="rounded-lg bg-[var(--color-feedback-error-tint)] p-4 text-[var(--color-feedback-error)]">
-            Recipe not found or failed to load.
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  const sortedSubRecipes = [...(subRecipes || [])].sort((a, b) => a.position - b.position);
+  const recipeNames = new Map(allRecipesData?.items.map((r) => [r.id, r.name]));
+  const sortedSubRecipes = [...subRecipes].sort((a, b) => a.position - b.position);
+  const isEmpty = ingredients.length === 0 && sortedSubRecipes.length === 0;
 
   return (
-    <div className="flex-1 overflow-auto bg-background">
-      <div className="p-6 max-w-4xl mx-auto space-y-6">
-        {/* Base Ingredients Card */}
-        <Card>
-          <CardContent className="p-6">
-            <h2 className="text-lg font-medium mb-4 text-foreground">
-              Base Ingredients
-            </h2>
+    <RecipeTabPage>
+      <SectionHeader eyebrow={recipe.name} title="Ingredients" description="What goes into one batch." />
 
-            {ingredients && ingredients.length > 0 ? (
-              <ul className="space-y-2">
-                {ingredients.map((ri) => (
-                  <li
-                    key={ri.id}
-                    className="flex items-center justify-between py-3 border-b border-border last:border-0"
-                  >
-                    <div>
-                      <span className="font-medium text-foreground">
-                        {ri.ingredient?.name || `Ingredient #${ri.ingredient_id}`}
-                      </span>
-                    </div>
-                    <span className="text-muted-foreground">
-                      {ri.quantity} {ri.unit}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <div className="rounded-lg border-2 border-dashed border-border p-8 text-center">
-                <p className="text-muted-foreground">No base ingredients yet</p>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  Add ingredients in the Canvas tab
-                </p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+      {isEmpty ? (
+        <EmptyState
+          icon={Carrot}
+          title="No ingredients yet"
+          description="Drag ingredients or other recipes onto the canvas tab to build this recipe."
+        />
+      ) : (
+        <>
+          <Table framed aria-label="Base ingredients">
+            <TableHeader>
+              <TableRow>
+                <TableHead>Base ingredient</TableHead>
+                <TableHead numeric>Quantity</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {ingredients.length === 0 && <TableEmpty colSpan={2}>No base ingredients</TableEmpty>}
+              {ingredients.map((ri) => (
+                <TableRow key={ri.id}>
+                  <TableCell>
+                    <IngredientName name={ri.ingredient?.name ?? `Ingredient #${ri.ingredient_id}`} />
+                  </TableCell>
+                  <TableCell numeric>
+                    {ri.quantity} {ri.unit}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
 
-        {/* Items (Sub-Recipes) Card */}
-        <Card>
-          <CardContent className="p-6">
-            <h2 className="text-lg font-medium mb-4 text-foreground">
-              Items
-            </h2>
-
-            {sortedSubRecipes.length > 0 ? (
-              <ul className="space-y-2">
-                {sortedSubRecipes.map((sr) => (
-                  <li
-                    key={sr.id}
-                    className="flex items-center justify-between py-3 border-b border-border last:border-0"
-                  >
-                    <div>
-                      <span className="font-medium text-foreground">
-                        {recipeMap.get(sr.child_recipe_id) || `Recipe #${sr.child_recipe_id}`}
-                      </span>
-                    </div>
-                    <span className="text-muted-foreground">
-                      {sr.quantity} {sr.unit}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <div className="rounded-lg border-2 border-dashed border-border p-8 text-center">
-                <p className="text-muted-foreground">No items yet</p>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  Add sub-recipes in the Canvas tab
-                </p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-    </div>
+          <Table framed aria-label="Sub-recipes">
+            <TableHeader>
+              <TableRow>
+                <TableHead>Sub-recipe</TableHead>
+                <TableHead numeric>Quantity</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {sortedSubRecipes.length === 0 && <TableEmpty colSpan={2}>No sub-recipes</TableEmpty>}
+              {sortedSubRecipes.map((sr) => (
+                <TableRow key={sr.id}>
+                  <TableCell>{recipeNames.get(sr.child_recipe_id) ?? `Recipe #${sr.child_recipe_id}`}</TableCell>
+                  <TableCell numeric>
+                    {sr.quantity} {sr.unit}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </>
+      )}
+    </RecipeTabPage>
   );
 }
