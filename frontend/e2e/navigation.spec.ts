@@ -1,85 +1,75 @@
 /**
  * Section 2: Navigation & Layout
- * Covers: Top Navigation, Home Page redirects
+ * Covers: the app shell's rail (components/app/), Home Page redirects
  *
- * Nav facts (from TopNav.tsx):
- * - Outlets, Menu, Ingredients, Suppliers, Recipes, Tastings, R&D, Finance — visible to all logged-in users
- * - Admin (/admin/users) — adminOnly: true, hidden for normal users
- * - Navigation labels hidden at md breakpoint (xl:inline), icons only at md–xl
+ * Nav facts (from components/app/nav.ts):
+ * - Menu, Dishes (/recipes), Ingredients, R&D, Reports (/finance), Settings — visible to all
+ *   logged-in users; nothing is admin-only today
+ * - The rail is the complementary landmark "Sidebar" with a "Main" navigation (lg and up);
+ *   below lg the same nav opens from the top bar's "Open menu" button
+ * - The current item carries aria-current="page"
  */
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 
-test.describe('Top Navigation', () => {
+const DESKTOP = { width: 1280, height: 800 };
+
+function railNav(page: Page) {
+  return page.getByRole('complementary', { name: 'Sidebar' }).getByRole('navigation', { name: 'Main' });
+}
+
+test.describe('Rail navigation', () => {
   test.beforeEach(async ({ page }) => {
+    await page.setViewportSize(DESKTOP);
     await page.goto('/recipes');
     await page.waitForLoadState('load');
   });
 
   test('nav links are present', async ({ page }) => {
-    const nav = page.locator('nav').first();
+    const nav = railNav(page);
     await expect(nav).toBeVisible();
-    // Note: /recipes appears twice (logo + nav item) — use .first() to avoid strict mode
-    await expect(nav.locator('a[href="/recipes"]').first()).toBeVisible();
-    await expect(nav.locator('a[href="/ingredients"]').first()).toBeVisible();
-    await expect(nav.locator('a[href="/suppliers"]').first()).toBeVisible();
-    await expect(nav.locator('a[href="/tastings"]').first()).toBeVisible();
-    await expect(nav.locator('a[href="/rnd"]').first()).toBeVisible();
-    await expect(nav.locator('a[href="/menu"]').first()).toBeVisible();
-  });
-
-  test('admin-only nav item (/admin/users) is not visible to normal users', async ({ page }) => {
-    const adminLink = page.locator('nav a[href="/admin/users"]');
-    const isVisible = await adminLink.isVisible().catch(() => false);
-    expect(isVisible).toBe(false);
-  });
-
-  test('active page link is highlighted', async ({ page }) => {
-    // Assert the semantic marker, not the styling: the active nav item carries
-    // aria-current="page". Class-based assertions rot on every restyle.
-    const recipesNavItem = page
-      .locator('nav')
-      .first()
-      .locator('a[href="/recipes"][aria-current="page"]');
-    await expect(recipesNavItem).toBeVisible();
-  });
-
-  test('username is displayed in the nav', async ({ page }) => {
-    // TopNav shows username as a <span> in the desktop nav
-    const usernameSpan = page.locator('nav').first().locator('span').filter({ hasText: /\w+/ }).first();
-    await expect(usernameSpan).toBeVisible();
-  });
-
-  test('logout button is present', async ({ page }) => {
-    const nav = page.locator('nav').first();
-    const logoutBtn = nav.locator('button').filter({ hasText: /logout/i });
-    if (await logoutBtn.isVisible()) {
-      await expect(logoutBtn).toBeVisible();
-    } else {
-      // At narrower viewports logout may be in mobile menu — just verify nav exists
-      await expect(nav).toBeVisible();
+    for (const name of ['Menu', 'Dishes', 'Ingredients', 'R&D', 'Reports', 'Settings']) {
+      await expect(nav.getByRole('link', { name, exact: true })).toBeVisible();
     }
   });
 
+  test('admin-only nav item (/admin/users) is not visible to normal users', async ({ page }) => {
+    await expect(page.locator('a[href="/admin/users"]')).toHaveCount(0);
+  });
+
+  test('active page link is highlighted', async ({ page }) => {
+    // Assert the semantic marker, not the styling: the active nav item carries aria-current.
+    await expect(railNav(page).getByRole('link', { name: 'Dishes' })).toHaveAttribute('aria-current', 'page');
+  });
+
+  test('username is displayed in the rail', async ({ page }) => {
+    await expect(page.getByRole('button', { name: /^Account menu for / })).toBeVisible();
+  });
+
+  test('sign out is in the account menu', async ({ page }) => {
+    await page
+      .getByRole('complementary', { name: 'Sidebar' })
+      .getByRole('button', { name: /^Account menu for / })
+      .click();
+    await expect(page.getByRole('dialog', { name: 'Account' }).getByRole('button', { name: 'Sign out' })).toBeVisible();
+  });
+
   test.describe('Edge Cases', () => {
-    test('very long username does not break the nav bar layout', async ({ page }) => {
+    test('very long username does not break the layout', async ({ page }) => {
       await page.evaluate(() => {
         const auth = JSON.parse(localStorage.getItem('mission_recipes_auth') || '{}');
         auth.username = 'a'.repeat(80);
         localStorage.setItem('mission_recipes_auth', JSON.stringify(auth));
       });
       await page.reload();
-      const nav = page.locator('nav').first();
-      await expect(nav).toBeVisible();
-      const navBox = await nav.boundingBox();
-      const viewport = page.viewportSize();
-      if (navBox && viewport) {
-        expect(navBox.width).toBeLessThanOrEqual(viewport.width);
-      }
+      const rail = page.getByRole('complementary', { name: 'Sidebar' });
+      await expect(rail).toBeVisible();
+      const railBox = await rail.boundingBox();
+      expect(railBox?.width ?? 0).toBeLessThanOrEqual(240);
+      expect(await page.evaluate(() => document.body.scrollWidth)).toBeLessThanOrEqual(DESKTOP.width);
     });
 
     test('rapidly clicking the same nav link multiple times does not cause errors', async ({ page }) => {
-      // Use the nav item (rounded-md class) not the logo link to avoid strict mode
-      const recipesLink = page.locator('nav').first().locator('a[href="/recipes"][class*="rounded"]');
+      const recipesLink = railNav(page).getByRole('link', { name: 'Dishes' });
       await recipesLink.click();
       await recipesLink.click();
       await recipesLink.click();
