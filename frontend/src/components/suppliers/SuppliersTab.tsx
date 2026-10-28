@@ -5,11 +5,11 @@
  * opened on their own page to edit, archived from the card's menu.
  */
 import { useEffect, useState } from 'react';
-import { Download, Truck, Upload } from 'lucide-react';
+import { Truck } from 'lucide-react';
 import { toast } from 'sonner';
 import { useDebouncedValue } from '@/lib/hooks/useDebouncedValue';
 import { useSuppliers, useUpdateSupplier, useDeactivateSupplier } from '@/lib/hooks';
-import { DropdownButton } from '@/components/ui';
+import { ImportMenu } from '@/components/lists/ImportMenu';
 import { ReferenceListView, type ListView } from '@/components/lists/ReferenceListView';
 import { downloadFMHSampleSupplier, downloadFMHSampleSupplierPricings } from '@/lib/api';
 import { triggerBlobDownload } from '@/lib/utils';
@@ -21,7 +21,6 @@ import { SupplierCard, SupplierListRow } from './SupplierCard';
 
 const PAGE_SIZE = 30;
 const SEARCH_DEBOUNCE_MS = 300;
-const MENU_ICON = { className: 'size-4', strokeWidth: 1.5 } as const;
 
 export function SuppliersTab() {
   const [showArchived, setShowArchived] = useState(false);
@@ -84,22 +83,23 @@ export function SuppliersTab() {
       onAdd={() => setShowForm(true)}
       addLabel="Add supplier"
       headerExtras={
-        <DropdownButton
-          label="FMH"
-          items={[
-            {
-              label: downloading === 'suppliers' ? 'Downloading…' : 'Export sample suppliers',
-              icon: <Download {...MENU_ICON} />,
-              onClick: () => download('suppliers'),
-              disabled: downloading !== null,
-            },
-            {
-              label: downloading === 'pricings' ? 'Downloading…' : 'Export sample supplier pricings',
-              icon: <Download {...MENU_ICON} />,
-              onClick: () => download('pricings'),
-              disabled: downloading !== null,
-            },
-            { label: 'Import', icon: <Upload {...MENU_ICON} />, onClick: () => setShowFMHImport(true) },
+        <ImportMenu
+          groups={[
+            [{ kind: 'import', label: 'Import FMH suppliers', onSelect: () => setShowFMHImport(true) }],
+            [
+              {
+                kind: 'download',
+                label: downloading === 'suppliers' ? 'Downloading…' : 'Export sample suppliers',
+                onSelect: () => download('suppliers'),
+                disabled: downloading !== null,
+              },
+              {
+                kind: 'download',
+                label: downloading === 'pricings' ? 'Downloading…' : 'Export sample supplier pricings',
+                onSelect: () => download('pricings'),
+                disabled: downloading !== null,
+              },
+            ],
           ]}
         />
       }

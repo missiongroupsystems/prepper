@@ -6,10 +6,11 @@
  * phone — then the grouped cards or rows and pagination.
  */
 import { useMemo, useState } from 'react';
-import { Carrot, Download, Plus, SlidersHorizontal, Upload } from 'lucide-react';
+import { Carrot, Plus, SlidersHorizontal } from 'lucide-react';
 import { toast } from 'sonner';
 import { useIngredients, useDeactivateIngredient, useUpdateIngredient, useCategories, useAllergens } from '@/lib/hooks';
-import { Button, Checkbox, DropdownButton, EmptyState, Pagination, SearchInput, Select, ViewToggle } from '@/components/ui';
+import { Button, Checkbox, EmptyState, Pagination, SearchInput, Select, ViewToggle } from '@/components/ui';
+import { ImportMenu } from '@/components/lists/ImportMenu';
 import { CardGrid, ListError, ListGroup, ListSkeleton, ListStack, ListToolbar, TabHeader } from '@/components/lists/ListLayout';
 import type { ListView } from '@/components/lists/ReferenceListView';
 import { downloadFMHSampleItems, downloadBuyCatalogueTemplate } from '@/lib/api';
@@ -31,7 +32,6 @@ import {
 } from './useIngredientFilters';
 
 const PAGE_SIZE = 30;
-const MENU_ICON = { className: 'size-4', strokeWidth: 1.5 } as const;
 const PILLS_ID = 'ingredient-filter-pills';
 
 type Download = 'items' | 'template';
@@ -147,28 +147,26 @@ export function IngredientsListTab() {
         description="Your ingredient library, priced per base unit."
         actions={
           <>
-            <DropdownButton
-              label="FMH"
-              items={[
-                {
-                  label: downloading === 'items' ? 'Downloading…' : 'Export product list',
-                  icon: <Download {...MENU_ICON} />,
-                  onClick: () => download('items'),
-                  disabled: downloading !== null,
-                },
-                { label: 'Import', icon: <Upload {...MENU_ICON} />, onClick: () => setShowFMHImport(true) },
-              ]}
-            />
-            <DropdownButton
-              label="Buy Catalogue"
-              items={[
-                {
-                  label: downloading === 'template' ? 'Downloading…' : 'Download template',
-                  icon: <Download {...MENU_ICON} />,
-                  onClick: () => download('template'),
-                  disabled: downloading !== null,
-                },
-                { label: 'Import', icon: <Upload {...MENU_ICON} />, onClick: () => setShowBuyCatalogueImport(true) },
+            <ImportMenu
+              groups={[
+                [
+                  { kind: 'import', label: 'Import FMH product list', onSelect: () => setShowFMHImport(true) },
+                  {
+                    kind: 'download',
+                    label: downloading === 'items' ? 'Downloading…' : 'Export FMH product list',
+                    onSelect: () => download('items'),
+                    disabled: downloading !== null,
+                  },
+                ],
+                [
+                  { kind: 'import', label: 'Import Buy Catalogue', onSelect: () => setShowBuyCatalogueImport(true) },
+                  {
+                    kind: 'download',
+                    label: downloading === 'template' ? 'Downloading…' : 'Download Buy Catalogue template',
+                    onSelect: () => download('template'),
+                    disabled: downloading !== null,
+                  },
+                ],
               ]}
             />
             {addButton}
