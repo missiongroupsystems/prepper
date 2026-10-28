@@ -1,256 +1,34 @@
 'use client';
 
-import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useDebouncedValue } from '@/lib/hooks/useDebouncedValue';
-import Link from 'next/link';
-import { Plus, Trash2, Check, X, MapPin, Phone, Mail, ArchiveRestore, Upload, Download, Truck } from 'lucide-react';
-import { useSuppliers, useUpdateSupplier, useDeactivateSupplier } from '@/lib/hooks';
-import { PageHeader, SearchInput, Button, Skeleton, Input, Card, CardHeader, CardTitle, CardContent, ViewToggle, Checkbox, Badge, DropdownButton, EmptyState, EntityCode } from '@/components/ui';
-import { Pagination } from '@/components/ui/Pagination';
+import { Plus, Upload, Download, Truck } from 'lucide-react';
+import { useSuppliers } from '@/lib/hooks';
+import { Page, SectionHeader } from '@/components/app';
+import { SearchInput, Button, Skeleton, ViewToggle, Checkbox, DropdownButton, EmptyState, Pagination } from '@/components/ui';
 import { AddSupplierModal, FMHSupplierImportModal, SupplierListRow } from '@/components/suppliers';
+import { SupplierCard } from '@/components/catalogue';
 import { toast } from 'sonner';
-import type { Supplier } from '@/types';
 import { downloadFMHSampleSupplier, downloadFMHSampleSupplierPricings } from '@/lib/api';
 import { triggerBlobDownload } from '@/lib/utils';
-import { supplierDisplayName } from '@/lib/format/displayName';
 
 type ViewType = 'grid' | 'list';
 
-function OverflowTooltip({ children, text }: { children: React.ReactNode; text: string }) {
-  const ref = useRef<HTMLSpanElement>(null);
-  const [isOverflowing, setIsOverflowing] = useState(false);
-
-  const checkOverflow = useCallback(() => {
-    const el = ref.current;
-    if (el) {
-      setIsOverflowing(el.scrollWidth > el.clientWidth);
-    }
-  }, []);
-
-  useEffect(() => {
-    checkOverflow();
-    const observer = new ResizeObserver(checkOverflow);
-    if (ref.current) observer.observe(ref.current);
-    return () => observer.disconnect();
-  }, [checkOverflow]);
-
-  return (
-    <span ref={ref} className="truncate block" title={isOverflowing ? text : undefined}>
-      {children}
-    </span>
-  );
-}
-
-function SupplierCard({ supplier }: { supplier: Supplier }) {
-  const [isEditing, setIsEditing] = useState(false);
-  const [editName, setEditName] = useState(supplier.name);
-  const [editAddress, setEditAddress] = useState(supplier.address || '');
-  const [editPhone, setEditPhone] = useState(supplier.phone_number || '');
-  const [editEmail, setEditEmail] = useState(supplier.email || '');
-  const updateSupplier = useUpdateSupplier();
-  const deactivateSupplier = useDeactivateSupplier();
-  const { code, name } = supplierDisplayName(supplier);
-
-  const handleSave = () => {
-    if (!editName.trim()) {
-      toast.error('Supplier name is required');
-      return;
-    }
-    const hasChanges =
-      editName.trim() !== supplier.name ||
-      editAddress.trim() !== (supplier.address || '') ||
-      editPhone.trim() !== (supplier.phone_number || '') ||
-      editEmail.trim() !== (supplier.email || '');
-
-    if (!hasChanges) {
-      setIsEditing(false);
-      return;
-    }
-    updateSupplier.mutate(
-      {
-        id: supplier.id,
-        data: {
-          name: editName.trim(),
-          address: editAddress.trim() || undefined,
-          phone_number: editPhone.trim() || undefined,
-          email: editEmail.trim() || undefined,
-        },
-      },
-      {
-        onSuccess: () => {
-          toast.success('Supplier updated');
-          setIsEditing(false);
-        },
-        onError: () => toast.error('Failed to update supplier'),
-      }
-    );
-  };
-
-  const handleCancel = () => {
-    setEditName(supplier.name);
-    setEditAddress(supplier.address || '');
-    setEditPhone(supplier.phone_number || '');
-    setEditEmail(supplier.email || '');
-    setIsEditing(false);
-  };
-
-  const handleArchive = () => {
-    deactivateSupplier.mutate(supplier.id, {
-      onSuccess: () => {
-        toast.success('Supplier archived');
-      },
-      onError: () => toast.error('Failed to archive supplier'),
-    });
-  };
-
-  const handleUnarchive = () => {
-    updateSupplier.mutate(
-      {
-        id: supplier.id,
-        data: { is_active: true },
-      },
-      {
-        onSuccess: () => {
-          toast.success('Supplier restored');
-        },
-        onError: () => toast.error('Failed to restore supplier'),
-      }
-    );
-  };
-
-  return (
-    <Card>
-      <CardHeader>
-        {isEditing ? (
-          <div className="flex items-center gap-2 w-full">
-            <Input
-              value={editName}
-              onChange={(e) => setEditName(e.target.value)}
-              className="flex-1"
-              autoFocus
-              placeholder="Supplier name"
-            />
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handleSave}
-              disabled={updateSupplier.isPending}
-            >
-              <Check className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="icon" onClick={handleCancel}>
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-        ) : (
-          <div className="flex items-start justify-between w-full gap-2">
-            <Link href={`/suppliers/${supplier.id}`} className="min-w-0 flex-1">
-              <div>
-                {code && <EntityCode className="mb-1">{code}</EntityCode>}
-                <CardTitle className="break-words hover:text-muted-foreground">{name}</CardTitle>
-                {!supplier.is_active && (
-                  <Badge variant="secondary" className="mt-2">Archived</Badge>
-                )}
-              </div>
-            </Link>
-            {supplier.is_active ? (
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={handleArchive}
-                disabled={deactivateSupplier.isPending}
-                title="Archive supplier"
-                className="shrink-0"
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            ) : (
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={handleUnarchive}
-                disabled={updateSupplier.isPending}
-                title="Restore supplier"
-                className="shrink-0"
-              >
-                <ArchiveRestore className="h-4 w-4" />
-              </Button>
-            )}
-          </div>
-        )}
-      </CardHeader>
-      <CardContent>
-        {isEditing ? (
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <MapPin className="h-4 w-4 text-muted-foreground shrink-0" />
-              <Input
-                value={editAddress}
-                onChange={(e) => setEditAddress(e.target.value)}
-                placeholder="Address"
-                className="flex-1"
-              />
-            </div>
-            <div className="flex items-center gap-2">
-              <Phone className="h-4 w-4 text-muted-foreground shrink-0" />
-              <Input
-                value={editPhone}
-                onChange={(e) => setEditPhone(e.target.value)}
-                placeholder="Phone number"
-                className="flex-1"
-              />
-            </div>
-            <div className="flex items-center gap-2">
-              <Mail className="h-4 w-4 text-muted-foreground shrink-0" />
-              <Input
-                value={editEmail}
-                onChange={(e) => setEditEmail(e.target.value)}
-                placeholder="Email"
-                type="email"
-                className="flex-1"
-              />
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-1 text-sm text-muted-foreground">
-            {supplier.address && (
-              <div className="flex items-center gap-2 min-w-0">
-                <MapPin className="h-4 w-4 shrink-0" />
-                <OverflowTooltip text={supplier.address}>{supplier.address}</OverflowTooltip>
-              </div>
-            )}
-            {supplier.phone_number && (
-              <div className="flex items-center gap-2">
-                <Phone className="h-4 w-4 shrink-0" />
-                <span>{supplier.phone_number}</span>
-              </div>
-            )}
-            {supplier.email && (
-              <div className="flex items-center gap-2 min-w-0">
-                <Mail className="h-4 w-4 shrink-0" />
-                <OverflowTooltip text={supplier.email}>{supplier.email}</OverflowTooltip>
-              </div>
-            )}
-            {!supplier.address && !supplier.phone_number && !supplier.email && (
-              <p className="text-muted-foreground italic">No contact info</p>
-            )}
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
+const PAGE_SIZE = 30;
+const SEARCH_DEBOUNCE_MS = 300;
+const SKELETON_COUNT = 6;
+const GRID_CLASSES = 'grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3';
 
 export default function SuppliersPage() {
   const [showArchived, setShowArchived] = useState(false);
   const [search, setSearch] = useState('');
-  const debouncedSearch = useDebouncedValue(search, 300);
+  const debouncedSearch = useDebouncedValue(search, SEARCH_DEBOUNCE_MS);
   const [pageNumber, setPageNumber] = useState(1);
   useEffect(() => setPageNumber(1), [debouncedSearch]);
 
   const { data, isLoading, error } = useSuppliers({
     active_only: !showArchived,
-    page_size: 30,
+    page_size: PAGE_SIZE,
     page_number: pageNumber,
     search: debouncedSearch || undefined,
   });
@@ -287,57 +65,58 @@ export default function SuppliersPage() {
 
   if (error) {
     return (
-      <div className="p-6">
-        <div className="rounded-xl bg-[var(--color-feedback-error-tint)] p-4 text-[var(--color-feedback-error)]">
-          Failed to load suppliers. Please try again.
-        </div>
-      </div>
+      <Page>
+        <EmptyState icon={Truck} title="Suppliers failed to load" description="Check your connection and try again." />
+      </Page>
     );
   }
 
+  // Also rendered as the Suppliers tab of /ingredients, whose tab body clips overflow, so the
+  // list owns its scroll.
   return (
-    <div className="h-full w-full overflow-auto">
-      <div className="p-6 max-w-7xl mx-auto">
-        <PageHeader
+    <div className="h-full w-full overflow-y-auto">
+      <Page>
+        <SectionHeader
           title="Suppliers"
-          description="Manage your ingredient suppliers"
-        >
-          <div className="flex items-center gap-2">
-            <DropdownButton
-              label="FMH"
-              items={[
-                {
-                  label: downloadingSupplier ? 'Downloading…' : 'Export sample suppliers',
-                  icon: <Download className="h-3.5 w-3.5" />,
-                  onClick: handleDownloadSampleSupplier,
-                  disabled: downloadingSupplier,
-                },
-                {
-                  label: downloadingPricings ? 'Downloading…' : 'Export sample supplier pricings',
-                  icon: <Download className="h-3.5 w-3.5" />,
-                  onClick: handleDownloadSamplePricings,
-                  disabled: downloadingPricings,
-                },
-                {
-                  label: 'Import',
-                  icon: <Upload className="h-3.5 w-3.5" />,
-                  onClick: () => setShowFMHImport(true),
-                },
-              ]}
-            />
-            <Button onClick={() => setShowForm(true)}>
-              <Plus className="h-4 w-4" />
-              <span className="hidden sm:inline">Add supplier</span>
-            </Button>
-          </div>
-        </PageHeader>
+          description="The suppliers you buy ingredients from, with their contact details and pack pricing."
+          actions={
+            <>
+              <DropdownButton
+                label="FMH"
+                items={[
+                  {
+                    label: downloadingSupplier ? 'Downloading…' : 'Export sample suppliers',
+                    icon: <Download className="size-3.5" strokeWidth={1.5} />,
+                    onClick: handleDownloadSampleSupplier,
+                    disabled: downloadingSupplier,
+                  },
+                  {
+                    label: downloadingPricings ? 'Downloading…' : 'Export sample supplier pricings',
+                    icon: <Download className="size-3.5" strokeWidth={1.5} />,
+                    onClick: handleDownloadSamplePricings,
+                    disabled: downloadingPricings,
+                  },
+                  {
+                    label: 'Import',
+                    icon: <Upload className="size-3.5" strokeWidth={1.5} />,
+                    onClick: () => setShowFMHImport(true),
+                  },
+                ]}
+              />
+              <Button onClick={() => setShowForm(true)}>
+                <Plus className="size-4" strokeWidth={1.5} aria-hidden="true" />
+                Add supplier
+              </Button>
+            </>
+          }
+        />
         <AddSupplierModal isOpen={showForm} onClose={() => setShowForm(false)} />
         <FMHSupplierImportModal isOpen={showFMHImport} onClose={() => setShowFMHImport(false)} />
         {/* Toolbar */}
-        <div className="flex flex-col gap-4 mb-6 sm:flex-row sm:items-center">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
           <div className="flex-1 max-w-md">
             <SearchInput
-              placeholder="Search suppliers..."
+              placeholder="Search suppliers…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               onClear={() => setSearch('')}
@@ -358,15 +137,15 @@ export default function SuppliersPage() {
         {/* Loading State */}
         {isLoading && (
           view === 'grid' ? (
-            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {Array.from({ length: 8 }).map((_, i) => (
-                <Skeleton key={i} className="h-32 rounded-xl" />
+            <div className={GRID_CLASSES}>
+              {Array.from({ length: SKELETON_COUNT }).map((_, i) => (
+                <Skeleton key={i} className="h-32 rounded-lg" />
               ))}
             </div>
           ) : (
             <div className="flex flex-col gap-2 w-full">
-              {Array.from({ length: 8 }).map((_, i) => (
-                <Skeleton key={i} className="h-20 rounded-xl" />
+              {Array.from({ length: SKELETON_COUNT }).map((_, i) => (
+                <Skeleton key={i} className="h-20 rounded-lg" />
               ))}
             </div>
           )
@@ -383,7 +162,7 @@ export default function SuppliersPage() {
               description="Add one, or import your FMH supplier list."
               action={
                 <Button onClick={() => setShowForm(true)}>
-                  <Plus className="h-4 w-4" />
+                  <Plus className="size-4" strokeWidth={1.5} aria-hidden="true" />
                   Add supplier
                 </Button>
               }
@@ -394,7 +173,7 @@ export default function SuppliersPage() {
         {/* Suppliers List */}
         {!isLoading && filteredSuppliers.length > 0 && (
           view === 'grid' ? (
-            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <div className={GRID_CLASSES}>
               {filteredSuppliers.map((supplier) => (
                 <SupplierCard key={supplier.id} supplier={supplier} />
               ))}
@@ -418,7 +197,7 @@ export default function SuppliersPage() {
             onPageChange={setPageNumber}
           />
         )}
-      </div>
+      </Page>
     </div>
   );
 }
