@@ -6,6 +6,8 @@ All notable changes to Mission Recipes are documented here.
 
 ## Index
 
+- **[0.1.5](#015---2026-10-28)** — Full, Readable Entity Names: Display-Time Formatter for ALL-CAPS FMH Names, Split SKU Codes, No Truncation on Cards
+- **[0.1.4](#014---2026-10-28)** — Redesign Phase 2B: Collapsible Left Rail + Top Bar Replace TopNav, Page & SectionHeader, Environment Badge, AuthGuard Hydration Fix
 - **[0.1.3](#013---2026-10-28)** — Redesign Phase 2A: Workforce UI Primitives (Pill Buttons, Status Badges, Framed Table, Sunken Fields, Select Panel, Menu/Segmented/TabRail, Dialog vs SidePanel, EmptyState, Restyled Toasts)
 - **[0.1.2](#012---2026-10-28)** — Redesign Phase 1 Foundations: Workforce-Aligned Tokens (`styles/tokens.css`), Dark Mode Rebuilt with No-Flash Script, Variable Satoshi & System Mono, MS-Recipes Logos, Favicon & PWA Icons
 - **[0.1.1](#011---2026-10-28)** — Rename to Mission Recipes: Product Name Across UI, Email & Docs, One-Time `prepper_*` → `mission_recipes_*` Storage Key Migration
@@ -61,6 +63,42 @@ All notable changes to Mission Recipes are documented here.
 - **[0.0.3](#003---2024-11-27)** — Database Migration: Alembic Initial Tables to Supabase + PostgreSQL JSON Compatibility Fix
 - **[0.0.2](#002---2024-11-27)** — Frontend Implementation: Next.js 15 Recipe Canvas with Drag-and-Drop, Autosave & TanStack Query
 - **[0.0.1](#001---2024-11-27)** — Backend Foundation: FastAPI + SQLModel with 17 API Endpoints, Domain Services & Unit Conversion
+---
+
+## [0.1.5] - 2026-10-28
+
+### Changed
+
+#### Full, readable entity names on cards
+
+About 95% of ingredients, suppliers and categories come from the FMH import, which stores names in ALL CAPS. Names are now formatted at display time; the stored data is unchanged.
+
+- **`lib/format/displayName.ts`**: names are reformatted only when they are "shouting", i.e. more than 70% of their letters are upper case. Mixed-case names are left exactly as typed. Shouting names become sentence case. Tokens containing digits are preserved, with plain unit suffixes lower-cased (`1KG` → `1kg`). A short named list of acronyms stays upper case (`KNOWN_ACRONYMS`: IQF, UHT, PTE, LTD…). Quoted brand names are title-cased. A leading code such as `(100039)` is split out of the name. Covered by 34 unit tests (`npm run test:unit`).
+- **Cards and rows**: the ingredient, supplier, ingredient-category and dish-category cards, rows and filter pills use the formatter. Names wrap instead of being cut off, and codes show separately through a new `EntityCode`. Unit prices use `formatUnitPrice` with the real base unit (e.g. "per kg"). Filter pills that differ only in case (`DAIRY` / `Dairy`) are shown once.
+- **Not yet covered**: the recipe canvas cards. They are picked up in Phase 3 (track B).
+
+---
+
+## [0.1.4] - 2026-10-28
+
+### Changed
+
+#### Redesign Phase 2B: left-rail app shell
+
+- **Shell**: the top nav is replaced by Workforce's collapsible left rail plus a top bar (`components/app/`).
+  - The rail shows the `BrandLogo` inline mark, collapsing to the icon mark. Nav is grouped under section eyebrows, and the active item uses the accent.
+  - Collapsed/expanded state persists under `mission_recipes_sidebar` and is applied before hydration.
+  - The top bar carries breadcrumbs, the theme toggle and a user chip with sign-out.
+  - Below `lg` the rail becomes a menu sheet with 44px targets.
+  - Auth pages (`/login`, `/register`, `/auth/callback`, `/tastings/invite/[id]`) render without the shell. `TopNav` is retired.
+- **Page and SectionHeader**:
+  - `Page` gives every screen Workforce's 1080px measure and responsive padding, with `wide` and `fill` modes; the recipe canvas and menu-sketch editor use `fill`.
+  - `SectionHeader` provides the title, description and actions slot.
+  - `ui/PageHeader` now renders through `SectionHeader`. Pages adopt `Page` in Phase 3.
+- **Environment badge**: Workforce's `env-badge` is adopted. It reads `NEXT_PUBLIC_APP_ENV` (documented in `frontend/.env.example`) and renders nothing in production. Styles live in `src/styles/shell.css`.
+- **Fix**: `AuthGuard` now waits for auth hydration before redirecting, so a cold load of a protected page stays on it.
+- **Tests**: a new `e2e/app-shell.spec.ts` (offline). The nav specs and helpers now point at the rail.
+
 ---
 
 ## [0.1.3] - 2026-10-28
