@@ -1,0 +1,70 @@
+/*
+ * Overlay and motion utilities for the ui/* primitives (Dialog, SidePanel, Menu, Select,
+ * toasts). Names match Mission Workforce so markup ports one-to-one. Durations come only from
+ * the motion tokens (--dur-base 160ms, --dur-entrance 200ms); reduced motion freezes every one
+ * of them to its end state.
+ */
+
+/* Body scroll lock while a modal overlay owns the viewport (see components/ui/useOverlay). */
+html[data-scroll-locked] {
+  overflow: hidden;
+}
+
+@keyframes ms-fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes ms-scrim-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes ms-slide-in-right {
+  from { opacity: 0; transform: translateX(24px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes ms-slide-in-left {
+  from { opacity: 0; transform: translateX(-24px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes ms-sheet-up {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: none; }
+}
+
+@layer utilities {
+  /* Dialogs and toasts appearing: opacity + 6px rise, 200ms. */
+  .animate-fade-in {
+    animation: ms-fade-in var(--dur-entrance) var(--ease-out-expo) both;
+  }
+  /* Menus, popovers and select lists: the same shape at 160ms. */
+  .animate-pop-in {
+    animation: ms-fade-in var(--dur-base) var(--ease-out-expo) both;
+  }
+  .animate-scrim-in {
+    animation: ms-scrim-in var(--dur-entrance) linear both;
+  }
+  .animate-slide-in-right {
+    animation: ms-slide-in-right var(--dur-entrance) var(--ease-out-expo) both;
+  }
+  .animate-slide-in-left {
+    animation: ms-slide-in-left var(--dur-entrance) var(--ease-out-expo) both;
+  }
+  .animate-sheet-up {
+    animation: ms-sheet-up var(--dur-entrance) var(--ease-out-expo) both;
+  }
+  /* THE overlay backdrop for every Dialog, SidePanel and sheet — one place to change the look. */
+  .scrim {
+    background-color: var(--scrim);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in,
+  .animate-pop-in,
+  .animate-scrim-in,
+  .animate-slide-in-right,
+  .animate-slide-in-left,
+  .animate-sheet-up {
+    animation: none;
+  }
+}
