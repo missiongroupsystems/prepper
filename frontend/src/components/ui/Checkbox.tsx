@@ -1,49 +1,47 @@
 'use client';
 
-import { forwardRef, InputHTMLAttributes } from 'react';
+/**
+ * Checkbox (§11). Native `<input type="checkbox">` — 18px, accent fill via `accent-color`, the
+ * accent focus ring. Native because the browser's checkbox is keyboard- and screen-reader-correct
+ * for free and `accent-color` already paints it in the brand.
+ *
+ * `label` renders a real `<label>` bound to the input, so the text is clickable and named.
+ */
+import { forwardRef, useId, type InputHTMLAttributes } from 'react';
 import { cn } from '@/lib/utils';
 
 interface CheckboxProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'type'> {
   label?: string;
 }
 
-/**
- * Checkbox (§11). 18px box, 1px --border-input, 4px radius.
- * Checked = brand accent fill + white glyph — the checked state is one of the
- * accent's four named roles (§4). It is never blue.
- */
 export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
-  ({ className, checked, disabled, label, ...props }, ref) => {
-    return (
-      <div className="flex items-center gap-2">
-        <input
-          ref={ref}
-          type="checkbox"
-          checked={checked}
-          disabled={disabled}
-          className={cn(
-            'relative h-[18px] w-[18px] shrink-0 cursor-pointer appearance-none rounded-sm border bg-card',
-            'border-input transition-colors duration-[120ms] ease-out',
-            'checked:border-primary checked:bg-primary',
-            'hover:enabled:border-[var(--border-strong)]',
-            'disabled:cursor-not-allowed disabled:bg-muted disabled:border-[var(--border-default)]',
-            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
-            // Checkmark glyph
-            'after:absolute after:hidden after:content-[""] checked:after:block',
-            'after:left-[5px] after:top-[1px] after:h-[9px] after:w-[5px]',
-            'after:rotate-45 after:border-b-2 after:border-r-2 after:border-[var(--color-text-inverse)]',
-            className
-          )}
-          {...props}
-        />
-        {label && (
-          <label className="cursor-pointer select-none text-sm text-muted-foreground">
-            {label}
-          </label>
+  ({ className, label, id, ...props }, ref) => {
+    const generatedId = useId();
+    const inputId = id ?? generatedId;
+    const input = (
+      <input
+        ref={ref}
+        id={inputId}
+        type="checkbox"
+        className={cn(
+          'size-[18px] shrink-0 cursor-pointer rounded-sm border border-input bg-card accent-accent',
+          'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
+          'aria-invalid:outline-2 aria-invalid:outline-danger',
+          'disabled:cursor-not-allowed disabled:opacity-50',
+          className
         )}
-      </div>
+        {...props}
+      />
+    );
+    if (!label) return input;
+    return (
+      <span className="inline-flex items-center gap-2">
+        {input}
+        <label htmlFor={inputId} className="cursor-pointer text-sm text-ink select-none">
+          {label}
+        </label>
+      </span>
     );
   }
 );
-
 Checkbox.displayName = 'Checkbox';
