@@ -1,6 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/utils';
+import { formatDisplayName } from '@/lib/format/displayName';
 import type { Category, Allergen } from '@/types';
 
 const UNIT_OPTIONS = [
@@ -10,6 +11,24 @@ const UNIT_OPTIONS = [
   { value: 'l', label: 'l' },
   { value: 'pcs', label: 'pcs' },
 ];
+
+/** One pill per display label: `DAIRY` and `Dairy` read the same, so they filter together. */
+interface CategoryPill {
+  label: string;
+  ids: number[];
+}
+
+function toCategoryPills(categories: Category[]): CategoryPill[] {
+  const pills = new Map<string, CategoryPill>();
+  for (const category of categories) {
+    const label = formatDisplayName(category.name);
+    const key = label.toLowerCase();
+    const pill = pills.get(key);
+    if (pill) pill.ids.push(category.id);
+    else pills.set(key, { label, ids: [category.id] });
+  }
+  return [...pills.values()];
+}
 
 interface FilterButtonsProps {
   categories: Category[] | undefined;
@@ -44,12 +63,11 @@ export function FilterButtons({
   onAllergenChange,
   hasSearch = false,
 }: FilterButtonsProps) {
-  const toggleCategory = (categoryId: number) => {
-    if (selectedCategories.includes(categoryId)) {
-      onCategoryChange(selectedCategories.filter((id) => id !== categoryId));
-    } else {
-      onCategoryChange([...selectedCategories, categoryId]);
-    }
+  const isPillSelected = (pill: CategoryPill) => pill.ids.some((id) => selectedCategories.includes(id));
+
+  const toggleCategoryPill = (pill: CategoryPill) => {
+    const others = selectedCategories.filter((id) => !pill.ids.includes(id));
+    onCategoryChange(isPillSelected(pill) ? others : [...others, ...pill.ids]);
   };
 
   const toggleUnit = (unit: string) => {
@@ -76,29 +94,29 @@ export function FilterButtons({
     }
   };
 
-  const activeCategories = categories?.filter((c) => c.is_active) ?? [];
+  const categoryPills = toCategoryPills(categories?.filter((c) => c.is_active) ?? []);
   const activeAllergens = allergens?.filter((a) => a.is_active) ?? [];
 
   return (
     <div className="flex flex-col gap-3">
       {/* Category Filters */}
-      {activeCategories.length > 0 && (
+      {categoryPills.length > 0 && (
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-xs font-medium text-muted-foreground mr-1">
             {hasSearch ? 'Matching tags:' : 'Category:'}
           </span>
-          {activeCategories.map((category) => (
+          {categoryPills.map((pill) => (
             <button
-              key={category.id}
-              onClick={() => toggleCategory(category.id)}
+              key={pill.ids[0]}
+              onClick={() => toggleCategoryPill(pill)}
               className={cn(
                 'px-3 py-1 text-xs font-medium rounded-full transition-colors',
-                selectedCategories.includes(category.id)
+                isPillSelected(pill)
                   ? 'bg-primary text-primary-foreground'
                   : 'bg-secondary text-secondary-foreground hover:bg-muted'
               )}
             >
-              {category.name}
+              {pill.label}
             </button>
           ))}
           {hasMoreCategories && (

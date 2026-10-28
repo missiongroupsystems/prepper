@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Edit2, Archive, ArchiveRestore } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent, Badge, Button } from '@/components/ui';
 import type { Category } from '@/types';
+import { formatDisplayName } from '@/lib/format/displayName';
 
 interface CategoryCardProps {
   category: Category;
@@ -17,14 +18,14 @@ export function CategoryCard({ category, onEdit, onArchive, onUnarchive }: Categ
 
   return (
     <Card
-      className="relative group mb-4"
+      className="relative group"
       onMouseEnter={() => setShowActions(true)}
       onMouseLeave={() => setShowActions(false)}
     >
       <CardHeader>
         <div className="flex-1 min-w-0">
-          <CardTitle className="truncate">
-            {category.name}
+          <CardTitle className="break-words">
+            {formatDisplayName(category.name)}
           </CardTitle>
         </div>
 

@@ -22,8 +22,9 @@ import {
 } from '@/lib/hooks';
 import { useAppState } from '@/lib/store';
 import { toast } from 'sonner';
-import { Badge, Button, Card, CardContent, EditableCell, Input, Modal, Select, Skeleton, Checkbox } from '@/components/ui';
+import { Badge, Button, Card, CardContent, EditableCell, EntityCode, Input, Modal, Select, Skeleton, Checkbox } from '@/components/ui';
 import { formatCurrency } from '@/lib/utils';
+import { displayNameParts, formatDisplayName } from '@/lib/format/displayName';
 import type { UpdateSupplierIngredientRequest, SupplierIngredient } from '@/types';
 
 interface SupplierRowEdit {
@@ -297,6 +298,7 @@ export default function IngredientPage({ params }: IngredientPageProps) {
   };
 
   const currentCategory = categories.find((c) => c.id === ingredient?.category_id);
+  const displayName = displayNameParts(ingredient?.name ?? '');
 
   // Recalculate and update median cost based on current suppliers
   const recalculateMedianCost = (updatedSuppliers: typeof suppliers) => {
@@ -313,8 +315,8 @@ export default function IngredientPage({ params }: IngredientPageProps) {
 
   const handleArchive = () => {
     deactivateIngredientMutation.mutate(ingredientId, {
-      onSuccess: () => toast.success(`${ingredient?.name} archived`),
-      onError: () => toast.error(`Failed to archive ${ingredient?.name}`),
+      onSuccess: () => toast.success(`${displayName.name} archived`),
+      onError: () => toast.error(`Failed to archive ${displayName.name}`),
     });
   };
 
@@ -322,8 +324,8 @@ export default function IngredientPage({ params }: IngredientPageProps) {
     updateIngredientMutation.mutate(
       { id: ingredientId, data: { is_active: true } },
       {
-        onSuccess: () => toast.success(`${ingredient?.name} unarchived`),
-        onError: () => toast.error(`Failed to unarchive ${ingredient?.name}`),
+        onSuccess: () => toast.success(`${displayName.name} unarchived`),
+        onError: () => toast.error(`Failed to unarchive ${displayName.name}`),
       }
     );
   };
@@ -513,9 +515,11 @@ export default function IngredientPage({ params }: IngredientPageProps) {
                 <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1">
-                        <h1 className="text-2xl font-medium text-foreground">
+                        {displayName.code && <EntityCode className="mb-1 px-2">{displayName.code}</EntityCode>}
+                        <h1 className="text-2xl font-medium text-foreground break-words">
                           <EditableCell
                             value={ingredient.name}
+                            displayValue={displayName.name}
                             onSave={(value) => handleUpdateIngredient({ name: value })}
                             className="text-2xl font-medium"
                           />
@@ -607,7 +611,7 @@ export default function IngredientPage({ params }: IngredientPageProps) {
                       <div className="flex items-center gap-2 text-sm">
                         <span className="text-muted-foreground">Category:</span>
                         <Badge variant={currentCategory ? 'default' : 'secondary'}>
-                          {currentCategory?.name ?? 'N/A'}
+                          {currentCategory ? formatDisplayName(currentCategory.name) : 'N/A'}
                         </Badge>
                         <Button
                           variant="ghost"
@@ -695,7 +699,7 @@ export default function IngredientPage({ params }: IngredientPageProps) {
                           { value: '', label: 'Select outlet...' },
                           ...outlets.map((o) => ({
                             value: o.id.toString(),
-                            label: o.name,
+                            label: formatDisplayName(o.name),
                           })),
                         ]}
                       />
@@ -841,11 +845,11 @@ export default function IngredientPage({ params }: IngredientPageProps) {
                                 href={`/suppliers/${supplier.supplier_id}`}
                                 className="hover:text-primary hover:underline"
                               >
-                                {supplier.supplier_name}
+                                {formatDisplayName(supplier.supplier_name ?? '')}
                               </Link>
                             </td>
                             <td className="py-3 px-2 text-muted-foreground text-xs">
-                              {supplier.outlet_name ?? '-'}
+                              {supplier.outlet_name ? formatDisplayName(supplier.outlet_name) : '-'}
                             </td>
                             <td className="py-3 px-2 text-muted-foreground font-mono text-xs">
                               {editingSupplier === supplier.id ? (
