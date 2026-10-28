@@ -7,6 +7,7 @@ import '@xyflow/react/dist/style.css';
 import { Calendar, User, History } from 'lucide-react';
 import { useRecipe, useRecipeVersions } from '@/lib/hooks';
 import { useAppState } from '@/lib/store';
+import { useTheme } from '@/components/theme';
 import { Page, SectionHeader } from '@/components/app';
 import { Badge, EmptyState, Skeleton } from '@/components/ui';
 import { RecipeTabState } from '@/components/recipe-tabs/RecipeTabPage';
@@ -92,6 +93,9 @@ export function VersionsTab() {
   const { data: versions, isLoading, error } = useRecipeVersions(selectedRecipeId, userId);
   const { data: recipe } = useRecipe(selectedRecipeId);
   const colors = useTreeColors();
+  // ReactFlow stamps `light` / `dark` on its root, and both are theme scopes in tokens.css — so it
+  // must be told the resolved theme, or its default `light` repaints the tree light in dark mode.
+  const { resolvedTheme } = useTheme();
 
   const handleNodeClick: NodeMouseHandler<VersionNodeType> = useCallback(
     (_event, node) => router.push(`/?recipe=${node.data.recipe.id}`),
@@ -134,6 +138,7 @@ export function VersionsTab() {
             nodes={nodes}
             edges={edges}
             nodeTypes={nodeTypes}
+            colorMode={resolvedTheme}
             onNodeClick={handleNodeClick}
             defaultViewport={{ x: 48, y: 200, zoom: 1 }}
             nodesDraggable={false}
