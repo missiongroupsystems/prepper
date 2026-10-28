@@ -31,7 +31,7 @@ async function openShowcase(page: Page) {
   await page.goto('/settings');
   const heading = page.getByRole('heading', { name: 'Mission Recipes design system' });
   await expect(async () => {
-    await page.getByRole('button', { name: 'Design', exact: true }).click();
+    await page.getByRole('tab', { name: 'Design', exact: true }).click();
     await expect(heading).toBeVisible({ timeout: 1_000 });
   }).toPass();
 }

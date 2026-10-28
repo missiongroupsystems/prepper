@@ -1,269 +1,99 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Plus, X } from 'lucide-react';
+/** Ingredients → Tags: the ingredient categories, added in a panel and edited with autosave. */
+import { useEffect, useState } from 'react';
+import { Tags } from 'lucide-react';
+import { toast } from 'sonner';
 import { useCategoriesPaginated, useUpdateCategory, useDeactivateCategory, useDebouncedValue } from '@/lib/hooks';
 import { CategoryCard, CategoryListRow, AddCategoryModal } from '@/components/categories';
-import { PageHeader, SearchInput, Button, Skeleton, Input, Textarea, ViewToggle, Checkbox } from '@/components/ui';
-import { Pagination } from '@/components/ui/Pagination';
-import { toast } from 'sonner';
+import { TAG_COPY } from '@/components/categories/AddCategoryModal';
+import { NameDescriptionEditPanel } from '@/components/forms/NameDescriptionPanels';
+import { ReferenceListView, type ListView } from '@/components/lists/ReferenceListView';
+import { formatDisplayName } from '@/lib/format/displayName';
 import type { Category } from '@/types';
 
-type ViewType = 'grid' | 'list';
-
-interface CategoryFormData {
-  name: string;
-  description: string;
-}
-
-interface EditCategoryModalProps {
-  category: Category;
-  onClose: () => void;
-}
-
-function EditCategoryModal({ category, onClose }: EditCategoryModalProps) {
-  const updateCategory = useUpdateCategory();
-  const [formData, setFormData] = useState<CategoryFormData>({
-    name: category.name,
-    description: category.description || '',
-  });
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.name.trim()) {
-      toast.error('Category name is required');
-      return;
-    }
-
-    updateCategory.mutate(
-      {
-        id: category.id,
-        data: {
-          name: formData.name.trim(),
-          description: formData.description.trim() || null,
-        },
-      },
-      {
-        onSuccess: () => {
-          toast.success('Category updated');
-          onClose();
-        },
-        onError: () => {
-          toast.error('Failed to update category');
-        },
-      }
-    );
-  };
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-[var(--color-scrim)]" onClick={onClose} />
-      <form
-        onSubmit={handleSubmit}
-        className="relative bg-card border border-border rounded-2xl p-6 shadow-elevation-3 w-full max-w-md mx-4"
-      >
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="font-medium text-lg">Edit category</h3>
-          <Button variant="ghost" size="icon" onClick={onClose} type="button">
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
-
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">Name *</label>
-            <Input
-              value={formData.name}
-              onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
-              placeholder="e.g., Proteins"
-              autoFocus
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-1">Description</label>
-            <Textarea
-              value={formData.description}
-              onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
-              placeholder="Optional description for this category"
-              rows={3}
-            />
-          </div>
-
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={onClose} type="button">
-              Cancel
-            </Button>
-            <Button type="submit" disabled={updateCategory.isPending}>
-              {updateCategory.isPending ? 'Saving...' : 'Save changes'}
-            </Button>
-          </div>
-        </div>
-      </form>
-    </div>
-  );
-}
+const PAGE_SIZE = 30;
+const SEARCH_DEBOUNCE_MS = 300;
 
 export function CategoriesTab() {
   const deactivateCategory = useDeactivateCategory();
   const updateCategory = useUpdateCategory();
 
   const [search, setSearch] = useState('');
-  const debouncedSearch = useDebouncedValue(search, 300);
+  const debouncedSearch = useDebouncedValue(search, SEARCH_DEBOUNCE_MS);
   const [showForm, setShowForm] = useState(false);
   const [showArchived, setShowArchived] = useState(false);
-  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
-  const [view, setView] = useState<ViewType>('grid');
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [view, setView] = useState<ListView>('grid');
   const [pageNumber, setPageNumber] = useState(1);
 
-  useEffect(() => { setPageNumber(1); }, [debouncedSearch, showArchived]);
+  useEffect(() => setPageNumber(1), [debouncedSearch, showArchived]);
 
   const { data, isLoading, error } = useCategoriesPaginated({
     active_only: !showArchived,
     page_number: pageNumber,
-    page_size: 30,
+    page_size: PAGE_SIZE,
     search: debouncedSearch || undefined,
   });
-  const filteredCategories = data?.items ?? [];
+  const categories = data?.items ?? [];
+  // Read the record being edited from the live list, so autosaved changes flow back into the panel.
+  const editing = categories.find((c) => c.id === editingId) ?? null;
 
   const handleArchive = (category: Category) => {
+    const name = formatDisplayName(category.name);
     deactivateCategory.mutate(category.id, {
-      onSuccess: () => toast.success(`${category.name} archived`),
-      onError: () => toast.error(`Failed to archive ${category.name}`),
+      onSuccess: () => toast.success(`${name} archived`),
+      onError: () => toast.error(`Failed to archive ${name}`),
     });
   };
 
   const handleUnarchive = (category: Category) => {
+    const name = formatDisplayName(category.name);
     updateCategory.mutate(
       { id: category.id, data: { is_active: true } },
       {
-        onSuccess: () => toast.success(`${category.name} unarchived`),
-        onError: () => toast.error(`Failed to unarchive ${category.name}`),
+        onSuccess: () => toast.success(`${name} unarchived`),
+        onError: () => toast.error(`Failed to unarchive ${name}`),
       }
     );
   };
 
-  if (error) {
-    return (
-      <div className="p-6">
-        <div className="rounded-xl bg-[var(--color-feedback-error-tint)] p-4 text-[var(--color-feedback-error)]">
-          Failed to load categories. Please try again.
-        </div>
-      </div>
-    );
-  }
+  const edit = (category: Category) => setEditingId(category.id);
 
   return (
-    <div className="h-full w-full overflow-auto">
-      <div className="p-6 max-w-7xl mx-auto">
-        <PageHeader
-          title="Tags (ingredients)"
-          description="Manage ingredient tags"
-        >
-          <Button onClick={() => setShowForm(true)}>
-            <Plus className="h-4 w-4" />
-            <span className="hidden sm:inline">Add tag</span>
-          </Button>
-        </PageHeader>
-
-        <AddCategoryModal isOpen={showForm} onClose={() => setShowForm(false)} />
-
-        {/* Toolbar */}
-        <div className="flex flex-col gap-4 mb-6 sm:flex-row sm:items-center">
-          <div className="flex-1 max-w-md">
-            <SearchInput
-              placeholder="Search categories..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              onClear={() => setSearch('')}
-            />
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Checkbox
-              checked={showArchived}
-              onChange={(e) => setShowArchived(e.target.checked)}
-              label="Show archived"
-            />
-
-            <ViewToggle view={view} onViewChange={setView} />
-          </div>
-        </div>
-
-        {/* Loading State */}
-        {isLoading && (
-          view === 'grid' ? (
-            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {Array.from({ length: 8 }).map((_, i) => (
-                <Skeleton key={i} className="h-32 rounded-xl" />
-              ))}
-            </div>
-          ) : (
-            <div className="flex flex-col gap-2 w-full">
-              {Array.from({ length: 8 }).map((_, i) => (
-                <Skeleton key={i} className="h-20 rounded-xl" />
-              ))}
-            </div>
-          )
-        )}
-
-        {/* Empty State */}
-        {!isLoading && filteredCategories.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-muted-foreground">
-              {search ? 'No categories match your search' : 'No categories yet'}
-            </p>
-          </div>
-        )}
-
-        {/* Categories Grid */}
-        {!isLoading && filteredCategories.length > 0 && (
-          view === 'grid' ? (
-            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {filteredCategories.map((category) => (
-                <CategoryCard
-                  key={category.id}
-                  category={category}
-                  onEdit={setEditingCategory}
-                  onArchive={handleArchive}
-                  onUnarchive={handleUnarchive}
-                />
-              ))}
-            </div>
-          ) : (
-            <div className="flex flex-col gap-2 w-full">
-              {filteredCategories.map((category) => (
-                <CategoryListRow
-                  key={category.id}
-                  category={category}
-                  onEdit={setEditingCategory}
-                  onArchive={handleArchive}
-                  onUnarchive={handleUnarchive}
-                />
-              ))}
-            </div>
-          )
-        )}
-
-        {/* Pagination */}
-        {data && (
-          <Pagination
-            pageNumber={data.page_number}
-            totalPages={data.total_pages}
-            totalCount={data.total_count}
-            currentPageSize={data.current_page_size}
-            onPageChange={setPageNumber}
-          />
-        )}
-      </div>
-
-      {/* Edit Modal */}
-      {editingCategory && (
-        <EditCategoryModal
-          category={editingCategory}
-          onClose={() => setEditingCategory(null)}
-        />
-      )}
-    </div>
+    <ReferenceListView
+      title="Tags"
+      description="Group ingredients so they are quicker to find and filter."
+      noun="tags"
+      icon={Tags}
+      emptyDescription="New ingredients are tagged automatically from their name."
+      onAdd={() => setShowForm(true)}
+      addLabel="Add tag"
+      search={search}
+      onSearchChange={setSearch}
+      showArchived={showArchived}
+      onShowArchivedChange={setShowArchived}
+      view={view}
+      onViewChange={setView}
+      items={categories}
+      isLoading={isLoading}
+      error={error}
+      renderItem={(category, itemView) => {
+        const Item = itemView === 'grid' ? CategoryCard : CategoryListRow;
+        return (
+          <Item key={category.id} category={category} onEdit={edit} onArchive={handleArchive} onUnarchive={handleUnarchive} />
+        );
+      }}
+      page={data}
+      onPageChange={setPageNumber}
+    >
+      <AddCategoryModal isOpen={showForm} onClose={() => setShowForm(false)} />
+      <NameDescriptionEditPanel
+        record={editing}
+        onClose={() => setEditingId(null)}
+        copy={TAG_COPY}
+        update={(patch) => updateCategory.mutateAsync({ id: editingId as number, data: patch })}
+      />
+    </ReferenceListView>
   );
 }

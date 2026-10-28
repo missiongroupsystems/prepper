@@ -1,10 +1,10 @@
 'use client';
 
-import { User as UserIcon, Store } from 'lucide-react';
+import { Store } from 'lucide-react';
 import { useAppState } from '@/lib/store';
-import { useUser } from '@/lib/hooks';
-import { useOutlet } from '@/lib/hooks';
-import { Skeleton } from '@/components/ui';
+import { useUser, useOutlet } from '@/lib/hooks';
+import { Card, Skeleton } from '@/components/ui';
+import { TabHeader } from '@/components/lists/ListLayout';
 
 function timeAgo(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -19,13 +19,9 @@ function timeAgo(dateStr: string): string {
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div>
-      <p className="text-[13px] font-medium text-[var(--color-text-secondary)] mb-1">
-        {label}
-      </p>
-      <div className="text-base font-medium text-foreground pb-3 border-b border-border">
-        {children}
-      </div>
+    <div className="flex flex-col gap-1 border-b border-line pb-3">
+      <dt className="text-[13px] font-medium text-muted-foreground">{label}</dt>
+      <dd className="text-base text-ink">{children}</dd>
     </div>
   );
 }
@@ -38,79 +34,47 @@ export function UserProfileTab() {
   const { data: parentOutlet } = useOutlet(outlet?.parent_outlet_id ?? null);
 
   const roleLabel = userType === 'admin' ? 'Administrator' : 'Normal';
-
-  const outletSubline = [parentOutlet?.name, outlet?.code].filter(Boolean).join(' \u2022 ');
+  const outletSubline = [parentOutlet?.name, outlet?.code].filter(Boolean).join(' · ');
 
   return (
-    <div className="h-full w-full overflow-auto">
-      <div className="p-8 max-w-2xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-3">
-            <UserIcon className="h-6 w-6 text-muted-foreground" />
-            <h1 className="text-2xl font-medium tracking-[-0.015em] text-foreground">
-              Account information
-            </h1>
-          </div>
-          {userLoading ? (
-            <Skeleton className="h-4 w-32 rounded" />
+    <div className="flex max-w-2xl flex-col gap-8">
+      <TabHeader
+        title="Account"
+        description="Who you are signed in as, and the outlet your access is scoped to."
+        actions={
+          userLoading ? (
+            <Skeleton className="h-4 w-32" />
           ) : user?.updated_at ? (
-            <span className="text-sm text-muted-foreground">
-              Last updated: {timeAgo(user.updated_at)}
+            <span className="text-sm text-tertiary">Last updated {timeAgo(user.updated_at)}</span>
+          ) : undefined
+        }
+      />
+
+      <dl className="grid grid-cols-1 gap-x-12 gap-y-6 sm:grid-cols-2">
+        <Field label="Username">{userLoading ? <Skeleton className="h-5 w-28" /> : (username ?? '—')}</Field>
+        <Field label="Email address">{userLoading ? <Skeleton className="h-5 w-40" /> : (email ?? '—')}</Field>
+        <Field label="Role">{roleLabel}</Field>
+        <Field label="Manager">{isManager ? 'Yes' : 'No'}</Field>
+      </dl>
+
+      <section className="flex flex-col gap-3">
+        <h3 className="text-[13px] font-medium text-muted-foreground">Assigned outlet</h3>
+        {outletLoading ? (
+          <Skeleton className="h-20 rounded-lg" />
+        ) : outlet ? (
+          <Card className="flex items-center gap-4 px-5 py-4">
+            <span className="grid size-10 shrink-0 place-items-center rounded-md bg-surface-sunken text-tertiary">
+              <Store className="size-5" strokeWidth={1.5} aria-hidden="true" />
             </span>
-          ) : null}
-        </div>
-
-        {/* Fields grid */}
-        <div className="grid grid-cols-2 gap-x-12 gap-y-6 mb-8">
-          <Field label="Username">
-            {userLoading ? <Skeleton className="h-5 w-28 rounded" /> : (username ?? '—')}
-          </Field>
-
-          <Field label="Email address">
-            {userLoading ? <Skeleton className="h-5 w-40 rounded" /> : (email ?? '—')}
-          </Field>
-
-          <Field label="Role">
-            <span className="flex items-center gap-2">
-              <span className="inline-block h-2.5 w-2.5 rounded-full bg-[var(--border-strong)]" />
-              {roleLabel}
-            </span>
-          </Field>
-
-          <Field label="Managerial status">
-            {`Manager: ${isManager ? 'Yes' : 'No'}`}
-          </Field>
-        </div>
-
-        {/* Assigned Outlet */}
-        <div>
-          <p className="text-[13px] font-medium text-[var(--color-text-secondary)] mb-3">
-            Assigned outlet
-          </p>
-
-          {outletLoading ? (
-            <Skeleton className="h-20 rounded-xl" />
-          ) : outlet ? (
-            <div className="flex items-center gap-4 rounded-xl border border-border bg-card px-5 py-4">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-secondary">
-                <Store className="h-5 w-5 text-muted-foreground" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-medium text-foreground">{outlet.name}</p>
-                {outletSubline && (
-                  <p className="text-sm text-muted-foreground">{outletSubline}</p>
-                )}
-              </div>
-              <button className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">
-                Change
-              </button>
+            <div className="min-w-0 flex-1">
+              <p className="font-medium text-ink">{outlet.name}</p>
+              {outletSubline && <p className="text-sm text-muted-foreground">{outletSubline}</p>}
             </div>
-          ) : (
-            <p className="text-sm text-muted-foreground">No outlet assigned</p>
-          )}
-        </div>
-      </div>
+          </Card>
+        ) : (
+          <p className="text-sm text-muted-foreground">No outlet assigned. An admin can assign one under Users.</p>
+        )}
+      </section>
     </div>
   );
 }
