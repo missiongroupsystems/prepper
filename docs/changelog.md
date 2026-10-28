@@ -6,6 +6,7 @@ All notable changes to Mission Recipes are documented here.
 
 ## Index
 
+- **[0.1.3](#013---2026-10-28)** — Redesign Phase 2A: Workforce UI Primitives (Pill Buttons, Status Badges, Framed Table, Sunken Fields, Select Panel, Menu/Segmented/TabRail, Dialog vs SidePanel, EmptyState, Restyled Toasts)
 - **[0.1.2](#012---2026-10-28)** — Redesign Phase 1 Foundations: Workforce-Aligned Tokens (`styles/tokens.css`), Dark Mode Rebuilt with No-Flash Script, Variable Satoshi & System Mono, MS-Recipes Logos, Favicon & PWA Icons
 - **[0.1.1](#011---2026-10-28)** — Rename to Mission Recipes: Product Name Across UI, Email & Docs, One-Time `prepper_*` → `mission_recipes_*` Storage Key Migration
 - **[0.1.0](#010---2026-07-14)** — Post-CI Review Remediation: E2E Suite Un-Rotted (Semantic Selectors), Contrast Fix on Canvas Empty States, `archived` No Longer Reads as an Error & Version-Tree De-Zinced
@@ -60,6 +61,28 @@ All notable changes to Mission Recipes are documented here.
 - **[0.0.3](#003---2024-11-27)** — Database Migration: Alembic Initial Tables to Supabase + PostgreSQL JSON Compatibility Fix
 - **[0.0.2](#002---2024-11-27)** — Frontend Implementation: Next.js 15 Recipe Canvas with Drag-and-Drop, Autosave & TanStack Query
 - **[0.0.1](#001---2024-11-27)** — Backend Foundation: FastAPI + SQLModel with 17 API Endpoints, Domain Services & Unit Conversion
+---
+
+## [0.1.3] - 2026-10-28
+
+### Changed
+
+#### Redesign Phase 2A: UI primitives matched to Workforce
+
+`components/ui/*` was rebuilt to match Workforce, the Mission Systems reference app, in look, behaviour and accessibility. Existing exports and prop names still work, so no page needed edits.
+
+- **Button**: pill-shaped, with the variants `primary`, `secondary` (now outlined, no longer a beige fill), `ghost` and `danger`, and the sizes `sm`, `md`, `icon` and `icon-sm`. Below `sm` every size steps up to a 44px touch target (40px for `sm`). `buttonClasses()` is available for links. The old names `default`, `outline` and `destructive` map onto the new ones.
+- **Badge**: neutral (sunken) by default, with semantic and status variants (draft, pending, settled, attention, blocked, alt). Status colours appear only on badges.
+- **Card**: hairline border, 12px radius, no shadow.
+- **New:** `Table` (with `framed` and `TableEmpty`), `EmptyState`, `SkeletonRows`, `Spinner`, `PendingButton`, `Label`, `FieldHint`, `FieldError`, `Menu`, `SegmentedControl` and `TabRail`. `ViewToggle` and `DropdownButton` are rebuilt on these.
+- **Fields**: Input, Textarea, Checkbox, Switch, NumericInput, SearchInput and EditableCell share one sunken field style, 36px tall with an 8px radius. They support `aria-invalid` and `aria-describedby`, and error text uses the danger colour. `Select` is now Workforce's searchable panel, shown as a bottom sheet on phones, and keeps its `options` / `onChange(e)` API.
+- **Overlays**: `Dialog` (with a size `sm` for confirmations) and `SidePanel` (for create, edit and detail) both have a focus trap, close on Escape, lock page scroll, return focus on close, and render in a portal. Action buttons sit in a footer slot. `Modal` and `ConfirmModal` keep their props but now run on `Dialog`. `ConfirmModal` also closes when the backdrop is clicked. Overlay motion and the scrim live in the new `styles/overlays.css`.
+- **Toasts**: the `sonner` toaster is restyled to the tokens. None of the roughly 40 `toast.*` call sites changed.
+- **Showcase**: `/design-system` (Settings → Design) shows every primitive, variant, size and state in both themes, using new `_sections/` files.
+- **Tests**: a new `e2e/overlays.spec.ts` covers Escape and focus return for the dialog and side panel, the dialog focus trap, cancelling the confirm modal, and keyboard use of the menu.
+
+**Phase 3 should check**: the outlined `secondary` buttons, cards losing 4px of radius, 36px inputs, Textarea now sizing by `rows` (the 120px minimum is gone), and e2e specs that call `selectOption` on what is now a custom Select.
+
 ---
 
 ## [0.1.2] - 2026-10-28
