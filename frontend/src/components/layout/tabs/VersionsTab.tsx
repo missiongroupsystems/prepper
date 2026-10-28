@@ -107,7 +107,8 @@ export function VersionsTab() {
   if (!selectedRecipeId) return <RecipeTabState state="unselected" subject={subject} icon={History} />;
   if (error) return <RecipeTabState state="error" subject={subject} icon={History} />;
 
-  const count = versions?.length ?? 0;
+  // Versions the user may not see come back masked and are not drawn, so count what is drawn.
+  const count = nodes.length;
   return (
     <Page fill>
       <div className={HEADER_MEASURE}>
@@ -121,7 +122,12 @@ export function VersionsTab() {
       <div className="min-h-[400px] flex-1 border-t border-line">
         {isLoading && <VersionTreeSkeleton />}
         {!isLoading && count === 0 && (
-          <EmptyState bare icon={History} title="No versions yet" description="Fork this recipe to start a version tree." />
+          <EmptyState
+            bare
+            icon={History}
+            title="No versions to show"
+            description="Fork this recipe to start a version tree. Private versions you do not own are hidden."
+          />
         )}
         {!isLoading && count > 0 && (
           <ReactFlow

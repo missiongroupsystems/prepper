@@ -26,7 +26,7 @@ function CostSummary({ costing }: { costing: CostingResult }) {
   return (
     <Card>
       <dl className="grid grid-cols-2 gap-x-6 gap-y-5 sm:grid-cols-4">
-        <SummaryFigure label="Cost per portion" value={costing.cost_per_portion} hint={`Batch ÷ ${costing.yield_quantity} ${costing.yield_unit}`} />
+        <SummaryFigure label="Cost per portion" value={costing.cost_per_portion} hint={`Yield of ${costing.yield_quantity} ${costing.yield_unit}`} />
         <SummaryFigure label="Batch cost" value={costing.total_batch_cost} />
         <SummaryFigure label="Ingredients" value={costing.ingredient_cost} />
         {hasSubRecipes && <SummaryFigure label="Sub-recipes" value={costing.sub_recipe_cost} />}
