@@ -11,6 +11,8 @@ dependencies = [
     "pydantic-settings>=2.1.0",
     "alembic>=1.13.0",
     "psycopg2-binary>=2.9.9",
+    # Production's DATABASE_URL uses the psycopg 3 driver (postgresql+psycopg://).
+    "psycopg[binary]>=3.2",
     "supabase>=2.0.0",
     "httpx>=0.26.0",
     "anthropic>=0.48.0",
