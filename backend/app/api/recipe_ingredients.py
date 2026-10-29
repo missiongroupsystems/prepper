@@ -3,13 +3,13 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session
 
-from app.api.deps import get_session
+from app.api.deps import get_editable_recipe, get_session
+from app.domain import RecipeService
 from app.models import (
     RecipeIngredientCreate,
-    RecipeIngredientUpdate,
     RecipeIngredientRead,
+    RecipeIngredientUpdate,
 )
-from app.domain import RecipeService
 
 router = APIRouter()
 
@@ -34,6 +34,7 @@ def list_recipe_ingredients(
     "/{recipe_id}/ingredients",
     response_model=RecipeIngredientRead,
     status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(get_editable_recipe)],
 )
 def add_ingredient_to_recipe(
     recipe_id: int,
@@ -42,12 +43,6 @@ def add_ingredient_to_recipe(
 ):
     """Add an ingredient to a recipe."""
     service = RecipeService(session)
-    recipe = service.get_recipe(recipe_id)
-    if not recipe:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Recipe not found",
-        )
     result = service.add_ingredient_to_recipe(recipe_id, data)
     if not result:
         raise HTTPException(
@@ -60,6 +55,7 @@ def add_ingredient_to_recipe(
 @router.patch(
     "/{recipe_id}/ingredients/{ri_id}",
     response_model=RecipeIngredientRead,
+    dependencies=[Depends(get_editable_recipe)],
 )
 def update_recipe_ingredient(
     recipe_id: int,
@@ -69,7 +65,7 @@ def update_recipe_ingredient(
 ):
     """Update a recipe ingredient's quantity or unit."""
     service = RecipeService(session)
-    result = service.update_recipe_ingredient(ri_id, data)
+    result = service.update_recipe_ingredient(recipe_id, ri_id, data)
     if not result:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -81,6 +77,7 @@ def update_recipe_ingredient(
 @router.delete(
     "/{recipe_id}/ingredients/{ri_id}",
     status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(get_editable_recipe)],
 )
 def remove_ingredient_from_recipe(
     recipe_id: int,
@@ -89,7 +86,7 @@ def remove_ingredient_from_recipe(
 ):
     """Remove an ingredient from a recipe."""
     service = RecipeService(session)
-    success = service.remove_ingredient_from_recipe(ri_id)
+    success = service.remove_ingredient_from_recipe(recipe_id, ri_id)
     if not success:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

@@ -4,7 +4,8 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel
 from sqlmodel import Session
 
-from app.api.deps import get_session, get_current_user
+from app.api.deps import get_current_user, get_editable_recipe, get_session
+from app.domain import OutletService
 from app.models import (
     Outlet,
     OutletCreate,
@@ -15,7 +16,6 @@ from app.models import (
     User,
     UserType,
 )
-from app.domain import OutletService
 
 
 class RecipeOutletsBatchRequest(BaseModel):
@@ -298,6 +298,7 @@ def get_recipe_outlets(
     "/{recipe_id}/outlets",
     response_model=RecipeOutlet,
     status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(get_editable_recipe)],
 )
 def add_recipe_to_outlet(
     recipe_id: int,
@@ -315,7 +316,11 @@ def add_recipe_to_outlet(
     return result
 
 
-@recipe_outlets_router.patch("/{recipe_id}/outlets/{outlet_id}", response_model=RecipeOutlet)
+@recipe_outlets_router.patch(
+    "/{recipe_id}/outlets/{outlet_id}",
+    response_model=RecipeOutlet,
+    dependencies=[Depends(get_editable_recipe)],
+)
 def update_recipe_outlet(
     recipe_id: int,
     outlet_id: int,
@@ -336,6 +341,7 @@ def update_recipe_outlet(
 @recipe_outlets_router.delete(
     "/{recipe_id}/outlets/{outlet_id}",
     status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(get_editable_recipe)],
 )
 def remove_recipe_from_outlet(
     recipe_id: int,

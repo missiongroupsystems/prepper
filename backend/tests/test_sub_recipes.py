@@ -163,14 +163,14 @@ def test_add_sub_recipe_indirect_cycle_rejected(client: TestClient):
 
 
 def test_add_sub_recipe_parent_not_found(client: TestClient):
-    """Test adding sub-recipe to non-existent parent returns 400."""
+    """Test adding sub-recipe to non-existent parent returns 404."""
     sub = create_recipe(client, "Sub Recipe")
 
     response = client.post(
         "/api/v1/recipes/99999/sub-recipes",
         json={"child_recipe_id": sub["id"], "quantity": 1, "unit": "portion"},
     )
-    assert response.status_code == 400
+    assert response.status_code == 404
     assert "not found" in response.json()["detail"].lower()
 
 
