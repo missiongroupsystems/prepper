@@ -12,7 +12,7 @@ export const GROUP_BY_OPTIONS = [
 ];
 
 export const STATUS_FILTER_OPTIONS = [
-  { value: 'all', label: 'All statuses' },
+  { value: 'all', label: 'Active and draft' },
   { value: 'draft', label: 'Draft' },
   { value: 'active', label: 'Active' },
   { value: 'archived', label: 'Archived' },

@@ -2,6 +2,7 @@
 
 import { ListOrdered } from 'lucide-react';
 import { useAppState } from '@/lib/store';
+import { canEditRecipe } from '@/lib/permissions/recipe';
 import { useRecipe } from '@/lib/hooks';
 import { Instructions } from '@/components/recipe/Instructions';
 import { SectionHeader } from '@/components/app';
@@ -17,7 +18,7 @@ export function InstructionsTab() {
   if (isLoading) return <RecipeTabState state="loading" subject={subject} />;
   if (error || !recipe) return <RecipeTabState state="error" subject={subject} icon={ListOrdered} />;
 
-  const canEdit = userType === 'admin' || (userId !== null && recipe.owner_id === userId);
+  const canEdit = canEditRecipe(recipe, userId, userType);
 
   return (
     <RecipeTabPage>

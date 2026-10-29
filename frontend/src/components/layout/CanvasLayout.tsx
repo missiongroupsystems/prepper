@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { Page } from '@/components/app';
 import { TopAppBar } from '@/components/layout/TopAppBar';
+import { RecipeActions } from '@/components/layout/RecipeActions';
 import {
   CanvasTab,
   OverviewTab,
@@ -59,7 +60,7 @@ export function CanvasLayout({ showBackLink = false, showTabs = true }: CanvasLa
   return (
     <Page fill>
       {showBackLink && (
-        <div className="shrink-0 border-b border-border/60 bg-background px-3">
+        <div className="flex shrink-0 items-center justify-between border-b border-border/60 bg-background px-3">
           <Link
             href="/recipes"
             className="inline-flex min-h-9 items-center gap-1.5 rounded-md px-2 text-sm text-muted-foreground transition-colors hover:text-ink max-sm:min-h-11"
@@ -67,6 +68,7 @@ export function CanvasLayout({ showBackLink = false, showTabs = true }: CanvasLa
             <ArrowLeft className="size-4" strokeWidth={1.5} aria-hidden="true" />
             Recipes
           </Link>
+          <RecipeActions />
         </div>
       )}
       {showTabs && <TopAppBar />}
