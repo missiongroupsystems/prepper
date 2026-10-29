@@ -405,11 +405,11 @@ class RecipeService:
         return None
 
     def update_recipe_ingredient(
-        self, recipe_ingredient_id: int, data: RecipeIngredientUpdate
+        self, recipe_id: int, recipe_ingredient_id: int, data: RecipeIngredientUpdate
     ) -> RecipeIngredientRead | None:
-        """Update a recipe ingredient's quantity or unit."""
+        """Update a recipe ingredient's quantity or unit. None if it isn't on this recipe."""
         ri = self.session.get(RecipeIngredient, recipe_ingredient_id)
-        if not ri:
+        if not ri or ri.recipe_id != recipe_id:
             return None
 
         update_data = data.model_dump(exclude_unset=True)
@@ -434,10 +434,10 @@ class RecipeService:
             return self._build_recipe_ingredient_read(refreshed)
         return None
 
-    def remove_ingredient_from_recipe(self, recipe_ingredient_id: int) -> bool:
-        """Remove an ingredient from a recipe."""
+    def remove_ingredient_from_recipe(self, recipe_id: int, recipe_ingredient_id: int) -> bool:
+        """Remove an ingredient from a recipe. False if it isn't on this recipe."""
         ri = self.session.get(RecipeIngredient, recipe_ingredient_id)
-        if not ri:
+        if not ri or ri.recipe_id != recipe_id:
             return False
 
         self.session.delete(ri)

@@ -326,8 +326,8 @@ def test_add_recipe_to_outlet_recipe_not_found(client: TestClient):
         "/api/v1/recipes/999/outlets",
         json={"outlet_id": outlet_id},
     )
-    assert response.status_code == 400
-    assert "Recipe or outlet not found" in response.json()["detail"]
+    assert response.status_code == 404
+    assert "Recipe not found" in response.json()["detail"]
 
 
 def test_add_recipe_to_outlet_outlet_not_found(client: TestClient):
@@ -450,8 +450,9 @@ def test_update_recipe_outlet_partial(client: TestClient):
 
 def test_update_recipe_outlet_not_found(client: TestClient):
     """Test updating a recipe-outlet link that doesn't exist."""
+    recipe_id = _create_recipe(client)
     response = client.patch(
-        "/api/v1/recipes/999/outlets/999",
+        f"/api/v1/recipes/{recipe_id}/outlets/999",
         json={"is_active": False},
     )
     assert response.status_code == 404
@@ -481,7 +482,8 @@ def test_remove_recipe_from_outlet(client: TestClient):
 
 def test_remove_recipe_from_outlet_not_found(client: TestClient):
     """Test removing a recipe-outlet link that doesn't exist."""
-    response = client.delete("/api/v1/recipes/999/outlets/999")
+    recipe_id = _create_recipe(client)
+    response = client.delete(f"/api/v1/recipes/{recipe_id}/outlets/999")
     assert response.status_code == 404
     assert "Recipe-outlet link not found" in response.json()["detail"]
 

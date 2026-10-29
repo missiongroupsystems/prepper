@@ -154,11 +154,11 @@ class SubRecipeService:
         return recipe_recipe
 
     def update_sub_recipe(
-        self, link_id: int, data: RecipeRecipeUpdate
+        self, parent_recipe_id: int, link_id: int, data: RecipeRecipeUpdate
     ) -> RecipeRecipe | None:
-        """Update a sub-recipe link's quantity or unit."""
+        """Update a sub-recipe link's quantity or unit. None if it isn't on this recipe."""
         rr = self.session.get(RecipeRecipe, link_id)
-        if not rr:
+        if not rr or rr.parent_recipe_id != parent_recipe_id:
             return None
 
         update_data = data.model_dump(exclude_unset=True)
@@ -170,10 +170,10 @@ class SubRecipeService:
         self.session.refresh(rr)
         return rr
 
-    def remove_sub_recipe(self, link_id: int) -> bool:
-        """Remove a sub-recipe link."""
+    def remove_sub_recipe(self, parent_recipe_id: int, link_id: int) -> bool:
+        """Remove a sub-recipe link. False if it isn't on this recipe."""
         rr = self.session.get(RecipeRecipe, link_id)
-        if not rr:
+        if not rr or rr.parent_recipe_id != parent_recipe_id:
             return False
 
         self.session.delete(rr)

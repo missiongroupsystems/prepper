@@ -1,18 +1,18 @@
 """Sub-recipe API routes for BOM hierarchy management."""
 
-from pydantic import BaseModel
 from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel
 from sqlmodel import Session
 
 from app.api.costing import evict_costing_cache
-from app.api.deps import get_session
+from app.api.deps import get_editable_recipe, get_session
+from app.domain import CycleDetectedError, SubRecipeService
 from app.models import (
     RecipeRecipe,
     RecipeRecipeCreate,
-    RecipeRecipeUpdate,
     RecipeRecipeReorder,
+    RecipeRecipeUpdate,
 )
-from app.domain import SubRecipeService, CycleDetectedError
 
 router = APIRouter()
 batch_router = APIRouter()
@@ -46,6 +46,7 @@ def list_sub_recipes(
     "/{recipe_id}/sub-recipes",
     response_model=RecipeRecipe,
     status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(get_editable_recipe)],
 )
 def add_sub_recipe(
     recipe_id: int,
@@ -74,7 +75,11 @@ def add_sub_recipe(
         )
 
 
-@router.put("/{recipe_id}/sub-recipes/{link_id}", response_model=RecipeRecipe)
+@router.put(
+    "/{recipe_id}/sub-recipes/{link_id}",
+    response_model=RecipeRecipe,
+    dependencies=[Depends(get_editable_recipe)],
+)
 def update_sub_recipe(
     recipe_id: int,
     link_id: int,
@@ -83,7 +88,7 @@ def update_sub_recipe(
 ):
     """Update a sub-recipe link's quantity or unit."""
     service = SubRecipeService(session)
-    result = service.update_sub_recipe(link_id, data)
+    result = service.update_sub_recipe(recipe_id, link_id, data)
     if not result:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -96,6 +101,7 @@ def update_sub_recipe(
 @router.delete(
     "/{recipe_id}/sub-recipes/{link_id}",
     status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(get_editable_recipe)],
 )
 def remove_sub_recipe(
     recipe_id: int,
@@ -104,7 +110,7 @@ def remove_sub_recipe(
 ):
     """Remove a sub-recipe from a recipe."""
     service = SubRecipeService(session)
-    if not service.remove_sub_recipe(link_id):
+    if not service.remove_sub_recipe(recipe_id, link_id):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Sub-recipe link not found",
@@ -112,7 +118,11 @@ def remove_sub_recipe(
     evict_costing_cache(recipe_id)
 
 
-@router.post("/{recipe_id}/sub-recipes/reorder", response_model=list[RecipeRecipe])
+@router.post(
+    "/{recipe_id}/sub-recipes/reorder",
+    response_model=list[RecipeRecipe],
+    dependencies=[Depends(get_editable_recipe)],
+)
 def reorder_sub_recipes(
     recipe_id: int,
     data: RecipeRecipeReorder,

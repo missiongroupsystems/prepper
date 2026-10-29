@@ -3,14 +3,18 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session
 
-from app.api.deps import get_session
-from app.models import Recipe, InstructionsRaw, InstructionsStructured
+from app.api.deps import get_editable_recipe, get_session
 from app.domain import InstructionsService, RecipeService
+from app.models import InstructionsRaw, InstructionsStructured, Recipe
 
 router = APIRouter()
 
 
-@router.post("/{recipe_id}/instructions/raw", response_model=Recipe)
+@router.post(
+    "/{recipe_id}/instructions/raw",
+    response_model=Recipe,
+    dependencies=[Depends(get_editable_recipe)],
+)
 def store_raw_instructions(
     recipe_id: int,
     data: InstructionsRaw,
@@ -27,7 +31,11 @@ def store_raw_instructions(
     return recipe
 
 
-@router.post("/{recipe_id}/instructions/parse", response_model=Recipe)
+@router.post(
+    "/{recipe_id}/instructions/parse",
+    response_model=Recipe,
+    dependencies=[Depends(get_editable_recipe)],
+)
 def parse_instructions(
     recipe_id: int,
     session: Session = Depends(get_session),
@@ -55,7 +63,11 @@ def parse_instructions(
     return result
 
 
-@router.patch("/{recipe_id}/instructions/structured", response_model=Recipe)
+@router.patch(
+    "/{recipe_id}/instructions/structured",
+    response_model=Recipe,
+    dependencies=[Depends(get_editable_recipe)],
+)
 def update_structured_instructions(
     recipe_id: int,
     data: InstructionsStructured,

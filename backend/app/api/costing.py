@@ -1,13 +1,12 @@
 """Costing API routes."""
 
 from cachetools import TTLCache
-
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session
 
-from app.api.deps import get_session
-from app.models import Recipe, CostingResult
+from app.api.deps import get_editable_recipe, get_session
 from app.domain import CostingService
+from app.models import CostingResult, Recipe
 
 router = APIRouter()
 
@@ -42,7 +41,11 @@ def get_recipe_costing(
     return result
 
 
-@router.post("/{recipe_id}/costing/recompute", response_model=Recipe)
+@router.post(
+    "/{recipe_id}/costing/recompute",
+    response_model=Recipe,
+    dependencies=[Depends(get_editable_recipe)],
+)
 def recompute_recipe_cost(
     recipe_id: int,
     session: Session = Depends(get_session),

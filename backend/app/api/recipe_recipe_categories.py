@@ -3,15 +3,31 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session
 
-from app.api.deps import get_session
+from app.api.deps import (
+    get_current_user,
+    get_editable_recipe,
+    get_session,
+    require_recipe_editor,
+)
+from app.domain.recipe_recipe_category_service import RecipeRecipeCategoryService
+from app.models import User
 from app.models.recipe_recipe_category import (
     RecipeRecipeCategory,
     RecipeRecipeCategoryCreate,
     RecipeRecipeCategoryUpdate,
 )
-from app.domain.recipe_recipe_category_service import RecipeRecipeCategoryService
 
 router = APIRouter()
+
+
+def _get_link_or_404(service: RecipeRecipeCategoryService, link_id: int) -> RecipeRecipeCategory:
+    link = service.get_recipe_category_link(link_id)
+    if not link:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Recipe-category link not found",
+        )
+    return link
 
 
 @router.post(
@@ -22,8 +38,10 @@ router = APIRouter()
 def create_recipe_category_link(
     data: RecipeRecipeCategoryCreate,
     session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
 ):
     """Create a link between a recipe and a recipe category."""
+    require_recipe_editor(session, data.recipe_id, current_user)
     service = RecipeRecipeCategoryService(session)
     return service.create_recipe_category_link(data)
 
@@ -44,13 +62,7 @@ def get_recipe_category_link(
 ):
     """Get a recipe-category link by ID."""
     service = RecipeRecipeCategoryService(session)
-    link = service.get_recipe_category_link(link_id)
-    if not link:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Recipe-category link not found",
-        )
-    return link
+    return _get_link_or_404(service, link_id)
 
 
 @router.get("/recipe/{recipe_id}", response_model=list[RecipeRecipeCategory])
@@ -78,34 +90,33 @@ def update_recipe_category_link(
     link_id: int,
     data: RecipeRecipeCategoryUpdate,
     session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
 ):
     """Update a recipe-category link."""
     service = RecipeRecipeCategoryService(session)
-    link = service.update_recipe_category_link(link_id, data)
-    if not link:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Recipe-category link not found",
-        )
-    return link
+    link = _get_link_or_404(service, link_id)
+    require_recipe_editor(session, link.recipe_id, current_user)
+    return service.update_recipe_category_link(link_id, data)
 
 
 @router.delete("/{link_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_recipe_category_link(
     link_id: int,
     session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
 ):
     """Delete a recipe-category link."""
     service = RecipeRecipeCategoryService(session)
-    deleted = service.delete_recipe_category_link(link_id)
-    if not deleted:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Recipe-category link not found",
-        )
+    link = _get_link_or_404(service, link_id)
+    require_recipe_editor(session, link.recipe_id, current_user)
+    service.delete_recipe_category_link(link_id)
 
 
-@router.delete("/recipe/{recipe_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/recipe/{recipe_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(get_editable_recipe)],
+)
 def delete_all_categories_for_recipe(
     recipe_id: int,
     session: Session = Depends(get_session),
