@@ -9,9 +9,8 @@ import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { BookOpen, Plus } from 'lucide-react';
 import { useRecipes, useRecipeCategories, useAllRecipeRecipeCategories, useOutlets, useRecipeOutletsBatch, useRecipeAllergensBatch, useSubRecipesBatch, useDebouncedValue } from '@/lib/hooks';
-import { SectionHeader } from '@/components/app';
 import { Button, EmptyState, Pagination, SearchInput, Select, ViewToggle } from '@/components/ui';
-import { CardGrid, ListError, ListGroup, ListSkeleton, ListStack, ListToolbar } from '@/components/lists/ListLayout';
+import { CardGrid, ListError, ListGroup, ListSkeleton, ListStack, ListToolbar, TabHeader } from '@/components/lists/ListLayout';
 import type { ListView } from '@/components/lists/ReferenceListView';
 import { formatDisplayName } from '@/lib/format/displayName';
 import { useAppState } from '@/lib/store';
@@ -228,11 +227,10 @@ export function RecipeManagementTab() {
   };
 
   return (
-    <>
-      <SectionHeader
-        eyebrow="Kitchen · Dishes"
+    <div className="flex flex-col gap-6">
+      <TabHeader
         title="Dishes"
-        description="Every dish and prep recipe, with its cost per portion."
+        description="Every dish and prep recipe, with its cost per portion. Deleted dishes are under the Archived status."
         actions={newDishButton}
       />
 
@@ -291,6 +289,6 @@ export function RecipeManagementTab() {
           onPageChange={setPageNumber}
         />
       )}
-    </>
+    </div>
   );
 }

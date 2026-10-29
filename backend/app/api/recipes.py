@@ -45,17 +45,19 @@ def list_recipes(
     page_size: int = Query(default=30, ge=1, le=100),
     search: str | None = Query(default=None),
     category_ids: str | None = Query(default=None),
+    include_archived: bool = Query(default=False),
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_user),
 ):
-    """List all recipes, optionally filtered by status and category."""
+    """List recipes, optionally filtered by status and category. Archived recipes are excluded unless
+    requested by status or include_archived."""
     from app.models.pagination import PaginatedResponse
 
     parsed_category_ids = [int(x) for x in category_ids.split(",")] if category_ids else None
 
     service = RecipeService(session)
     offset = (page_number - 1) * page_size
-    items, total = service.list_paginated_with_count(offset=offset, limit=page_size, status=status, current_user=current_user, search=search, category_ids=parsed_category_ids)
+    items, total = service.list_paginated_with_count(offset=offset, limit=page_size, status=status, current_user=current_user, search=search, category_ids=parsed_category_ids, include_archived=include_archived)
     return PaginatedResponse.create(items=items, total_count=total, page_number=page_number, page_size=page_size)
 
 

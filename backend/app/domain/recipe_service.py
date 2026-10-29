@@ -100,12 +100,17 @@ class RecipeService:
         statement = statement.where(or_(*conditions))
         return list(self.session.exec(statement).all())
 
-    def _build_list_query(self, status=None, current_user=None, search=None, category_ids=None):
-        """Build base query for recipe listing with filters."""
+    def _build_list_query(self, status=None, current_user=None, search=None, category_ids=None, include_archived=False):
+        """Build base query for recipe listing with filters.
+
+        Archived (soft-deleted) recipes are left out unless asked for by status or include_archived.
+        """
         from sqlalchemy import or_
         statement = select(Recipe)
         if status:
             statement = statement.where(Recipe.status == status)
+        elif not include_archived:
+            statement = statement.where(Recipe.status != RecipeStatus.ARCHIVED)
         if search:
             from sqlalchemy import or_ as sql_or
             from app.models.recipe_recipe_category import RecipeRecipeCategory
@@ -170,10 +175,10 @@ class RecipeService:
         count_stmt = select(func.count()).select_from(statement.subquery())
         return self.session.exec(count_stmt).one()
 
-    def list_paginated_with_count(self, offset: int, limit: int, status=None, current_user=None, search: str | None = None, category_ids=None) -> tuple[list[Recipe], int]:
+    def list_paginated_with_count(self, offset: int, limit: int, status=None, current_user=None, search: str | None = None, category_ids=None, include_archived: bool = False) -> tuple[list[Recipe], int]:
         """Return paginated items and total count, reusing the same base filter."""
         from sqlalchemy import func
-        base = self._build_list_query(status=status, current_user=current_user, search=search, category_ids=category_ids)
+        base = self._build_list_query(status=status, current_user=current_user, search=search, category_ids=category_ids, include_archived=include_archived)
         total = self.session.exec(select(func.count()).select_from(base.subquery())).one()
         items = list(self.session.exec(base.order_by(Recipe.id.desc()).offset(offset).limit(limit)).all())
         return items, total
